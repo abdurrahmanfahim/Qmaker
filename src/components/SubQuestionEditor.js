@@ -5,11 +5,19 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
 import { 
   TrashIcon,
   Bars3BottomLeftIcon,
   Bars3Icon,
-  Bars3BottomRightIcon
+  Bars3BottomRightIcon,
+  BoldIcon,
+  ItalicIcon,
+  UnderlineIcon,
+  ListBulletIcon,
+  NumberedListIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 
@@ -28,6 +36,9 @@ const SubQuestionEditor = ({
       Bold,
       Italic,
       Underline,
+      BulletList,
+      OrderedList,
+      ListItem,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -124,38 +135,67 @@ const SubQuestionEditor = ({
               <div className="border-b border-gray-300 dark:border-gray-600 p-1 sm:p-2 flex items-center gap-1 sm:gap-2 bg-gray-50 dark:bg-gray-700 overflow-x-auto">
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 ${
+                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
                     editor.isActive('bold') 
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
+                  title="Bold"
                 >
-                  B
+                  <BoldIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
                 
                 <button
                   onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 ${
+                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
                     editor.isActive('italic') 
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
+                  title="Italic"
                 >
-                  I
+                  <ItalicIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
                 
                 <button
                   onClick={() => editor.chain().focus().toggleUnderline().run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 ${
+                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
                     editor.isActive('underline') 
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
+                  title="Underline"
                 >
-                  U
+                  <UnderlineIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
                 
-                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1 hidden sm:block"></div>
+                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                
+                <button
+                  onClick={() => editor.chain().focus().toggleBulletList().run()}
+                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                    editor.isActive('bulletList') 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                  title="Bullet List"
+                >
+                  <ListBulletIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                </button>
+                
+                <button
+                  onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                    editor.isActive('orderedList') 
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                  title="Numbered List"
+                >
+                  <NumberedListIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                </button>
+                
+                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                 
                 <button
                   onClick={() => editor.chain().focus().setTextAlign('left').run()}

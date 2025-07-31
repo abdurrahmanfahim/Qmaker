@@ -6,6 +6,7 @@ const MetadataPanel = () => {
   const { metadata, setMetadata, setLanguage } = usePaperStore();
   const [isExpanded, setIsExpanded] = useState(true);
   const [userInteracting, setUserInteracting] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   
   // Check if essential fields are filled
   const isComplete = metadata.className && metadata.subject && metadata.examName;
@@ -122,18 +123,34 @@ const MetadataPanel = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Auto-collapse when essential fields are completed (mobile only) - but not while user is interacting
+  // Auto-collapse with countdown when essential fields are completed (mobile only)
   useEffect(() => {
     if (isMobile && isComplete && isExpanded && !userInteracting) {
-      const timer = setTimeout(() => setIsExpanded(false), 3000);
-      return () => clearTimeout(timer);
+      setCountdown(8); // Start 8-second countdown
+      const countdownInterval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            setIsExpanded(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      return () => {
+        clearInterval(countdownInterval);
+        setCountdown(0);
+      };
+    } else {
+      setCountdown(0);
     }
   }, [isComplete, isMobile, isExpanded, userInteracting]);
 
   // Reset interaction state after user stops interacting
   useEffect(() => {
     if (userInteracting) {
-      const timer = setTimeout(() => setUserInteracting(false), 5000);
+      const timer = setTimeout(() => setUserInteracting(false), 8000); // Longer interaction window
       return () => clearTimeout(timer);
     }
   }, [userInteracting]);
@@ -171,16 +188,21 @@ const MetadataPanel = () => {
                       Paper Information
                     </h2>
                     <div className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-                      isComplete 
+                      countdown > 0
+                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        : isComplete 
                         ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
                         : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
                     }`}>
-                      {completionPercentage}%
+                      {countdown > 0 ? `${countdown}s` : `${completionPercentage}%`}
                     </div>
                   </div>
                   {!isExpanded && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
-                      {metadata.examName || 'Tap to add exam details'} • {metadata.className || 'Class'} • {metadata.subject || 'Subject'}
+                      {countdown > 0 
+                        ? `Auto-closing in ${countdown}s - Tap to keep open`
+                        : `${metadata.examName || 'Tap to add exam details'} • ${metadata.className || 'Class'} • ${metadata.subject || 'Subject'}`
+                      }
                     </p>
                   )}
                 </div>
