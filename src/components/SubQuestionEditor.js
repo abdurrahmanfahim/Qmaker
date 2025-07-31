@@ -79,8 +79,8 @@ const SubQuestionEditor = ({
       <div className="flex items-start gap-2 sm:gap-3">
         
         <div className="flex-1 space-y-3 min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className={`flex items-center justify-between gap-2 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-2 sm:gap-3 min-w-0 flex-1 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
               <span className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs sm:text-sm font-medium flex-shrink-0">
                 {subQuestion.label}
               </span>
@@ -93,16 +93,16 @@ const SubQuestionEditor = ({
               />
             </div>
             
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className={`flex items-center gap-1 flex-shrink-0 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
               <input
                 type="number"
                 value={subQuestion.marks}
                 onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { marks: parseInt(e.target.value) || 0 })}
-                className="w-12 sm:w-16 px-1 sm:px-2 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Marks"
+                className={`w-10 sm:w-16 px-1 sm:px-2 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
+                placeholder="0"
                 min="0"
               />
-              <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">marks</span>
+              <span className={`text-xs text-gray-500 dark:text-gray-400 hidden sm:inline ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-left' : ''}`}>marks</span>
               
 
               <button
@@ -110,7 +110,7 @@ const SubQuestionEditor = ({
                   e.stopPropagation();
                   deleteSubQuestion(sectionId, subQuestion.id);
                 }}
-                className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                className="p-1 text-red-500 hover:text-red-700 transition-colors touch-manipulation"
                 title="Delete Sub-Question"
               >
                 <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />

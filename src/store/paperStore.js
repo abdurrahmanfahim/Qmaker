@@ -75,7 +75,7 @@ const usePaperStore = create(
 
       // Section management
       addSection: () => {
-        const getSectionTitle = (index, language = 'english') => {
+        const getSectionTitle = (index, language) => {
           const ordinals = {
             english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
             arabic: ['السؤال الأول', 'السؤال الثاني', 'السؤال الثالث', 'السؤال الرابع', 'السؤال الخامس'],
@@ -85,9 +85,10 @@ const usePaperStore = create(
           return ordinals[language]?.[index] || `Section ${index + 1}`;
         };
 
+        const currentLanguage = get().metadata.language;
         const newSection = {
           id: uuidv4(),
-          title: getSectionTitle(get().sections.length),
+          title: getSectionTitle(get().sections.length, currentLanguage),
           subQuestions: []
         };
         set(state => ({

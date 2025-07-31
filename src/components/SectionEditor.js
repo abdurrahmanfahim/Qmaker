@@ -100,25 +100,25 @@ const SectionEditor = () => {
           </button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {sections.map((section) => (
             <div
               key={section.id}
-              className={`flex-shrink-0 flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border cursor-pointer transition-all ${
+              className={`group flex-shrink-0 flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border cursor-pointer transition-all min-w-0 ${
                 section.id === activeSectionId
                   ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700 shadow-sm'
                   : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-sm'
               }`}
               onClick={() => setActiveSection(section.id)}
             >
-              <span className="text-xs sm:text-sm font-medium whitespace-nowrap max-w-20 sm:max-w-24 truncate">{section.title}</span>
+              <span className="text-xs sm:text-sm font-medium whitespace-nowrap truncate flex-1 min-w-0">{section.title}</span>
               {sections.length > 1 && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteSection(section.id);
                   }}
-                  className="text-red-500 hover:text-red-700 transition-colors"
+                  className="sm:opacity-0 sm:group-hover:opacity-100 opacity-100 text-red-500 hover:text-red-700 transition-all p-0.5 rounded flex-shrink-0 touch-manipulation"
                 >
                   <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>

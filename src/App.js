@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import usePaperStore from './store/paperStore';
+import Layout from './components/Layout';
 import Header from './components/Header';
 import MetadataPanel from './components/MetadataPanel';
 import SectionEditor from './components/SectionEditor';
@@ -13,8 +14,8 @@ function App() {
   }, [initialize]);
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="flex flex-col h-screen">
+    <div className={darkMode ? 'dark' : ''}>
+      <Layout>
         <Header />
         
         {previewMode ? (
@@ -25,7 +26,7 @@ function App() {
             <SectionEditor />
           </div>
         )}
-      </div>
+      </Layout>
     </div>
   );
 }
