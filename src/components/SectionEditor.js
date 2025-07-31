@@ -33,25 +33,13 @@ const SectionEditor = () => {
   const getPlaceholders = (language) => {
     switch (language) {
       case 'arabic':
-        return {
-          sectionTitle: 'عنوان القسم...',
-          sectionInstructions: 'تعليمات القسم (اختيارية)...'
-        };
+        return { sectionTitle: 'عنوان القسم...' };
       case 'bangla':
-        return {
-          sectionTitle: 'বিভাগের শিরোনাম...',
-          sectionInstructions: 'বিভাগের নির্দেশনা (ঐচ্ছিক)...'
-        };
+        return { sectionTitle: 'বিভাগের শিরোনাম...' };
       case 'urdu':
-        return {
-          sectionTitle: 'سیکشن کا عنوان...',
-          sectionInstructions: 'سیکشن کی ہدایات (اختیاری)...'
-        };
+        return { sectionTitle: 'سیکشن کا عنوان...' };
       default:
-        return {
-          sectionTitle: 'Section title...',
-          sectionInstructions: 'Section instructions (optional)...'
-        };
+        return { sectionTitle: 'Section title...' };
     }
   };
 
@@ -110,16 +98,15 @@ const SectionEditor = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
       {/* Section Tabs */}
-      <div className="flex-shrink-0 p-2 sm:p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
+      <div className="flex-shrink-0 p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sections</h2>
           <button
             onClick={addSection}
-            className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
           >
             <PlusIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Section</span>
-            <span className="sm:hidden">Add</span>
+            <span>Add Section</span>
           </button>
         </div>
 
@@ -129,7 +116,7 @@ const SectionEditor = () => {
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className="flex gap-2 overflow-x-auto pb-2"
+                className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
               >
                 {sections.map((section, index) => (
                   <Draggable key={section.id} draggableId={section.id} index={index}>
@@ -137,17 +124,17 @@ const SectionEditor = () => {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
                           section.id === activeSectionId
-                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700'
-                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                        } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700 shadow-sm'
+                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-sm'
+                        } ${snapshot.isDragging ? 'shadow-lg scale-105' : ''}`}
                         onClick={() => setActiveSection(section.id)}
                       >
                         <div {...provided.dragHandleProps}>
                           <Bars3Icon className="w-4 h-4 text-gray-400" />
                         </div>
-                        <span className="text-sm font-medium whitespace-nowrap">{section.title}</span>
+                        <span className="text-sm font-medium whitespace-nowrap max-w-24 truncate">{section.title}</span>
                         {sections.length > 1 && (
                           <button
                             onClick={(e) => {
@@ -174,67 +161,57 @@ const SectionEditor = () => {
       {activeSection ? (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Section Header */}
-          <div className="flex-shrink-0 p-2 sm:p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={activeSection.title}
-                onChange={(e) => updateSection(activeSection.id, { title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
-                placeholder={getPlaceholders(activeSection.language).sectionTitle}
-              />
-              
-              <textarea
-                value={activeSection.instructions}
-                onChange={(e) => updateSection(activeSection.id, { instructions: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm sm:text-base"
-                rows="2"
-                placeholder={getPlaceholders(activeSection.language).sectionInstructions}
-              />
-
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex-shrink-0 p-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={activeSection.title}
+                  onChange={(e) => updateSection(activeSection.id, { title: e.target.value })}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder={getPlaceholders(activeSection.language).sectionTitle}
+                />
                 <select
                   value={activeSection.language}
                   onChange={(e) => updateSection(activeSection.id, { 
                     language: e.target.value,
                     direction: ['arabic', 'urdu'].includes(e.target.value) ? 'rtl' : 'ltr'
                   })}
-                  className="w-full sm:w-auto px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="english">English</option>
-                  <option value="arabic">Arabic</option>
-                  <option value="bangla">Bangla</option>
-                  <option value="urdu">Urdu</option>
+                  <option value="english">EN</option>
+                  <option value="arabic">AR</option>
+                  <option value="bangla">BN</option>
+                  <option value="urdu">UR</option>
                 </select>
-
-                <button
-                  onClick={handleAddSubQuestion}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{getEmptyStateText(activeSection.language).addSubQuestion}</span>
-                  <span className="sm:hidden">Add</span>
-                </button>
               </div>
+
+              <button
+                onClick={handleAddSubQuestion}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-sm"
+              >
+                <PlusIcon className="w-4 h-4" />
+                <span>{getEmptyStateText(activeSection.language).addSubQuestion}</span>
+              </button>
             </div>
           </div>
 
           {/* Sub-Questions */}
           <div className="flex-1 overflow-auto custom-scrollbar">
             {activeSection.subQuestions.length === 0 ? (
-              <div className={`flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-4 ${['arabic', 'urdu'].includes(activeSection.language) ? 'rtl font-arabic' : activeSection.language === 'bangla' ? 'font-bangla' : ''}`}>
-                <DocumentTextIcon className="w-8 h-8 sm:w-12 sm:h-12 mb-3" />
-                <p className="text-base sm:text-lg font-medium mb-2 text-center">{getEmptyStateText(activeSection.language).noQuestions}</p>
-                <p className="text-sm mb-4 text-center">{getEmptyStateText(activeSection.language).getStarted}</p>
-                <div className="space-y-2 w-full max-w-xs">
+              <div className={`flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-6 ${['arabic', 'urdu'].includes(activeSection.language) ? 'rtl font-arabic' : activeSection.language === 'bangla' ? 'font-bangla' : ''}`}>
+                <DocumentTextIcon className="w-12 h-12 mb-4 text-gray-400" />
+                <p className="text-lg font-medium mb-2 text-center">{getEmptyStateText(activeSection.language).noQuestions}</p>
+                <p className="text-sm mb-6 text-center text-gray-400">{getEmptyStateText(activeSection.language).getStarted}</p>
+                <div className="space-y-4 w-full max-w-sm">
                   <button
                     onClick={handleAddSubQuestion}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
                   >
-                    <PlusIcon className="w-4 h-4" />
+                    <PlusIcon className="w-5 h-5" />
                     {getEmptyStateText(activeSection.language).addSubQuestion}
                   </button>
-                  <div className="mt-4">
+                  <div className="mt-6">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center">
                       {getEmptyStateText(activeSection.language).chooseTemplate}
                     </p>
@@ -246,7 +223,7 @@ const SectionEditor = () => {
               <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="subQuestions" type="subQuestion">
                   {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef} className="p-2 sm:p-4 space-y-4">
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="p-3 space-y-4">
                       {activeSection.subQuestions.map((subQuestion, index) => (
                         <Draggable key={subQuestion.id} draggableId={subQuestion.id} index={index}>
                           {(provided, snapshot) => (
@@ -272,11 +249,11 @@ const SectionEditor = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 p-4">
+        <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 p-6">
           <div className="text-center">
-            <DocumentTextIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" />
-            <p className="text-base sm:text-lg font-medium mb-2">No section selected</p>
-            <p className="text-sm">Select a section to start editing</p>
+            <DocumentTextIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <p className="text-lg font-medium mb-2">No section selected</p>
+            <p className="text-sm text-gray-400">Select a section to start editing</p>
           </div>
         </div>
       )}

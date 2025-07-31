@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   SunIcon, 
   MoonIcon, 
   EyeIcon, 
   DocumentArrowDownIcon,
   ArrowDownTrayIcon,
-  ArrowUpTrayIcon
+  ArrowUpTrayIcon,
+  EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { exportToPDF } from '../utils/pdfExport';
@@ -52,49 +53,48 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 sm:px-6 py-3 sm:py-4">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-            <span className="hidden sm:inline">Question Paper Builder</span>
-            <span className="sm:hidden">QPB</span>
+        <div className="flex items-center space-x-3">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            <span className="sm:inline">Qmaker</span>
           </h1>
-          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">
+          <span className="text-xs text-gray-500 dark:text-gray-400 bg-green-100 dark:bg-green-900 px-2 py-1 rounded-full">
             Auto-saved
           </span>
         </div>
         
-        <div className="flex items-center space-x-1 sm:space-x-3">
+        <div className="flex items-center space-x-2">
           <button
             onClick={togglePreviewMode}
-            className={`px-2 sm:px-4 py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-sm ${
+            className={`px-3 py-2 rounded-lg transition-all flex items-center space-x-2 text-sm font-medium shadow-sm ${
               previewMode 
                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             <EyeIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">{previewMode ? 'Exit Preview' : 'Preview'}</span>
+            <span className="hidden sm:inline">{previewMode ? 'Exit' : 'Preview'}</span>
           </button>
           
           <button
             onClick={handleExportPDF}
-            className="px-2 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 sm:space-x-2 text-sm"
+            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 text-sm font-medium shadow-sm"
           >
             <DocumentArrowDownIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Export PDF</span>
+            <span className="hidden sm:inline">PDF</span>
           </button>
           
-          <div className="hidden sm:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-2">
             <button
               onClick={handleExportJSON}
-              className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center space-x-1"
+              className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center space-x-1 font-medium shadow-sm"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
               <span>Export</span>
             </button>
             
-            <label className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer flex items-center space-x-1">
+            <label className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all cursor-pointer flex items-center space-x-1 font-medium shadow-sm">
               <ArrowUpTrayIcon className="w-4 h-4" />
               <span>Import</span>
               <input
@@ -108,12 +108,13 @@ const Header = () => {
           
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all shadow-sm"
+            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {darkMode ? (
-              <SunIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+              <SunIcon className="w-5 h-5 text-yellow-500" />
             ) : (
-              <MoonIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              <MoonIcon className="w-5 h-5 text-gray-600" />
             )}
           </button>
         </div>
