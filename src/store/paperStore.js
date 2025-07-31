@@ -7,13 +7,14 @@ const usePaperStore = create(
     (set, get) => ({
       // Paper metadata
       metadata: {
+        language: 'bangla',
+        schoolName: '',
+        examName: '',
         className: '',
         subject: '',
+        book: '',
         fullMarks: '',
         duration: '',
-        examDate: '',
-        teacherName: '',
-        schoolName: '',
         instructions: ''
       },
 
@@ -21,10 +22,7 @@ const usePaperStore = create(
       sections: [
         {
           id: uuidv4(),
-          title: 'Section A',
-          instructions: '',
-          language: 'english',
-          direction: 'ltr',
+          title: 'First Question',
           subQuestions: []
         }
       ],
@@ -37,15 +35,59 @@ const usePaperStore = create(
 
       // Actions
       setMetadata: (metadata) => set({ metadata }),
+      setLanguage: (language) => {
+        set(state => {
+          const getSectionTitle = (index, lang) => {
+            const ordinals = {
+              english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
+              arabic: ['السؤال الأول', 'السؤال الثاني', 'السؤال الثالث', 'السؤال الرابع', 'السؤال الخامس'],
+              bangla: ['প্রথম প্রশ্ন', 'দ্বিতীয় প্রশ্ন', 'তৃতীয় প্রশ্ন', 'চতুর্থ প্রশ্ন', 'পঞ্চম প্রশ্ন'],
+              urdu: ['پہلا سوال', 'دوسرا سوال', 'تیسرا سوال', 'چوتھا سوال', 'پانچواں سوال']
+            };
+            return ordinals[lang]?.[index] || `Section ${index + 1}`;
+          };
+
+          const getLabel = (idx, lang) => {
+            if (lang === 'arabic') {
+              const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
+              return `(${arabicLetters[idx] || 'أ'})`;
+            }
+            if (lang === 'bangla') return `(${String.fromCharCode(2453 + idx)})`;
+            if (lang === 'urdu') return `(${String.fromCharCode(1575 + idx)})`;
+            return `(${String.fromCharCode(97 + idx)})`;
+          };
+
+          const updatedSections = state.sections.map((section, sectionIndex) => ({
+            ...section,
+            title: getSectionTitle(sectionIndex, language),
+            subQuestions: section.subQuestions.map((sq, sqIndex) => ({
+              ...sq,
+              label: getLabel(sqIndex, language)
+            }))
+          }));
+
+          return {
+            metadata: { ...state.metadata, language },
+            sections: updatedSections
+          };
+        });
+      },
 
       // Section management
       addSection: () => {
+        const getSectionTitle = (index, language = 'english') => {
+          const ordinals = {
+            english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
+            arabic: ['السؤال الأول', 'السؤال الثاني', 'السؤال الثالث', 'السؤال الرابع', 'السؤال الخامس'],
+            bangla: ['প্রথম প্রশ্ন', 'দ্বিতীয় প্রশ্ন', 'তৃতীয় প্রশ্ন', 'চতুর্থ প্রশ্ন', 'পঞ্চম প্রশ্ন'],
+            urdu: ['پہلا سوال', 'دوسرا سوال', 'تیسرا سوال', 'چوتھا سوال', 'پانچواں سوال']
+          };
+          return ordinals[language]?.[index] || `Section ${index + 1}`;
+        };
+
         const newSection = {
           id: uuidv4(),
-          title: `Section ${String.fromCharCode(65 + get().sections.length)}`,
-          instructions: '',
-          language: 'english',
-          direction: 'ltr',
+          title: getSectionTitle(get().sections.length),
           subQuestions: []
         };
         set(state => ({
@@ -89,14 +131,18 @@ const usePaperStore = create(
         if (!section) return;
 
         const getLabel = (index, language) => {
-          if (language === 'arabic') return String.fromCharCode(1571 + index); // أ، ب، ج
-          if (language === 'bangla') return String.fromCharCode(2453 + index); // ক, খ, গ
-          return String.fromCharCode(97 + index); // a, b, c
+          if (language === 'arabic') {
+            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
+            return `(${arabicLetters[index] || 'أ'})`;
+          }
+          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`; // (ক)
+          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`; // (ا)
+          return `(${String.fromCharCode(97 + index)})`; // (a)
         };
 
         const newSubQuestion = {
           id: uuidv4(),
-          label: getLabel(section.subQuestions.length, section.language),
+          label: getLabel(section.subQuestions.length, get().metadata.language),
           heading: template?.heading || '',
           content: template?.content || '',
           marks: template?.marks || 5,

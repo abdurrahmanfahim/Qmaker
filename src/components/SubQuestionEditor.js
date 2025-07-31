@@ -6,10 +6,10 @@ import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import { 
-  Bars3Icon,
   TrashIcon,
-  EyeIcon,
-  EyeSlashIcon
+  Bars3BottomLeftIcon,
+  Bars3Icon,
+  Bars3BottomRightIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 
@@ -18,8 +18,6 @@ const SubQuestionEditor = ({
   sectionId, 
   sectionLanguage, 
   isActive, 
-  isDragging, 
-  provided, 
   onClick 
 }) => {
   const { updateSubQuestion, deleteSubQuestion } = usePaperStore();
@@ -73,19 +71,12 @@ const SubQuestionEditor = ({
 
   return (
     <div
-      ref={provided.innerRef}
-      {...provided.draggableProps}
-      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-4 transition-all ${
-        isDragging ? 'shadow-lg' : 'hover:shadow-md'
-      } ${
+      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-4 transition-all hover:shadow-md ${
         isActive ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
       }`}
       onClick={onClick}
     >
       <div className="flex items-start gap-2 sm:gap-3">
-        <div {...provided.dragHandleProps} className="mt-1 flex-shrink-0">
-          <Bars3Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-        </div>
         
         <div className="flex-1 space-y-3 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -113,25 +104,7 @@ const SubQuestionEditor = ({
               />
               <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">marks</span>
               
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateSubQuestion(sectionId, subQuestion.id, { showAnswer: !subQuestion.showAnswer });
-                }}
-                className={`p-1 rounded transition-colors ${
-                  subQuestion.showAnswer 
-                    ? 'text-green-600 hover:text-green-700' 
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
-                title={subQuestion.showAnswer ? "Hide Answer" : "Show Answer"}
-              >
-                {subQuestion.showAnswer ? (
-                  <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                ) : (
-                  <EyeSlashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                )}
-              </button>
-              
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -186,38 +159,38 @@ const SubQuestionEditor = ({
                 
                 <button
                   onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 ${
+                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 flex items-center justify-center ${
                     editor.isActive({ textAlign: 'left' }) 
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   <span className="hidden sm:inline">Left</span>
-                  <span className="sm:hidden">L</span>
+                  <Bars3BottomLeftIcon className="w-3 h-3 sm:hidden" />
                 </button>
                 
                 <button
                   onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 ${
+                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 flex items-center justify-center ${
                     editor.isActive({ textAlign: 'center' }) 
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   <span className="hidden sm:inline">Center</span>
-                  <span className="sm:hidden">C</span>
+                  <Bars3Icon className="w-3 h-3 sm:hidden" />
                 </button>
                 
                 <button
                   onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 ${
+                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 flex items-center justify-center ${
                     editor.isActive({ textAlign: 'right' }) 
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   <span className="hidden sm:inline">Right</span>
-                  <span className="sm:hidden">R</span>
+                  <Bars3BottomRightIcon className="w-3 h-3 sm:hidden" />
                 </button>
               </div>
             )}
@@ -228,21 +201,7 @@ const SubQuestionEditor = ({
             />
           </div>
 
-          {/* Answer Section */}
-          {subQuestion.showAnswer && (
-            <div className="border border-green-300 dark:border-green-600 rounded-lg p-2 sm:p-3 bg-green-50 dark:bg-green-900/20">
-              <label className="block text-xs sm:text-sm font-medium text-green-700 dark:text-green-300 mb-2">
-                Answer Key
-              </label>
-              <textarea
-                value={subQuestion.answer}
-                onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { answer: e.target.value })}
-                className={`w-full px-2 sm:px-3 py-2 border border-green-300 dark:border-green-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none text-sm ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
-                rows="3"
-                placeholder={getAnswerPlaceholder(sectionLanguage)}
-              />
-            </div>
-          )}
+
         </div>
       </div>
     </div>
