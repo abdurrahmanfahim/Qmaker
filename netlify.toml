@@ -3,5 +3,5 @@
   command = "npm ci --silent && npm run build"
 
 [build.environment]
-  NODE_VERSION = "18.18.0"
+  NODE_VERSION = "18.17.0"
   NPM_FLAGS = "--silent --no-audit --no-fund"

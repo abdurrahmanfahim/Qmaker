@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { 
   BookOpenIcon, 
   MagnifyingGlassIcon,
-  PlusIcon,
   TrashIcon,
-  TagIcon,
-  FolderIcon
+  TagIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 
 const QuestionBank = ({ isOpen, onClose }) => {
-  const { addSubQuestion } = usePaperStore();
   const [questions, setQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -29,17 +26,7 @@ const QuestionBank = ({ isOpen, onClose }) => {
     localStorage.setItem('questionBank', JSON.stringify(newQuestions));
   };
 
-  const addToBank = (question) => {
-    const newQuestion = {
-      id: Date.now(),
-      heading: question.heading,
-      content: question.content,
-      marks: question.marks,
-      category: 'general',
-      createdAt: new Date().toISOString()
-    };
-    saveQuestions([...questions, newQuestion]);
-  };
+
 
   const deleteFromBank = (questionId) => {
     saveQuestions(questions.filter(q => q.id !== questionId));
