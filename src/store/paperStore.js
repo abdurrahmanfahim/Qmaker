@@ -182,9 +182,34 @@ const usePaperStore = create(
           title: getSectionTitle(get().sections.length, currentLanguage),
           subQuestions: []
         };
+        
+        const getLabel = (index, language) => {
+          if (language === 'arabic') {
+            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
+            return `(${arabicLetters[index] || 'أ'})`;
+          }
+          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`;
+          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`;
+          return `(${String.fromCharCode(97 + index)})`;
+        };
+        
+        const defaultSubQuestion = {
+          id: uuidv4(),
+          label: getLabel(0, currentLanguage),
+          heading: '',
+          content: '<p></p>',
+          marks: 5,
+          showAnswer: false,
+          answer: '',
+          type: 'text'
+        };
+        
+        newSection.subQuestions = [defaultSubQuestion];
+        
         set(state => ({
           sections: [...state.sections, newSection],
-          activeSectionId: newSection.id
+          activeSectionId: newSection.id,
+          activeSubQuestionId: defaultSubQuestion.id
         }));
       },
 

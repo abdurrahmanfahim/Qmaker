@@ -67,6 +67,9 @@
   button {
     min-height: 44px;
     min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   input, select, textarea {
@@ -565,61 +568,148 @@
 .dark .ProseMirror ol li::marker {
   color: #e5e7eb;
 }
-/* Enhanced table styles */
+/* TipTap table styles - exact copy from reference */
 .ProseMirror table {
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
-  margin: 1rem 0;
+  margin: 0;
   overflow: hidden;
-  border: 1px solid #374151;
+  position: relative;
 }
 
-.ProseMirror table td,
-.ProseMirror table th {
+.ProseMirror td, .ProseMirror th {
   min-width: 1em;
-  border: 1px solid #374151;
-  padding: 8px 12px;
+  border: 0.5px solid #ced4da;
+  padding: 3px 5px;
   vertical-align: top;
   box-sizing: border-box;
   position: relative;
 }
 
-.ProseMirror table th {
+/* Table hover controls */
+.table-add-row, .table-add-col {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 10;
+  border: none;
+}
+
+.table-add-row {
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+}
+
+.table-add-col {
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ProseMirror table:hover .table-add-row,
+.ProseMirror table:hover .table-add-col {
+  display: flex;
+}
+
+.ProseMirror th {
   font-weight: bold;
   text-align: left;
-  background-color: #f3f4f6;
+  background-color: #f1f3f4;
 }
 
+.ProseMirror .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+}
+
+/* Enhanced table styles */
+.ProseMirror .tableWrapper {
+  overflow-x: auto !important;
+}
+
+.ProseMirror .tableWrapper table,
+.ProseMirror table {
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+  width: 100% !important;
+  margin: 1rem 0 !important;
+  overflow: hidden !important;
+  border: 2px solid #000000 !important;
+}
+
+.ProseMirror .tableWrapper table td,
+.ProseMirror .tableWrapper table th,
+.ProseMirror table td,
+.ProseMirror table th {
+  min-width: 1em !important;
+  border: 2px solid #000000 !important;
+  padding: 8px 12px !important;
+  vertical-align: top !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  background-color: #ffffff !important;
+}
+
+.ProseMirror .tableWrapper table th,
+.ProseMirror table th {
+  font-weight: bold !important;
+  text-align: left !important;
+  background-color: #f3f4f6 !important;
+}
+
+.dark .ProseMirror .tableWrapper table,
 .dark .ProseMirror table {
-  border-color: #6b7280;
+  border-color: #ffffff !important;
 }
 
+.dark .ProseMirror .tableWrapper table td,
+.dark .ProseMirror .tableWrapper table th,
 .dark .ProseMirror table td,
 .dark .ProseMirror table th {
-  border-color: #6b7280;
+  border-color: #ffffff !important;
+  background-color: #1f2937 !important;
 }
 
+.dark .ProseMirror .tableWrapper table th,
 .dark .ProseMirror table th {
-  background-color: #374151;
-  color: #f9fafb;
+  background-color: #374151 !important;
+  color: #f9fafb !important;
 }
 
-/* Borderless tables in preview and PDF */
-.preview-content table,
-[data-export="pdf-content"] table {
+.dark .ProseMirror .tableWrapper table td,
+.dark .ProseMirror table td {
+  color: #e5e7eb !important;
+}
+
+/* Borderless tables in preview and PDF only */
+.preview-content table:not(.ProseMirror table),
+[data-export="pdf-content"] table:not(.ProseMirror table) {
   border: none !important;
 }
 
-.preview-content table td,
-.preview-content table th,
-[data-export="pdf-content"] table td,
-[data-export="pdf-content"] table th {
+.preview-content table:not(.ProseMirror table) td,
+.preview-content table:not(.ProseMirror table) th,
+[data-export="pdf-content"] table:not(.ProseMirror table) td,
+[data-export="pdf-content"] table:not(.ProseMirror table) th {
   border: none !important;
 }
 
-.preview-content table th,
-[data-export="pdf-content"] table th {
+.preview-content table:not(.ProseMirror table) th,
+[data-export="pdf-content"] table:not(.ProseMirror table) th {
   background-color: transparent !important;
 }
 

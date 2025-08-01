@@ -1,12 +1,4 @@
-/**
- * @fileoverview Rich text editor for individual sub-questions with multilingual support
- * Handles TipTap editor configuration, toolbar functionality, and language-specific formatting
- * @author Qmaker Team
- * @version 1.0.0
- * @since 2024
- */
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -17,31 +9,17 @@ import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import { 
   TrashIcon,
-  Bars3BottomLeftIcon,
-  Bars3Icon,
-  Bars3BottomRightIcon,
   BoldIcon,
   ItalicIcon,
   UnderlineIcon,
-  ListBulletIcon,
-  NumberedListIcon,
-  TableCellsIcon,
-
-  VariableIcon
+  EllipsisVerticalIcon,
+  Bars3BottomLeftIcon,
+  Bars3Icon,
+  Bars3BottomRightIcon,
+  TableCellsIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
-import MathEquation from './MathEquation';
 
-/**
- * Rich text editor component for individual sub-questions
- * Supports multilingual content, table editing, and math equations
- * @param {Object} subQuestion - Sub-question data object
- * @param {string} sectionId - Parent section ID
- * @param {string} sectionLanguage - Language for this section (english, bangla, arabic, urdu)
- * @param {boolean} isActive - Whether this sub-question is currently selected
- * @param {Function} onClick - Callback when sub-question is clicked
- * @returns {JSX.Element} Rendered sub-question editor
- */
 const SubQuestionEditor = ({ 
   subQuestion, 
   sectionId, 
@@ -50,516 +28,357 @@ const SubQuestionEditor = ({
   onClick 
 }) => {
   const { updateSubQuestion, deleteSubQuestion } = usePaperStore();
-  const [showMathModal, setShowMathModal] = useState(false); // Controls math equation modal visibility
-  
-  /**
-   * Cycle through text alignment options for mobile toolbar
-   * @returns {string} Next alignment option
-   */
-  const getNextAlignment = () => {
-    if (editor?.isActive({ textAlign: 'left' })) return 'center';
-    if (editor?.isActive({ textAlign: 'center' })) return 'right';
-    return 'left';
-  };
-  
-  /**
-   * Get appropriate alignment icon for current text alignment
-   * @returns {JSX.Element} Alignment icon component
-   */
-  const getCurrentAlignmentIcon = () => {
-    if (editor?.isActive({ textAlign: 'center' })) return <Bars3Icon className="w-4 h-4" />;
-    if (editor?.isActive({ textAlign: 'right' })) return <Bars3BottomRightIcon className="w-4 h-4" />;
-    return <Bars3BottomLeftIcon className="w-4 h-4" />;
-  };
+  const [showMenu, setShowMenu] = useState(false);
+  const [textAlign, setTextAlign] = useState('left');
+  const [showTableModal, setShowTableModal] = useState(false);
+  const menuRef = useRef(null);
 
-  // Configure TipTap rich text editor with extensions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+  
+
+
   const editor = useEditor({
     extensions: [
-      // Basic editing functionality with custom list styling
-      StarterKit.configure({
-        bulletList: {
-          HTMLAttributes: {
-            class: 'prose-bullet-list',
-          },
-        },
-        orderedList: {
-          HTMLAttributes: {
-            class: 'prose-ordered-list',
-          },
-        },
-        listItem: {
-          HTMLAttributes: {
-            class: 'prose-list-item',
-          },
-        },
-      }),
-      Underline, // Text underline support
-      TextAlign.configure({ // Text alignment for headings and paragraphs
+      StarterKit,
+      Underline,
+      TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      Table.configure({ // Resizable table support
+      Table.configure({
         resizable: true,
       }),
       TableRow,
       TableHeader,
       TableCell,
     ],
-    content: subQuestion.content, // Initialize with existing content
+    content: subQuestion.content,
     onUpdate: ({ editor }) => {
-      // Auto-save content changes to store
-      updateSubQuestion(sectionId, subQuestion.id, { content: editor.getHTML() });
+      try {
+        updateSubQuestion(sectionId, subQuestion.id, { content: editor.getHTML() });
+      } catch (error) {
+        console.error('Failed to save question content:', error);
+      }
+    },
+    onError: (error) => {
+      console.error('Editor error:', error);
     },
   });
 
-  /**
-   * Get appropriate font class based on language
-   * @param {string} language - Language code
-   * @returns {string} CSS font class
-   */
   const getFontClass = (language) => {
-    switch (language) {
-      case 'arabic': return 'font-arabic';
-      case 'urdu': return 'font-urdu';
-      case 'bangla': return 'font-bangla';
-      default: return 'font-english';
-    }
+    const fonts = { arabic: 'font-arabic', urdu: 'font-urdu', bangla: 'font-bangla' };
+    return fonts[language] || 'font-english';
   };
 
-  /**
-   * Get text direction class based on language
-   * @param {string} language - Language code
-   * @returns {string} Text direction class (rtl or ltr)
-   */
   const getDirectionClass = (language) => {
     return ['arabic', 'urdu'].includes(language) ? 'rtl' : 'ltr';
   };
 
-  /**
-   * Get localized placeholder text for question heading input
-   * @param {string} language - Language code
-   * @returns {string} Localized placeholder text
-   */
   const getQuestionPlaceholder = (language) => {
-    switch (language) {
-      case 'arabic': return 'عنوان السؤال...';
-      case 'bangla': return 'প্রশ্নের শিরোনাম...';
-      case 'urdu': return 'سوال کا عنوان...';
-      default: return 'Question heading...';
-    }
+    const placeholders = {
+      arabic: 'عنوان السؤال...',
+      bangla: 'প্রশ্নের শিরোনাম...',
+      urdu: 'سوال کا عنوان...'
+    };
+    return placeholders[language] || 'Question heading...';
   };
 
 
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-4 transition-all hover:shadow-md ${
-        isActive ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
+      className={`bg-white dark:bg-gray-800 rounded-lg border transition-colors ${
+        isActive ? 'border-[#09302f] shadow-sm' : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
       }`}
       onClick={onClick}
     >
-      <div className="flex items-start gap-2 sm:gap-3">
-        
-        <div className="flex-1 space-y-3 min-w-0">
-          <div className={`flex items-center justify-between gap-2 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-2 sm:gap-3 min-w-0 flex-1 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
-              <span className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs sm:text-sm font-medium flex-shrink-0">
+      <div className="p-2 sm:p-4">
+        <div className="space-y-6">
+          {/* Question Header */}
+          <div className={`flex items-start gap-4 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
+            <div className="flex-shrink-0">
+              <span className="inline-flex items-center justify-center w-10 h-10 bg-[#09302f] text-white rounded-full text-sm font-semibold">
                 {subQuestion.label}
               </span>
+            </div>
+            
+            <div className="flex-1 min-w-0">
               <input
                 type="text"
                 value={subQuestion.heading}
                 onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { heading: e.target.value })}
-                className={`flex-1 min-w-0 px-2 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+                className={`w-full px-2 py-2 border-0 focus:outline-none text-base bg-transparent text-gray-900 dark:text-gray-100 ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
                 placeholder={getQuestionPlaceholder(sectionLanguage)}
               />
             </div>
             
-            <div className={`flex items-center gap-1 flex-shrink-0 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center gap-1">
               <input
                 type="number"
                 value={subQuestion.marks}
                 onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { marks: parseInt(e.target.value) || 0 })}
-                className={`w-10 sm:w-16 px-1 sm:px-2 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
-                placeholder="0"
+                className={`w-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs text-center appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
+                style={{ MozAppearance: 'textfield' }}
+                placeholder="5"
                 min="0"
+                max="99"
               />
-              <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">marks</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteSubQuestion(sectionId, subQuestion.id);
-                }}
-                className="p-1 text-red-500 hover:text-red-700 transition-colors touch-manipulation"
-                title="Delete Sub-Question"
-              >
-                <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-              </button>
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenu(!showMenu);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center justify-center w-6 h-6"
+                  aria-label="More options"
+                >
+                  <EllipsisVerticalIcon className="w-3 h-3" />
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded shadow-lg z-10 min-w-20">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm('Delete this question?')) {
+                          deleteSubQuestion(sectionId, subQuestion.id);
+                        }
+                        setShowMenu(false);
+                      }}
+                      className="w-full px-2 py-1 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-1 text-xs"
+                    >
+                      <TrashIcon className="w-3 h-3" />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Rich Text Editor */}
-          <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-            {editor && (
+          <div>
+            <div className="border border-gray-300 dark:border-gray-500 rounded-lg overflow-hidden">
+            {editor ? (
               <div className="border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
-                {/* Mobile: Horizontally scrollable toolbar with core functions first */}
-                <div className="flex sm:hidden overflow-x-auto px-2 py-1 gap-1 scrollbar-none">
-                  {/* Core formatting - always visible */}
+                <div className="flex items-center gap-1 p-1">
                   <button
                     onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 ${
+                    className={`p-2 rounded transition-colors ${
                       editor.isActive('bold') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
-                    title="Bold"
+                    aria-label="Bold text"
+                    aria-pressed={editor.isActive('bold')}
+                    style={{ minWidth: '32px', minHeight: '32px' }}
                   >
-                    <BoldIcon className="w-5 h-5" />
+                    <BoldIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   
                   <button
                     onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 ${
+                    className={`p-1 rounded transition-colors ${
                       editor.isActive('italic') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
-                    title="Italic"
+                    aria-label="Italic text"
+                    aria-pressed={editor.isActive('italic')}
+                    style={{ minWidth: '32px', minHeight: '32px' }}
                   >
-                    <ItalicIcon className="w-5 h-5" />
+                    <ItalicIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   
                   <button
                     onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 ${
+                    className={`p-1 rounded transition-colors ${
                       editor.isActive('underline') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
-                    title="Underline"
+                    aria-label="Underline text"
+                    aria-pressed={editor.isActive('underline')}
+                    style={{ minWidth: '32px', minHeight: '32px' }}
                   >
-                    <UnderlineIcon className="w-5 h-5" />
+                    <UnderlineIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   
-                  {/* Alignment toggle */}
+                  <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                  
                   <button
-                    onClick={() => editor.chain().focus().setTextAlign(getNextAlignment()).run()}
-                    className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 ${
-                      editor.isActive({ textAlign: 'left' }) || editor.isActive({ textAlign: 'center' }) || editor.isActive({ textAlign: 'right' })
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    onClick={() => {
+                      const currentAlign = editor.isActive({ textAlign: 'center' }) ? 'center' : 
+                                          editor.isActive({ textAlign: 'right' }) ? 'right' : 'left';
+                      
+                      const nextAlign = currentAlign === 'left' ? 'center' : 
+                                       currentAlign === 'center' ? 'right' : 'left';
+                      
+                      editor.chain().focus().setTextAlign(nextAlign).run();
+                      setTextAlign(nextAlign);
+                    }}
+                    className={`p-2 rounded transition-colors ${
+                      editor?.isActive({ textAlign: 'center' }) || editor?.isActive({ textAlign: 'right' })
+                        ? 'bg-[#09302f] text-white'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
-                    title="Text Alignment"
+                    aria-label="Toggle text alignment"
+                    style={{ minWidth: '40px', minHeight: '40px' }}
                   >
-                    {getCurrentAlignmentIcon()}
+                    {editor?.isActive({ textAlign: 'center' }) ? (
+                      <Bars3Icon className="w-4 h-4" aria-hidden="true" />
+                    ) : editor?.isActive({ textAlign: 'right' }) ? (
+                      <Bars3BottomRightIcon className="w-4 h-4" aria-hidden="true" />
+                    ) : (
+                      <Bars3BottomLeftIcon className="w-4 h-4" aria-hidden="true" />
+                    )}
                   </button>
                   
-                  <button
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 ${
-                      editor.isActive('bulletList') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Bullet List"
-                  >
-                    <ListBulletIcon className="w-5 h-5" />
-                  </button>
+                  <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                   
                   <button
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 ${
-                      editor.isActive('orderedList') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Numbered List"
+                    onClick={() => setShowTableModal(true)}
+                    className="p-1 rounded transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    aria-label="Insert table"
+                    style={{ minWidth: '32px', minHeight: '32px' }}
                   >
-                    <NumberedListIcon className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Less used tools - in scrolled area */}
-                  <button
-                    onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-                    className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    title="Table"
-                  >
-                    <TableCellsIcon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowMathModal(true)}
-                    className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center flex-shrink-0 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    title="Math Equation"
-                  >
-                    <VariableIcon className="w-5 h-5" />
+                    <TableCellsIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
-                
-                {/* Table controls for mobile */}
-                {editor?.isActive('table') && (
-                  <div className="sm:hidden border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Add</div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => editor.chain().focus().addRowAfter().run()}
-                            className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 text-xs font-medium"
-                          >
-                            +Row
-                          </button>
-                          <button
-                            onClick={() => editor.chain().focus().addColumnAfter().run()}
-                            className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50 text-xs font-medium"
-                          >
-                            +Col
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Remove</div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => editor.chain().focus().deleteRow().run()}
-                            className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs font-medium"
-                          >
-                            -Row
-                          </button>
-                          <button
-                            onClick={() => editor.chain().focus().deleteColumn().run()}
-                            className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs font-medium"
-                          >
-                            -Col
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => editor.chain().focus().deleteTable().run()}
-                      className="w-full mt-2 min-h-[40px] px-3 rounded-lg transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs font-medium flex items-center justify-center gap-1"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                      Delete Table
-                    </button>
-                  </div>
-                )}
-                
-                {/* Desktop: Horizontally scrollable with core functions first */}
-                <div className="hidden sm:flex items-center gap-1 p-1.5 overflow-x-auto scrollbar-none">
-                  {/* Core formatting */}
-                  <button
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive('bold') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Bold"
-                  >
-                    <BoldIcon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive('italic') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Italic"
-                  >
-                    <ItalicIcon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive('underline') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Underline"
-                  >
-                    <UnderlineIcon className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Alignment */}
-                  <button
-                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive({ textAlign: 'left' }) 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    <Bars3BottomLeftIcon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive({ textAlign: 'center' }) 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    <Bars3Icon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive({ textAlign: 'right' }) 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    <Bars3BottomRightIcon className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Lists */}
-                  <button
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive('bulletList') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Bullet List"
-                  >
-                    <ListBulletIcon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={`p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                      editor.isActive('orderedList') 
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title="Numbered List"
-                  >
-                    <NumberedListIcon className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Less used tools - in scrolled area */}
-                  <button
-                    onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-                    className="p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    title="Insert Table"
-                  >
-                    <TableCellsIcon className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowMathModal(true)}
-                    className="p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    title="Insert Math Equation"
-                  >
-                    <VariableIcon className="w-5 h-5" />
-                  </button>
-                  
-
-                  
-                  {editor?.isActive('table') && (
-                    <>
-                      <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                      
-                      <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded-lg">
-                        <div className="flex items-center gap-0.5">
-                          <button
-                            onClick={() => editor.chain().focus().addRowBefore().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
-                            title="Add Row Above"
-                          >
-                            +Row↑
-                          </button>
-                          
-                          <button
-                            onClick={() => editor.chain().focus().addRowAfter().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
-                            title="Add Row Below"
-                          >
-                            +Row↓
-                          </button>
-                        </div>
-                        
-                        <div className="w-px h-4 bg-gray-300 dark:bg-gray-500"></div>
-                        
-                        <div className="flex items-center gap-0.5">
-                          <button
-                            onClick={() => editor.chain().focus().addColumnBefore().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50"
-                            title="Add Column Left"
-                          >
-                            +Col←
-                          </button>
-                          
-                          <button
-                            onClick={() => editor.chain().focus().addColumnAfter().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50"
-                            title="Add Column Right"
-                          >
-                            +Col→
-                          </button>
-                        </div>
-                        
-                        <div className="w-px h-4 bg-gray-300 dark:bg-gray-500"></div>
-                        
-                        <div className="flex items-center gap-0.5">
-                          <button
-                            onClick={() => editor.chain().focus().deleteRow().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                            title="Delete Row"
-                          >
-                            -Row
-                          </button>
-                          
-                          <button
-                            onClick={() => editor.chain().focus().deleteColumn().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                            title="Delete Column"
-                          >
-                            -Col
-                          </button>
-                          
-                          <button
-                            onClick={() => editor.chain().focus().deleteTable().run()}
-                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                            title="Delete Table"
-                          >
-                            <TrashIcon className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
+              </div>
+            ) : (
+              <div className="border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#09302f] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Loading editor...</span>
                 </div>
               </div>
             )}
             
             <EditorContent 
               editor={editor} 
-              className={`prose prose-sm max-w-none p-2 sm:p-3 min-h-[80px] sm:min-h-[100px] bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+              className={`prose prose-sm max-w-none p-4 sm:p-6 min-h-[120px] sm:min-h-[140px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-base leading-relaxed ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+              style={{ textAlign: 'inherit' }}
+              role="textbox"
+              aria-label="Question content editor"
+              aria-multiline="true"
+              spellCheck="true"
             />
           </div>
-
-
+          </div>
         </div>
       </div>
       
-      {/* Math Equation Modal */}
-      {showMathModal && (
-        <MathEquation
-          onInsert={(mathText) => {
-            editor?.chain().focus().insertContent(mathText).run();
-          }}
-          onClose={() => setShowMathModal(false)}
-        />
+      {/* Table Modal */}
+      {showTableModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowTableModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-80" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Insert Table</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rows</label>
+                <input
+                  type="number"
+                  defaultValue={2}
+                  min={1}
+                  max={10}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  id="table-rows"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Columns</label>
+                <input
+                  type="number"
+                  defaultValue={3}
+                  min={1}
+                  max={10}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  id="table-cols"
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="table-header"
+                  className="mr-2"
+                />
+                <label htmlFor="table-header" className="text-sm text-gray-700 dark:text-gray-300">Include header row</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="table-listing"
+                  className="mr-2"
+                  defaultChecked
+                />
+                <label htmlFor="table-listing" className="text-sm text-gray-700 dark:text-gray-300">With listing (a, b, c...)</label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setShowTableModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const rows = parseInt(document.getElementById('table-rows').value);
+                  const cols = parseInt(document.getElementById('table-cols').value);
+                  const withHeader = document.getElementById('table-header').checked;
+                  const withListing = document.getElementById('table-listing').checked;
+                  
+                  editor.chain().focus().insertTable({ rows, cols, withHeaderRow: false }).run();
+                  
+                  setTimeout(() => {
+                    if (withListing) {
+                      const letters = sectionLanguage === 'arabic' ? ['أ', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ي'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+                      const tables = editor.view.dom.querySelectorAll('table');
+                      const table = tables[tables.length - 1];
+                      const cells = table.querySelectorAll('td');
+                      for (let i = 0; i < cells.length; i++) {
+                        cells[i].innerHTML = `<p>${letters[i] || (i + 1)}.</p>`;
+                      }
+                    }
+                    
+                    const table = editor.view.dom.querySelector('table:last-of-type');
+                    const addRowBtn = document.createElement('button');
+                    addRowBtn.className = 'table-add-row';
+                    addRowBtn.innerHTML = '+';
+                    addRowBtn.onclick = () => editor.chain().focus().addRowAfter().run();
+                    
+                    const addColBtn = document.createElement('button');
+                    addColBtn.className = 'table-add-col';
+                    addColBtn.innerHTML = '+';
+                    addColBtn.onclick = () => editor.chain().focus().addColumnAfter().run();
+                    
+                    table.appendChild(addRowBtn);
+                    table.appendChild(addColBtn);
+                  }, 100);
+                  
+                  setShowTableModal(false);
+                }}
+                className="px-4 py-2 bg-[#09302f] text-white rounded hover:bg-[#072625]"
+              >
+                Insert
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-      
 
     </div>
   );

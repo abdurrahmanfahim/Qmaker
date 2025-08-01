@@ -11,39 +11,39 @@ import {
 
 const templates = {
   text: {
-    name: 'Text Question',
+    name: 'Text',
     icon: DocumentTextIcon,
-    content: '<p>Write your question here...</p>',
+    content: '<p></p>',
     marks: 5
   },
   mcq: {
-    name: 'Multiple Choice',
+    name: 'MCQ',
     icon: CheckCircleIcon,
-    content: '<p>Question text here:</p><p>a) Option A</p><p>b) Option B</p><p>c) Option C</p><p>d) Option D</p>',
+    content: '<p></p><p>a) </p><p>b) </p><p>c) </p><p>d) </p>',
     marks: 1
   },
   fillBlanks: {
-    name: 'Fill in the Blanks',
+    name: 'Fill Blanks',
     icon: PencilSquareIcon,
-    content: '<p>Complete the sentence: The capital of Bangladesh is _______.</p>',
+    content: '<p>_______</p>',
     marks: 2
   },
   shortAnswer: {
-    name: 'Short Answer',
+    name: 'Short',
     icon: ClipboardDocumentListIcon,
-    content: '<p>Answer in 2-3 sentences:</p>',
+    content: '<p></p>',
     marks: 3
   },
   essay: {
-    name: 'Essay Question',
+    name: 'Essay',
     icon: BookOpenIcon,
-    content: '<p>Write a detailed essay on:</p>',
+    content: '<p></p>',
     marks: 10
   },
   translation: {
     name: 'Translation',
     icon: LanguageIcon,
-    content: '<p>Translate the following:</p><p><strong>English:</strong> </p><p><strong>বাংলা:</strong> </p>',
+    content: '<p></p><p></p>',
     marks: 5
   }
 };
@@ -99,9 +99,7 @@ const TemplateModal = ({ isOpen, onClose, onSelect, language }) => {
                     </p>
                   </div>
                 </div>
-                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 sm:line-clamp-3 leading-relaxed">
-                  {template.content.replace(/<[^>]*>/g, '').substring(0, 60)}...
-                </div>
+
               </button>
             ))}
           </div>

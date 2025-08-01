@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import usePaperStore from './store/paperStore';
 import Layout from './components/Layout';
 import Header from './components/Header';
@@ -6,41 +6,60 @@ import MetadataPanel from './components/MetadataPanel';
 import SectionEditor from './components/SectionEditor';
 import LazyPreviewPanel from './components/LazyPreviewPanel';
 import ErrorBoundary from './components/ErrorBoundary';
-import { ToastProvider } from './components/Toast';
+import WelcomeScreen from './components/WelcomeScreen';
+import './styles/typography.css';
 
 function App() {
-  const { darkMode, previewMode, initialize } = usePaperStore();
+  const { darkMode, previewMode, initialize, setLanguage } = usePaperStore();
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     initialize();
+    const hasVisited = localStorage.getItem('qmaker-visited');
+    if (!hasVisited) {
+      setShowWelcome(true);
+    }
   }, [initialize]);
+
+
+
+  const handleWelcomeComplete = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
+    localStorage.setItem('qmaker-visited', 'true');
+    setShowWelcome(false);
+  };
+
+
+
+  if (showWelcome) {
+    return <WelcomeScreen onComplete={handleWelcomeComplete} />;
+  }
+
+
 
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <ToastProvider>
-        <ErrorBoundary fallbackMessage="The application encountered an error. Your work is automatically saved.">
-          <Layout>
-          <ErrorBoundary fallbackMessage="Header component failed to load.">
-            <Header />
-          </ErrorBoundary>
-          
-          {previewMode ? (
-            <ErrorBoundary fallbackMessage="Preview failed to load. Try switching back to edit mode.">
-              <LazyPreviewPanel />
-            </ErrorBoundary>
-          ) : (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <ErrorBoundary fallbackMessage="Paper information panel failed to load.">
-                <MetadataPanel />
-              </ErrorBoundary>
-              <ErrorBoundary fallbackMessage="Section editor failed to load.">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-[#09302f] text-white px-4 py-2 rounded-lg z-50">
+        Skip to main content
+      </a>
+      <ErrorBoundary fallbackMessage="Application error occurred.">
+        <Layout>
+          <Header />
+          <main id="main-content" className="flex-1 flex flex-col overflow-hidden" role="main" aria-label="Question paper editor">
+            <MetadataPanel />
+            <div className="flex-1 flex overflow-hidden">
+              <div className="flex-1 flex flex-col overflow-hidden">
                 <SectionEditor />
-              </ErrorBoundary>
+              </div>
+              {previewMode && (
+                <aside className="w-full md:w-1/2 border-l border-gray-200" role="complementary" aria-label="Question paper preview">
+                  <LazyPreviewPanel />
+                </aside>
+              )}
             </div>
-          )}
-          </Layout>
-        </ErrorBoundary>
-      </ToastProvider>
+          </main>
+        </Layout>
+      </ErrorBoundary>
     </div>
   );
 }

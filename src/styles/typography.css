@@ -1,0 +1,56 @@
+/* Clean Typography & Spacing System */
+
+/* Typography Scale - Consistent line heights */
+.text-xs { font-size: 0.75rem; line-height: 1.2; }
+.text-sm { font-size: 0.875rem; line-height: 1.4; }
+.text-base { font-size: 1rem; line-height: 1.5; }
+.text-lg { font-size: 1.125rem; line-height: 1.5; }
+
+/* Clean Focus States */
+.focus-clean:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #09302f;
+}
+
+/* Consistent Spacing */
+.space-clean { padding: 1rem; gap: 1rem; }
+.space-tight { padding: 0.5rem; gap: 0.5rem; }
+
+/* Clean Borders */
+.border-clean { border: 1px solid #e5e7eb; }
+.border-active { border: 1px solid #09302f; }
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Hide number input arrows */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
