@@ -5,7 +5,7 @@ import {
   TrashIcon,
   TagIcon
 } from '@heroicons/react/24/outline';
-import usePaperStore from '../store/paperStore';
+
 
 const QuestionBank = ({ isOpen, onClose }) => {
   const [questions, setQuestions] = useState([]);
