@@ -15,11 +15,8 @@ import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   EllipsisVerticalIcon,
-  ArrowUturnLeftIcon,
-  ArrowUturnRightIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  QuestionMarkCircleIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { exportToPDF, exportOptions } from '../utils/pdfExport';
@@ -50,8 +47,7 @@ const Header = () => {
     importData,
     undo,
     redo,
-    canUndo,
-    canRedo,
+
     metadata,
     sections,
     setLanguage

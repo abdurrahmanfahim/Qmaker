@@ -16,7 +16,7 @@ import usePaperStore from '../store/paperStore';
  * @returns {JSX.Element} Rendered metadata panel
  */
 const MetadataPanel = () => {
-  const { metadata, setMetadata, setLanguage } = usePaperStore();
+  const { metadata, setMetadata } = usePaperStore();
   
   // Panel expansion state with localStorage persistence
   const [isExpanded, setIsExpanded] = useState(() => {

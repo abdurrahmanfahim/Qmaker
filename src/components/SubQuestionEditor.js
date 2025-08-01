@@ -26,8 +26,7 @@ import {
   ListBulletIcon,
   NumberedListIcon,
   TableCellsIcon,
-  PlusIcon,
-  MinusIcon,
+
   VariableIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';

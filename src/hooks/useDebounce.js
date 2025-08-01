@@ -48,7 +48,7 @@ export const useDebouncedCallback = (callback, delay, deps = []) => {
     timeoutRef.current = setTimeout(() => {
       callback(...args);
     }, delay);
-  }, [callback, delay, ...deps]);
+  }, [callback, delay].concat(deps));
 
   // Cleanup on unmount
   useEffect(() => {
