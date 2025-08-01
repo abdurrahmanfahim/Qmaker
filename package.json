@@ -59,6 +59,10 @@
       "last 1 safari version"
     ]
   },
+  "engines": {
+    "node": "18.18.0",
+    "npm": ">=9.0.0"
+  },
   "devDependencies": {
     "tailwindcss": "^3.3.0"
   }
