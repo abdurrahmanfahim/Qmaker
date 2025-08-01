@@ -94,6 +94,7 @@ const SectionEditor = () => {
           <button
             onClick={addSection}
             className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            aria-label="Add new section to question paper"
           >
             <PlusIcon className="w-4 h-4" />
             <span>Add Section</span>
@@ -110,6 +111,8 @@ const SectionEditor = () => {
           
           <div 
             className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent scroll-smooth"
+            role="tablist"
+            aria-label="Question sections"
             onScroll={(e) => {
               const container = e.target;
               const leftIndicator = document.getElementById('scroll-left-indicator');
@@ -134,7 +137,17 @@ const SectionEditor = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-md hover:scale-102'
                 }`}
                 onClick={() => setActiveSection(section.id)}
-                style={{ minHeight: '44px' }} // Ensure minimum touch target
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setActiveSection(section.id);
+                  }
+                }}
+                role="tab"
+                tabIndex={0}
+                aria-selected={section.id === activeSectionId}
+                aria-label={`Section ${index + 1}: ${section.title}`}
+                style={{ minHeight: '44px' }}
               >
                 <span className="text-sm font-medium whitespace-nowrap truncate flex-1 min-w-0 text-center">
                   {section.title}
@@ -146,7 +159,8 @@ const SectionEditor = () => {
                       deleteSection(section.id);
                     }}
                     className="opacity-70 hover:opacity-100 text-red-500 hover:text-red-700 transition-all p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0 touch-manipulation"
-                    style={{ minWidth: '32px', minHeight: '32px' }} // Ensure minimum touch target
+                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    aria-label={`Delete section ${section.title}`}
                   >
                     <TrashIcon className="w-4 h-4" />
                   </button>

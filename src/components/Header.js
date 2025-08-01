@@ -6,7 +6,7 @@
  * @since 2024
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   SunIcon, 
   MoonIcon, 
@@ -24,6 +24,9 @@ import {
 import usePaperStore from '../store/paperStore';
 import { exportToPDF, exportOptions } from '../utils/pdfExport';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+import TestRunnerComponent from './TestRunner';
+import { useDebouncedCallback } from '../hooks/useDebounce';
+import { APP_VERSION } from '../utils/version';
 
 /**
  * Main application header component with responsive design
@@ -33,6 +36,7 @@ import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 const Header = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false); // Mobile dropdown menu state
   const [showShortcutsModal, setShowShortcutsModal] = useState(false); // Keyboard shortcuts modal
+  const [showTestRunner, setShowTestRunner] = useState(false); // Test runner modal
   const [autoSaveStatus, setAutoSaveStatus] = useState('saved'); // Auto-save status: 'saving', 'saved', 'error'
   const [lastSaved, setLastSaved] = useState(new Date()); // Timestamp of last save
   const dropdownRef = useRef(null); // Reference for click-outside detection
@@ -54,29 +58,30 @@ const Header = () => {
   } = usePaperStore();
 
   /**
-   * Auto-save functionality - saves data to localStorage after changes
-   * Triggers after 2 seconds of inactivity to avoid excessive saves
+   * Debounced auto-save function to prevent excessive localStorage writes
+   */
+  const debouncedSave = useDebouncedCallback(() => {
+    try {
+      setAutoSaveStatus('saving');
+      const data = exportData();
+      localStorage.setItem('qmaker-autosave', JSON.stringify({
+        data,
+        timestamp: new Date().toISOString()
+      }));
+      setAutoSaveStatus('saved');
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      setAutoSaveStatus('error');
+    }
+  }, 2000, [exportData]);
+
+  /**
+   * Trigger auto-save when data changes
    */
   useEffect(() => {
-    const saveData = () => {
-      try {
-        setAutoSaveStatus('saving');
-        const data = exportData();
-        localStorage.setItem('qmaker-autosave', JSON.stringify({
-          data,
-          timestamp: new Date().toISOString()
-        }));
-        setAutoSaveStatus('saved');
-        setLastSaved(new Date());
-      } catch (error) {
-        console.error('Auto-save failed:', error);
-        setAutoSaveStatus('error');
-      }
-    };
-
-    const timeoutId = setTimeout(saveData, 2000); // Debounced save
-    return () => clearTimeout(timeoutId);
-  }, [metadata, sections, exportData]);
+    debouncedSave();
+  }, [metadata, sections, debouncedSave]);
 
   /**
    * Close mobile dropdown when clicking outside
@@ -114,56 +119,64 @@ const Header = () => {
   }, [undo, redo]);
 
   /**
-   * Handle PDF export with specified format
-   * @param {string} format - Export format key from exportOptions
+   * Memoized PDF export handler to prevent recreation on every render
    */
-  const handleExportPDF = async (format = 'standard') => {
-    await exportToPDF(exportOptions[format]);
-  };
+  const handleExportPDF = useMemo(() => {
+    return async (format = 'standard') => {
+      await exportToPDF(exportOptions[format]);
+    };
+  }, []);
 
   /**
-   * Export paper data as JSON file for backup/sharing
-   * Creates downloadable file with current date in filename
+   * Memoized JSON export handler
    */
-  const handleExportJSON = () => {
-    const data = exportData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `question-paper-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url); // Clean up memory
-  };
+  const handleExportJSON = useMemo(() => {
+    return () => {
+      const data = exportData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `question-paper-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+  }, [exportData]);
 
   /**
-   * Import paper data from JSON file
-   * @param {Event} event - File input change event
+   * Memoized JSON import handler
    */
-  const handleImportJSON = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          importData(data); // Load data into store
-        } catch (error) {
-          alert('Invalid JSON file'); // Show error for malformed files
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
+  const handleImportJSON = useMemo(() => {
+    return (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            importData(data);
+          } catch (error) {
+            alert('Invalid JSON file');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+  }, [importData]);
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 py-2 sm:py-3">
       <div className="flex items-center justify-between gap-2">
         {/* Left side - Logo and status */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">
-            Qmaker
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">
+              Qmaker
+            </h1>
+            <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-500 font-mono">
+              v{APP_VERSION}
+            </span>
+          </div>
           {/* Auto-save status - desktop */}
           <div className="hidden lg:flex items-center gap-2">
             <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all ${
@@ -223,6 +236,8 @@ const Header = () => {
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500'
             }`}
             title={previewMode ? 'Exit Preview' : 'Preview'}
+            aria-label={previewMode ? 'Exit preview mode' : 'Enter preview mode'}
+            aria-pressed={previewMode}
           >
             <EyeIcon className="w-4 h-4" />
           </button>
@@ -232,6 +247,7 @@ const Header = () => {
             onClick={() => handleExportPDF()}
             className="min-h-[44px] min-w-[44px] px-2 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all flex items-center justify-center text-sm font-medium shadow-sm touch-manipulation"
             title="Export PDF"
+            aria-label="Export question paper as PDF"
           >
             <DocumentArrowDownIcon className="w-4 h-4" />
           </button>
@@ -241,8 +257,9 @@ const Header = () => {
             <select
               value={metadata.language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="pl-7 pr-6 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-16 sm:w-20 appearance-none shadow-sm hover:shadow-md transition-all font-medium cursor-pointer touch-manipulation"
+              className="pl-3 sm:pl-7 pr-6 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-16 sm:w-20 appearance-none shadow-sm hover:shadow-md transition-all font-medium cursor-pointer touch-manipulation"
               title="Select Language"
+              aria-label="Select paper language"
             >
               <option value="english">EN</option>
               <option value="bangla">বাং</option>
@@ -256,7 +273,7 @@ const Header = () => {
                 metadata.language === 'arabic' ? 'sa' : 'pk'
               }.png`}
               alt="Flag"
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-2 pointer-events-none rounded-sm"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-2 pointer-events-none rounded-sm hidden sm:block"
             />
             <svg className="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -265,6 +282,16 @@ const Header = () => {
           
           {/* Desktop secondary actions */}
           <div className="hidden md:flex items-center gap-2">
+            <button
+              onClick={() => setShowTestRunner(true)}
+              className="min-h-[44px] px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center gap-2 font-medium shadow-sm"
+              title="Run Tests"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Tests</span>
+            </button>
             {/* PDF Export Dropdown */}
             <div className="relative group">
               <button className="min-h-[44px] px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center gap-2 font-medium shadow-sm">
@@ -341,13 +368,20 @@ const Header = () => {
               onClick={() => setShowMobileMenu(!showMobileMenu)}
               className="min-h-[44px] min-w-[44px] p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 transition-all shadow-sm flex items-center justify-center touch-manipulation"
               title="More options"
+              aria-label="Open menu with additional options"
+              aria-expanded={showMobileMenu}
+              aria-haspopup="menu"
             >
               <EllipsisVerticalIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
             
             {/* Dropdown menu */}
             {showMobileMenu && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-3 z-50 max-h-[80vh] overflow-y-auto">
+              <div 
+                className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-3 z-50 max-h-[80vh] overflow-y-auto"
+                role="menu"
+                aria-label="Additional options menu"
+              >
                 <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-200 dark:border-gray-700">
                   PDF Export Options
                 </div>
@@ -424,7 +458,7 @@ const Header = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:shadow-sm'
                     }`}
                   >
-                    <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-6 h-4 rounded-sm shadow-sm" />
+                    <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-6 h-4 rounded-sm shadow-sm hidden sm:block" />
                     <span className="flex-1 text-left">English</span>
                     {metadata.language === 'english' && <div className="w-2 h-2 bg-blue-600 rounded-full"></div>}
                   </button>
@@ -439,7 +473,7 @@ const Header = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:shadow-sm'
                     }`}
                   >
-                    <img src="https://flagcdn.com/w20/bd.png" alt="Bangla" className="w-6 h-4 rounded-sm shadow-sm" />
+                    <img src="https://flagcdn.com/w20/bd.png" alt="Bangla" className="w-6 h-4 rounded-sm shadow-sm hidden sm:block" />
                     <span className="flex-1 text-left">বাংলা</span>
                     {metadata.language === 'bangla' && <div className="w-2 h-2 bg-blue-600 rounded-full"></div>}
                   </button>
@@ -454,7 +488,7 @@ const Header = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:shadow-sm'
                     }`}
                   >
-                    <img src="https://flagcdn.com/w20/sa.png" alt="Arabic" className="w-6 h-4 rounded-sm shadow-sm" />
+                    <img src="https://flagcdn.com/w20/sa.png" alt="Arabic" className="w-6 h-4 rounded-sm shadow-sm hidden sm:block" />
                     <span className="flex-1 text-right">العربية</span>
                     {metadata.language === 'arabic' && <div className="w-2 h-2 bg-blue-600 rounded-full"></div>}
                   </button>
@@ -469,7 +503,7 @@ const Header = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:shadow-sm'
                     }`}
                   >
-                    <img src="https://flagcdn.com/w20/pk.png" alt="Urdu" className="w-6 h-4 rounded-sm shadow-sm" />
+                    <img src="https://flagcdn.com/w20/pk.png" alt="Urdu" className="w-6 h-4 rounded-sm shadow-sm hidden sm:block" />
                     <span className="flex-1 text-right">اردو</span>
                     <div className="w-2 h-2 bg-blue-600 rounded-full" style={{opacity: metadata.language === 'urdu' ? 1 : 0}}></div>
                   </button>
@@ -506,6 +540,19 @@ const Header = () => {
                 
                 <button
                   onClick={() => {
+                    setShowTestRunner(true);
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Run Tests
+                </button>
+                
+                <button
+                  onClick={() => {
                     toggleDarkMode();
                     setShowMobileMenu(false);
                   }}
@@ -532,6 +579,7 @@ const Header = () => {
             onClick={toggleDarkMode}
             className="hidden md:flex min-h-[44px] min-w-[44px] p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all shadow-sm items-center justify-center"
             title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {darkMode ? (
               <SunIcon className="w-5 h-5 text-yellow-500" />
@@ -545,6 +593,10 @@ const Header = () => {
       <KeyboardShortcutsModal 
         isOpen={showShortcutsModal} 
         onClose={() => setShowShortcutsModal(false)} 
+      />
+      <TestRunnerComponent 
+        isOpen={showTestRunner} 
+        onClose={() => setShowTestRunner(false)} 
       />
     </header>
   );

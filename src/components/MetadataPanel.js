@@ -284,6 +284,9 @@ const MetadataPanel = () => {
                 localStorage.setItem('qmaker-metadata-expanded', JSON.stringify(newExpanded));
               }}
               className="flex items-center justify-between w-full text-left p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 active:scale-[0.98] group"
+              aria-expanded={isExpanded}
+              aria-controls="metadata-form"
+              aria-label={isExpanded ? 'Collapse paper information form' : 'Expand paper information form'}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="relative">
@@ -328,8 +331,12 @@ const MetadataPanel = () => {
                 <ChevronDownIcon className={`w-5 h-5 text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
               </div>
             </button>
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[600px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
-              <div className="px-3 pb-4 space-y-4">
+            <div 
+              id="metadata-form"
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[600px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}
+              aria-hidden={!isExpanded}
+            >
+              <div className="px-3 pb-4 space-y-4" role="form" aria-label="Paper information form">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {getLabels(metadata.language).numberingStyle}
@@ -369,9 +376,12 @@ const MetadataPanel = () => {
                   onFocus={() => setUserInteracting(true)}
                   className={getFieldClassName('examName', 'w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent text-base')}
                   placeholder={getPlaceholders(metadata.language).examName}
+                  aria-required="true"
+                  aria-invalid={!!getFieldError('examName')}
+                  aria-describedby={getFieldError('examName') ? 'examName-error' : undefined}
                 />
                 {getFieldError('examName') && (
-                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{getFieldError('examName')}</p>
+                  <p id="examName-error" className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">{getFieldError('examName')}</p>
                 )}
               </div>
               <div>
@@ -501,23 +511,7 @@ const MetadataPanel = () => {
             
             <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {getLabels(metadata.language).language}
-                    </label>
-                    <select
-                      value={metadata.language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    >
-                      <option value="english">English</option>
-                      <option value="bangla">বাংলা</option>
-                      <option value="arabic">العربية</option>
-                      <option value="urdu">اردو</option>
-                    </select>
-                  </div>
-                  
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {getLabels(metadata.language).schoolName}

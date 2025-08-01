@@ -4,7 +4,7 @@ import Layout from './components/Layout';
 import Header from './components/Header';
 import MetadataPanel from './components/MetadataPanel';
 import SectionEditor from './components/SectionEditor';
-import PreviewPanel from './components/PreviewPanel';
+import LazyPreviewPanel from './components/LazyPreviewPanel';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
 
@@ -26,7 +26,7 @@ function App() {
           
           {previewMode ? (
             <ErrorBoundary fallbackMessage="Preview failed to load. Try switching back to edit mode.">
-              <PreviewPanel />
+              <LazyPreviewPanel />
             </ErrorBoundary>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
