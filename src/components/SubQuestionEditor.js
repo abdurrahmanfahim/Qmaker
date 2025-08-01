@@ -20,10 +20,12 @@ import {
   TableCellsIcon,
   PlusIcon,
   MinusIcon,
-  VariableIcon
+  VariableIcon,
+  ArchiveBoxIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import MathEquation from './MathEquation';
+import QuestionBank from './QuestionBank';
 
 const SubQuestionEditor = ({ 
   subQuestion, 
@@ -34,6 +36,7 @@ const SubQuestionEditor = ({
 }) => {
   const { updateSubQuestion, deleteSubQuestion } = usePaperStore();
   const [showMathModal, setShowMathModal] = useState(false);
+  const [showQuestionBank, setShowQuestionBank] = useState(false);
   
   const getNextAlignment = () => {
     if (editor?.isActive({ textAlign: 'left' })) return 'center';
@@ -244,6 +247,14 @@ const SubQuestionEditor = ({
                       </button>
                       
                       <button
+                        onClick={() => setShowQuestionBank(true)}
+                        className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        title="Question Bank"
+                      >
+                        <ArchiveBoxIcon className="w-5 h-5" />
+                      </button>
+                      
+                      <button
                         onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
                         className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
                         title="Table"
@@ -403,6 +414,14 @@ const SubQuestionEditor = ({
                     <VariableIcon className="w-4 h-4" />
                   </button>
                   
+                  <button
+                    onClick={() => setShowQuestionBank(true)}
+                    className="p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    title="Question Bank"
+                  >
+                    <ArchiveBoxIcon className="w-4 h-4" />
+                  </button>
+                  
                   {editor?.isActive('table') && (
                     <>
                       <div className="flex items-center gap-0.5 ml-1">
@@ -507,6 +526,14 @@ const SubQuestionEditor = ({
             editor?.chain().focus().insertContent(mathText).run();
           }}
           onClose={() => setShowMathModal(false)}
+        />
+      )}
+      
+      {/* Question Bank Modal */}
+      {showQuestionBank && (
+        <QuestionBank
+          isOpen={showQuestionBank}
+          onClose={() => setShowQuestionBank(false)}
         />
       )}
     </div>

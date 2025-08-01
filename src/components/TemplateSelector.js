@@ -55,25 +55,44 @@ const templates = [
 
 const TemplateSelector = ({ onSelect, language = 'english' }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-      {templates.map((template) => {
-        const IconComponent = template.icon;
-        return (
-          <button
-            key={template.id}
-            onClick={() => onSelect(template)}
-            className="flex flex-col items-center p-2 sm:p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all group"
-          >
-            <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-blue-500 mb-2" />
-            <span className={`text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-center ${['arabic', 'urdu'].includes(language) ? 'font-arabic' : language === 'bangla' ? 'font-bangla' : ''}`}>
-              {template.name}
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {template.marks} marks
-            </span>
-          </button>
-        );
-      })}
+    <div className="relative">
+      <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-transparent z-10 pointer-events-none opacity-0 transition-opacity" id="template-scroll-left"></div>
+      <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-gray-50 dark:from-gray-800 to-transparent z-10 pointer-events-none" id="template-scroll-right"></div>
+      
+      <div 
+        className="flex gap-2 overflow-x-auto pb-2 scrollbar-none scroll-smooth"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        onScroll={(e) => {
+          const container = e.target;
+          const leftIndicator = document.getElementById('template-scroll-left');
+          const rightIndicator = document.getElementById('template-scroll-right');
+          
+          if (leftIndicator && rightIndicator) {
+            leftIndicator.style.opacity = container.scrollLeft > 10 ? '1' : '0';
+            const isAtEnd = container.scrollLeft >= container.scrollWidth - container.clientWidth - 10;
+            rightIndicator.style.opacity = isAtEnd ? '0' : '1';
+          }
+        }}
+      >
+        {templates.map((template) => {
+          const IconComponent = template.icon;
+          return (
+            <button
+              key={template.id}
+              onClick={() => onSelect(template)}
+              className="flex flex-col items-center justify-center p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg transition-all group min-w-[90px] max-w-[90px] h-[100px] touch-manipulation active:scale-95 hover:scale-105"
+            >
+              <IconComponent className="w-7 h-7 text-gray-500 group-hover:text-blue-500 mb-1.5 transition-colors" />
+              <span className={`text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-center leading-tight px-1 ${['arabic', 'urdu'].includes(language) ? 'font-arabic' : language === 'bangla' ? 'font-bangla' : ''}`}>
+                {template.name}
+              </span>
+              <span className="text-xs text-gray-400 group-hover:text-blue-400 mt-0.5">
+                {template.marks}m
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
