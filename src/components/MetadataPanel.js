@@ -1,19 +1,41 @@
+/**
+ * @fileoverview Paper metadata panel with responsive design and form validation
+ * Handles exam information input, language-specific placeholders, and auto-collapse behavior
+ * @author Qmaker Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 
+/**
+ * Paper metadata panel component with collapsible interface
+ * Handles exam information, validation, and responsive behavior
+ * @returns {JSX.Element} Rendered metadata panel
+ */
 const MetadataPanel = () => {
   const { metadata, setMetadata, setLanguage } = usePaperStore();
+  
+  // Panel expansion state with localStorage persistence
   const [isExpanded, setIsExpanded] = useState(() => {
     const saved = localStorage.getItem('qmaker-metadata-expanded');
     return saved !== null ? JSON.parse(saved) : true;
   });
-  const [userInteracting, setUserInteracting] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   
-  // Form validation
-  const [errors, setErrors] = useState({});
+  const [userInteracting, setUserInteracting] = useState(false); // Track user interaction for auto-collapse
+  const [countdown, setCountdown] = useState(0); // Auto-collapse countdown timer
   
+  // Form validation state
+  const [errors, setErrors] = useState({}); // Field-specific error messages
+  
+  /**
+   * Validate individual form fields with specific rules
+   * @param {string} field - Field name to validate
+   * @param {string} value - Field value to validate
+   * @returns {boolean} Whether validation passed
+   */
   const validateField = (field, value) => {
     const newErrors = { ...errors };
     
@@ -61,16 +83,21 @@ const MetadataPanel = () => {
     return Object.keys(newErrors).length === 0;
   };
   
-  // Check if essential fields are filled and valid
+  // Calculate form completion status
   const isComplete = metadata.className && metadata.subject && metadata.examName && Object.keys(errors).length === 0;
   const completionPercentage = Math.round([
     metadata.language, metadata.schoolName, metadata.examName, 
     metadata.className, metadata.subject, metadata.book, 
     metadata.fullMarks, metadata.duration
-  ].filter(Boolean).length / 8 * 100);
+  ].filter(Boolean).length / 8 * 100); // Percentage of filled fields
 
   const [isMobile, setIsMobile] = useState(false);
 
+  /**
+   * Get localized field labels based on current language
+   * @param {string} lang - Language code
+   * @returns {Object} Object containing localized labels
+   */
   const getLabels = (lang) => {
     const labels = {
       english: {
@@ -176,7 +203,7 @@ const MetadataPanel = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Auto-collapse with countdown when essential fields are completed (mobile only)
+  // Auto-collapse panel when form is complete (mobile only)
   useEffect(() => {
     if (isMobile && isComplete && isExpanded && !userInteracting) {
       setCountdown(8); // Start 8-second countdown
@@ -184,7 +211,7 @@ const MetadataPanel = () => {
         setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(countdownInterval);
-            setIsExpanded(false);
+            setIsExpanded(false); // Auto-collapse when countdown reaches 0
             return 0;
           }
           return prev - 1;
@@ -203,22 +230,38 @@ const MetadataPanel = () => {
   // Reset interaction state after user stops interacting
   useEffect(() => {
     if (userInteracting) {
-      const timer = setTimeout(() => setUserInteracting(false), 8000); // Longer interaction window
+      const timer = setTimeout(() => setUserInteracting(false), 8000); // 8-second interaction window
       return () => clearTimeout(timer);
     }
   }, [userInteracting]);
 
 
 
+  /**
+   * Handle form field changes with validation
+   * @param {string} field - Field name
+   * @param {string} value - New field value
+   */
   const handleChange = (field, value) => {
     setMetadata({ ...metadata, [field]: value });
     validateField(field, value);
   };
   
+  /**
+   * Get error message for specific field
+   * @param {string} field - Field name
+   * @returns {string|undefined} Error message if exists
+   */
   const getFieldError = (field) => {
     return errors[field];
   };
   
+  /**
+   * Get CSS classes for form fields with error styling
+   * @param {string} field - Field name
+   * @param {string} baseClassName - Base CSS classes
+   * @returns {string} Complete CSS class string
+   */
   const getFieldClassName = (field, baseClassName) => {
     const hasError = errors[field];
     return `${baseClassName} ${

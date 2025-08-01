@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Main application header with navigation, actions, and auto-save status
+ * Handles PDF export, theme toggle, language selection, and keyboard shortcuts
+ * @author Qmaker Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   SunIcon, 
@@ -17,12 +25,17 @@ import usePaperStore from '../store/paperStore';
 import { exportToPDF, exportOptions } from '../utils/pdfExport';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 
+/**
+ * Main application header component with responsive design
+ * Provides access to all major app functions and displays auto-save status
+ * @returns {JSX.Element} Rendered header component
+ */
 const Header = () => {
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
-  const [autoSaveStatus, setAutoSaveStatus] = useState('saved'); // 'saving', 'saved', 'error'
-  const [lastSaved, setLastSaved] = useState(new Date());
-  const dropdownRef = useRef(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false); // Mobile dropdown menu state
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false); // Keyboard shortcuts modal
+  const [autoSaveStatus, setAutoSaveStatus] = useState('saved'); // Auto-save status: 'saving', 'saved', 'error'
+  const [lastSaved, setLastSaved] = useState(new Date()); // Timestamp of last save
+  const dropdownRef = useRef(null); // Reference for click-outside detection
   
   const { 
     darkMode, 
@@ -40,7 +53,10 @@ const Header = () => {
     setLanguage
   } = usePaperStore();
 
-  // Auto-save functionality
+  /**
+   * Auto-save functionality - saves data to localStorage after changes
+   * Triggers after 2 seconds of inactivity to avoid excessive saves
+   */
   useEffect(() => {
     const saveData = () => {
       try {
@@ -58,11 +74,14 @@ const Header = () => {
       }
     };
 
-    const timeoutId = setTimeout(saveData, 2000); // Save after 2 seconds of inactivity
+    const timeoutId = setTimeout(saveData, 2000); // Debounced save
     return () => clearTimeout(timeoutId);
   }, [metadata, sections, exportData]);
 
-  // Close dropdown when clicking outside
+  /**
+   * Close mobile dropdown when clicking outside
+   * Improves UX by auto-closing menus when user clicks elsewhere
+   */
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -73,7 +92,10 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
-  // Keyboard shortcuts
+  /**
+   * Global keyboard shortcuts for undo/redo functionality
+   * Ctrl+Z: Undo, Ctrl+Y or Ctrl+Shift+Z: Redo
+   */
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey || event.metaKey) {
@@ -91,10 +113,18 @@ const Header = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo]);
 
+  /**
+   * Handle PDF export with specified format
+   * @param {string} format - Export format key from exportOptions
+   */
   const handleExportPDF = async (format = 'standard') => {
     await exportToPDF(exportOptions[format]);
   };
 
+  /**
+   * Export paper data as JSON file for backup/sharing
+   * Creates downloadable file with current date in filename
+   */
   const handleExportJSON = () => {
     const data = exportData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -103,9 +133,13 @@ const Header = () => {
     a.href = url;
     a.download = `question-paper-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url); // Clean up memory
   };
 
+  /**
+   * Import paper data from JSON file
+   * @param {Event} event - File input change event
+   */
   const handleImportJSON = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -113,9 +147,9 @@ const Header = () => {
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
-          importData(data);
+          importData(data); // Load data into store
         } catch (error) {
-          alert('Invalid JSON file');
+          alert('Invalid JSON file'); // Show error for malformed files
         }
       };
       reader.readAsText(file);
@@ -123,7 +157,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 sm:px-4 py-2 sm:py-3">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 py-2 sm:py-3">
       <div className="flex items-center justify-between gap-2">
         {/* Left side - Logo and status */}
         <div className="flex items-center gap-2 min-w-0 flex-1">

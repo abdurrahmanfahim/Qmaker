@@ -1,8 +1,24 @@
+/**
+ * @fileoverview Enhanced PDF export utility with multilingual support
+ * Handles PDF generation with proper RTL rendering, font loading, and progress feedback
+ * @author Qmaker Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import html2pdf from 'html2pdf.js';
 
-// Enhanced PDF export with professional styling and RTL support
+/**
+ * Export question paper to PDF with enhanced styling and RTL support
+ * @param {Object} options - Export configuration options
+ * @param {string} options.format - Paper format (a4, letter, a3)
+ * @param {string} options.orientation - Page orientation (portrait, landscape)
+ * @param {Array} options.margins - Page margins [top, right, bottom, left]
+ * @param {number} options.scale - Rendering scale for quality
+ * @param {string} options.filename - Output filename
+ */
 export const exportToPDF = async (options = {}) => {
-  // Find the preview content element
+  // Locate the content element to export
   const element = document.querySelector('[data-export="pdf-content"]') || 
                  document.querySelector('.max-w-4xl') ||
                  document.querySelector('.preview-content');
@@ -12,34 +28,35 @@ export const exportToPDF = async (options = {}) => {
     return;
   }
 
-  // Check if there's actual content
+  // Validate that there's actual question content
   const hasContent = element.querySelector('.space-y-8')?.children.length > 0;
   if (!hasContent) {
     alert('No questions found. Please add sections and questions before exporting.');
     return;
   }
 
-  // Apply PDF-specific styling before export
+  // Apply PDF-specific styling for better rendering
   await applyPDFStyling(element, options);
 
   const filename = options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.pdf`;
   
-  // Enhanced PDF options with better quality and RTL support
+  // Configure PDF generation options with enhanced quality settings
   const opt = {
-    margin: options.margins || [0.75, 0.75, 0.75, 0.75], // Increased margins for better readability
+    margin: options.margins || [0.75, 0.75, 0.75, 0.75], // Page margins in inches
     filename,
     image: { 
       type: 'jpeg', 
-      quality: 0.95 // Slightly reduced for better file size
+      quality: 0.95 // High quality for crisp text
     },
     html2canvas: { 
-      scale: options.scale || 2.5, // Higher scale for better text rendering
-      useCORS: true,
-      letterRendering: true,
+      scale: options.scale || 2.5, // High DPI for sharp text rendering
+      useCORS: true, // Allow cross-origin images
+      letterRendering: true, // Better text rendering
       allowTaint: true,
       backgroundColor: '#ffffff',
-      logging: false, // Disable logging for cleaner output
-      width: options.orientation === 'landscape' ? 1122 : 794, // A4 dimensions
+      logging: false, // Suppress console logs
+      // A4 dimensions in pixels at 96 DPI
+      width: options.orientation === 'landscape' ? 1122 : 794,
       height: options.orientation === 'landscape' ? 794 : 1122,
       scrollX: 0,
       scrollY: 0,
@@ -50,90 +67,101 @@ export const exportToPDF = async (options = {}) => {
       unit: 'in', 
       format: options.format || 'a4', 
       orientation: options.orientation || 'portrait',
-      compress: true,
-      precision: 16 // Higher precision for better text rendering
+      compress: true, // Reduce file size
+      precision: 16 // High precision for accurate measurements
     },
     pagebreak: { 
-      mode: ['avoid-all', 'css', 'legacy'],
-      before: '.print-page-break',
+      mode: ['avoid-all', 'css', 'legacy'], // Multiple page break strategies
+      before: '.print-page-break', // Elements that should start new pages
       after: '.print-page-break-after',
-      avoid: '.print-avoid-break'
+      avoid: '.print-avoid-break' // Elements to keep together
     }
   };
 
   try {
-    // Show enhanced loading state with progress
+    // Display progress feedback to user
     const loadingToast = createLoadingToast();
     document.body.appendChild(loadingToast);
     
-    // Generate PDF with progress updates
+    // Step 1: Prepare content
     updateLoadingProgress(loadingToast, 'Preparing content...');
     await new Promise(resolve => setTimeout(resolve, 500));
     
+    // Step 2: Generate PDF
     updateLoadingProgress(loadingToast, 'Rendering PDF...');
     await html2pdf().set(opt).from(element).save();
     
-    // Show success message
+    // Show success notification
     showSuccessToast(loadingToast);
     
   } catch (error) {
     console.error('PDF export failed:', error);
     showErrorToast('Failed to export PDF. Please try again.');
   } finally {
-    // Clean up PDF styling
+    // Always clean up applied styling
     removePDFStyling(element);
   }
 };
 
-// Apply PDF-specific styling for better rendering
+/**
+ * Apply PDF-specific styling for better rendering quality
+ * @param {HTMLElement} element - Element to be exported
+ * @param {Object} options - Export options
+ */
 const applyPDFStyling = async (element, options) => {
-  // Add PDF export class for specific styling
+  // Enable PDF export mode styling
   element.classList.add('pdf-export-mode');
   
-  // Enhance font rendering for RTL languages
+  // Optimize RTL language rendering (Arabic, Urdu)
   const rtlElements = element.querySelectorAll('.rtl, .font-arabic, .font-urdu');
   rtlElements.forEach(el => {
-    el.style.fontFeatureSettings = '"liga" 1, "calt" 1';
-    el.style.textRendering = 'optimizeLegibility';
-    el.style.direction = 'rtl';
-    el.style.unicodeBidi = 'bidi-override';
+    el.style.fontFeatureSettings = '"liga" 1, "calt" 1'; // Enable ligatures
+    el.style.textRendering = 'optimizeLegibility'; // Better text quality
+    el.style.direction = 'rtl'; // Right-to-left text direction
+    el.style.unicodeBidi = 'bidi-override'; // Force RTL rendering
   });
   
-  // Enhance table rendering
+  // Optimize table rendering for PDF
   const tables = element.querySelectorAll('table');
   tables.forEach(table => {
-    table.style.pageBreakInside = 'avoid';
-    table.style.borderCollapse = 'collapse';
-    table.style.width = '100%';
+    table.style.pageBreakInside = 'avoid'; // Keep tables together
+    table.style.borderCollapse = 'collapse'; // Clean borders
+    table.style.width = '100%'; // Full width
   });
   
-  // Add page break hints
+  // Configure page breaks for sections
   const sections = element.querySelectorAll('.print-page-break');
   sections.forEach((section, index) => {
     if (index > 0) {
-      section.style.pageBreakBefore = 'auto';
+      section.style.pageBreakBefore = 'auto'; // Allow page breaks between sections
     }
-    section.style.pageBreakInside = 'avoid';
+    section.style.pageBreakInside = 'avoid'; // Keep sections together
   });
   
-  // Wait for fonts to load
+  // Ensure all fonts are loaded before rendering
   if (document.fonts) {
     await document.fonts.ready;
   }
 };
 
-// Remove PDF-specific styling after export
+/**
+ * Clean up PDF-specific styling after export
+ * @param {HTMLElement} element - Element that was exported
+ */
 const removePDFStyling = (element) => {
   element.classList.remove('pdf-export-mode');
   
-  // Reset inline styles
+  // Remove all inline styles added during PDF preparation
   const styledElements = element.querySelectorAll('[style]');
   styledElements.forEach(el => {
     el.removeAttribute('style');
   });
 };
 
-// Create enhanced loading toast
+/**
+ * Create loading toast notification with progress bar
+ * @returns {HTMLElement} Loading toast element
+ */
 const createLoadingToast = () => {
   const toast = document.createElement('div');
   toast.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[280px]';
@@ -154,7 +182,11 @@ const createLoadingToast = () => {
   return toast;
 };
 
-// Update loading progress
+/**
+ * Update loading progress message and bar
+ * @param {HTMLElement} toast - Toast element
+ * @param {string} message - Progress message
+ */
 const updateLoadingProgress = (toast, message) => {
   const progressText = toast.querySelector('#progress-text');
   const progressBar = toast.querySelector('#progress-bar');
@@ -166,7 +198,10 @@ const updateLoadingProgress = (toast, message) => {
   }
 };
 
-// Show success toast
+/**
+ * Transform loading toast to success notification
+ * @param {HTMLElement} loadingToast - Loading toast to transform
+ */
 const showSuccessToast = (loadingToast) => {
   loadingToast.innerHTML = `
     <div class="flex items-center gap-3">
@@ -194,7 +229,10 @@ const showSuccessToast = (loadingToast) => {
   }, 3000);
 };
 
-// Show error toast
+/**
+ * Display error notification
+ * @param {string} message - Error message to display
+ */
 const showErrorToast = (message) => {
   const errorToast = document.createElement('div');
   errorToast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[280px]';
@@ -223,7 +261,10 @@ const showErrorToast = (message) => {
   }, 5000);
 };
 
-// Enhanced export options with better configurations
+/**
+ * Predefined export configurations for different paper formats
+ * Each option includes format, orientation, margins, scale, and filename
+ */
 export const exportOptions = {
   standard: {
     format: 'a4',

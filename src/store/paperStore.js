@@ -1,44 +1,59 @@
+/**
+ * @fileoverview Core state management for Qmaker question paper builder
+ * Handles paper metadata, sections, sub-questions, and UI state using Zustand
+ * @author Qmaker Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Main paper store using Zustand with persistence
+ * Manages entire application state including metadata, sections, and UI state
+ */
 const usePaperStore = create(
   persist(
     (set, get) => ({
-      // History for undo/redo
-      history: [],
-      historyIndex: -1,
-      maxHistorySize: 50,
-      // Paper metadata
+      // Undo/redo history management
+      history: [], // Array of state snapshots for undo/redo
+      historyIndex: -1, // Current position in history
+      maxHistorySize: 50, // Maximum number of history states to keep
+      // Paper metadata - exam information and settings
       metadata: {
-        language: 'bangla',
-        schoolName: '',
-        examName: '',
-        className: '',
-        subject: '',
-        book: '',
-        fullMarks: '',
-        duration: '',
-        instructions: '',
-        numberingStyle: 'letters'
+        language: 'bangla', // Primary language for the paper (bangla, english, arabic, urdu)
+        schoolName: '', // Institution name
+        examName: '', // Exam title and year
+        className: '', // Student class/grade
+        subject: '', // Subject name
+        book: '', // Textbook reference
+        fullMarks: '', // Total marks for the exam
+        duration: '', // Time allowed for exam
+        instructions: '', // General exam instructions
+        numberingStyle: 'letters' // Sub-question numbering style (letters, numbers, roman)
       },
 
-      // Sections array
+      // Main content structure - array of question sections
       sections: [
         {
-          id: uuidv4(),
-          title: 'First Question',
-          subQuestions: []
+          id: uuidv4(), // Unique identifier for each section
+          title: 'First Question', // Section heading
+          subQuestions: [] // Array of sub-questions within this section
         }
       ],
 
-      // UI state
-      activeSectionId: null,
-      activeSubQuestionId: null,
-      previewMode: false,
-      darkMode: false,
+      // UI state management
+      activeSectionId: null, // Currently selected section ID
+      activeSubQuestionId: null, // Currently selected sub-question ID
+      previewMode: false, // Toggle between edit and preview modes
+      darkMode: false, // Dark/light theme toggle
       
-      // History actions
+      /**
+       * Save current state to history for undo/redo functionality
+       * Creates a deep copy snapshot of metadata and sections
+       */
       saveToHistory: () => {
         const state = get();
         const snapshot = {
@@ -60,6 +75,9 @@ const usePaperStore = create(
         });
       },
       
+      /**
+       * Undo last action by restoring previous state from history
+       */
       undo: () => {
         const state = get();
         if (state.historyIndex > 0) {
@@ -72,6 +90,9 @@ const usePaperStore = create(
         }
       },
       
+      /**
+       * Redo previously undone action by moving forward in history
+       */
       redo: () => {
         const state = get();
         if (state.historyIndex < state.history.length - 1) {
@@ -84,14 +105,23 @@ const usePaperStore = create(
         }
       },
       
+      /** Check if undo is available */
       canUndo: () => get().historyIndex > 0,
+      /** Check if redo is available */
       canRedo: () => get().historyIndex < get().history.length - 1,
 
-      // Actions
+      /**
+       * Update paper metadata (exam info, settings)
+       * @param {Object} metadata - Updated metadata object
+       */
       setMetadata: (metadata) => {
         get().saveToHistory();
         set({ metadata });
       },
+      /**
+       * Change paper language and update all section titles and sub-question labels
+       * @param {string} language - Target language (english, bangla, arabic, urdu)
+       */
       setLanguage: (language) => {
         set(state => {
           const getSectionTitle = (index, lang) => {
@@ -130,7 +160,10 @@ const usePaperStore = create(
         });
       },
 
-      // Section management
+      /**
+       * Add new section to the paper with localized title
+       * Automatically sets the new section as active
+       */
       addSection: () => {
         get().saveToHistory();
         const getSectionTitle = (index, language) => {
@@ -155,6 +188,10 @@ const usePaperStore = create(
         }));
       },
 
+      /**
+       * Delete section by ID and update active section
+       * @param {string} sectionId - ID of section to delete
+       */
       deleteSection: (sectionId) => {
         get().saveToHistory();
         set(state => {
@@ -166,6 +203,11 @@ const usePaperStore = create(
         });
       },
 
+      /**
+       * Update section properties (title, instructions, etc.)
+       * @param {string} sectionId - ID of section to update
+       * @param {Object} updates - Properties to update
+       */
       updateSection: (sectionId, updates) => {
         get().saveToHistory();
         set(state => ({
@@ -186,7 +228,11 @@ const usePaperStore = create(
 
       setActiveSection: (sectionId) => set({ activeSectionId: sectionId }),
 
-      // Sub-question management
+      /**
+       * Add new sub-question to a section with optional template
+       * @param {string} sectionId - Target section ID
+       * @param {Object|null} template - Optional template with predefined content
+       */
       addSubQuestion: (sectionId, template = null) => {
         get().saveToHistory();
         const section = get().sections.find(s => s.id === sectionId);
@@ -223,6 +269,12 @@ const usePaperStore = create(
         }));
       },
 
+      /**
+       * Update sub-question properties (content, marks, etc.)
+       * @param {string} sectionId - Parent section ID
+       * @param {string} subQuestionId - Sub-question ID to update
+       * @param {Object} updates - Properties to update
+       */
       updateSubQuestion: (sectionId, subQuestionId, updates) => {
         get().saveToHistory();
         set(state => ({
@@ -239,6 +291,11 @@ const usePaperStore = create(
         }));
       },
 
+      /**
+       * Delete sub-question from section
+       * @param {string} sectionId - Parent section ID
+       * @param {string} subQuestionId - Sub-question ID to delete
+       */
       deleteSubQuestion: (sectionId, subQuestionId) => {
         get().saveToHistory();
         set(state => ({
@@ -269,11 +326,15 @@ const usePaperStore = create(
 
       setActiveSubQuestion: (subQuestionId) => set({ activeSubQuestionId: subQuestionId }),
 
-      // UI actions
+      /** Toggle between edit and preview modes */
       togglePreviewMode: () => set(state => ({ previewMode: !state.previewMode })),
+      /** Toggle dark/light theme */
       toggleDarkMode: () => set(state => ({ darkMode: !state.darkMode })),
 
-      // Data management
+      /**
+       * Export current paper data for backup/sharing
+       * @returns {Object} Complete paper data with timestamp
+       */
       exportData: () => {
         const state = get();
         return {
@@ -283,6 +344,10 @@ const usePaperStore = create(
         };
       },
 
+      /**
+       * Import paper data from backup/shared file
+       * @param {Object} data - Paper data to import
+       */
       importData: (data) => {
         set({
           metadata: data.metadata,
@@ -291,7 +356,10 @@ const usePaperStore = create(
         });
       },
 
-      // Initialize
+      /**
+       * Initialize store on app startup
+       * Sets first section as active if none selected
+       */
       initialize: () => {
         const state = get();
         if (state.sections.length > 0 && !state.activeSectionId) {
