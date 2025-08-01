@@ -4,12 +4,65 @@ import usePaperStore from '../store/paperStore';
 
 const MetadataPanel = () => {
   const { metadata, setMetadata, setLanguage } = usePaperStore();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const saved = localStorage.getItem('qmaker-metadata-expanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [userInteracting, setUserInteracting] = useState(false);
   const [countdown, setCountdown] = useState(0);
   
-  // Check if essential fields are filled
-  const isComplete = metadata.className && metadata.subject && metadata.examName;
+  // Form validation
+  const [errors, setErrors] = useState({});
+  
+  const validateField = (field, value) => {
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'examName':
+        if (!value || value.trim().length < 3) {
+          newErrors.examName = 'Exam name must be at least 3 characters';
+        } else {
+          delete newErrors.examName;
+        }
+        break;
+      case 'className':
+        if (!value || value.trim().length < 1) {
+          newErrors.className = 'Class is required';
+        } else {
+          delete newErrors.className;
+        }
+        break;
+      case 'subject':
+        if (!value || value.trim().length < 2) {
+          newErrors.subject = 'Subject must be at least 2 characters';
+        } else {
+          delete newErrors.subject;
+        }
+        break;
+      case 'fullMarks':
+        if (value && (isNaN(value) || parseInt(value) <= 0)) {
+          newErrors.fullMarks = 'Full marks must be a positive number';
+        } else {
+          delete newErrors.fullMarks;
+        }
+        break;
+      case 'duration':
+        if (value && value.trim().length > 0 && value.trim().length < 2) {
+          newErrors.duration = 'Duration must be at least 2 characters';
+        } else {
+          delete newErrors.duration;
+        }
+        break;
+      default:
+        break;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  // Check if essential fields are filled and valid
+  const isComplete = metadata.className && metadata.subject && metadata.examName && Object.keys(errors).length === 0;
   const completionPercentage = Math.round([
     metadata.language, metadata.schoolName, metadata.examName, 
     metadata.className, metadata.subject, metadata.book, 
@@ -29,7 +82,7 @@ const MetadataPanel = () => {
         fullMarks: 'Full Marks',
         duration: 'Duration',
         instructions: 'Instructions',
-        language: 'Language'
+        numberingStyle: 'Question Numbering'
       },
       bangla: {
         schoolName: 'মাদরাসার নাম',
@@ -40,7 +93,7 @@ const MetadataPanel = () => {
         fullMarks: 'পূর্ণমান',
         duration: 'সময়',
         instructions: 'নির্দেশনা',
-        language: 'ভাষা'
+        numberingStyle: 'প্রশ্ন নম্বরিং'
       },
       arabic: {
         schoolName: 'اسم المدرسة',
@@ -51,7 +104,7 @@ const MetadataPanel = () => {
         fullMarks: 'الدرجة الكاملة',
         duration: 'المدة',
         instructions: 'التعليمات',
-        language: 'اللغة'
+        numberingStyle: 'ترقيم الأسئلة'
       },
       urdu: {
         schoolName: 'مدرسے کا نام',
@@ -62,7 +115,7 @@ const MetadataPanel = () => {
         fullMarks: 'مکمل نمبر',
         duration: 'وقت',
         instructions: 'ہدایات',
-        language: 'زبان'
+        numberingStyle: 'سوال نمبرنگ'
       }
     };
     return labels[lang] || labels.english;
@@ -159,6 +212,20 @@ const MetadataPanel = () => {
 
   const handleChange = (field, value) => {
     setMetadata({ ...metadata, [field]: value });
+    validateField(field, value);
+  };
+  
+  const getFieldError = (field) => {
+    return errors[field];
+  };
+  
+  const getFieldClassName = (field, baseClassName) => {
+    const hasError = errors[field];
+    return `${baseClassName} ${
+      hasError 
+        ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500' 
+        : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
+    }`;
   };
 
   return (
@@ -168,7 +235,11 @@ const MetadataPanel = () => {
         <div className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-all duration-300 ${isComplete ? 'bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20' : ''}`}>
           <div className="px-4 py-3">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => {
+                const newExpanded = !isExpanded;
+                setIsExpanded(newExpanded);
+                localStorage.setItem('qmaker-metadata-expanded', JSON.stringify(newExpanded));
+              }}
               className="flex items-center justify-between w-full text-left p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 active:scale-[0.98] group"
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -218,18 +289,17 @@ const MetadataPanel = () => {
               <div className="px-3 pb-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {getLabels(metadata.language).language}
+                  {getLabels(metadata.language).numberingStyle}
                 </label>
                 <select
-                  value={metadata.language}
-                  onChange={(e) => setLanguage(e.target.value)}
+                  value={metadata.numberingStyle}
+                  onChange={(e) => handleChange('numberingStyle', e.target.value)}
                   onFocus={() => setUserInteracting(true)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                 >
-                  <option value="english">English</option>
-                  <option value="bangla">বাংলা</option>
-                  <option value="arabic">العربية</option>
-                  <option value="urdu">اردو</option>
+                  <option value="letters">(a), (b), (c)</option>
+                  <option value="numbers">(1), (2), (3)</option>
+                  <option value="roman">(i), (ii), (iii)</option>
                 </select>
               </div>
               <div>
@@ -254,9 +324,12 @@ const MetadataPanel = () => {
                   value={metadata.examName}
                   onChange={(e) => handleChange('examName', e.target.value)}
                   onFocus={() => setUserInteracting(true)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                  className={getFieldClassName('examName', 'w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent text-base')}
                   placeholder={getPlaceholders(metadata.language).examName}
                 />
+                {getFieldError('examName') && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{getFieldError('examName')}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -281,9 +354,12 @@ const MetadataPanel = () => {
                     value={metadata.className}
                     onChange={(e) => handleChange('className', e.target.value)}
                     onFocus={() => setUserInteracting(true)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    className={getFieldClassName('className', 'w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent text-base')}
                     placeholder={getPlaceholders(metadata.language).className}
                   />
+                  {getFieldError('className') && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{getFieldError('className')}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -294,9 +370,12 @@ const MetadataPanel = () => {
                     value={metadata.subject}
                     onChange={(e) => handleChange('subject', e.target.value)}
                     onFocus={() => setUserInteracting(true)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    className={getFieldClassName('subject', 'w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent text-base')}
                     placeholder={getPlaceholders(metadata.language).subject}
                   />
+                  {getFieldError('subject') && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{getFieldError('subject')}</p>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -308,9 +387,12 @@ const MetadataPanel = () => {
                     type="text"
                     value={metadata.fullMarks}
                     onChange={(e) => handleChange('fullMarks', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    className={getFieldClassName('fullMarks', 'w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent text-base')}
                     placeholder={getPlaceholders(metadata.language).fullMarks}
                   />
+                  {getFieldError('fullMarks') && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{getFieldError('fullMarks')}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -320,9 +402,12 @@ const MetadataPanel = () => {
                     type="text"
                     value={metadata.duration}
                     onChange={(e) => handleChange('duration', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    className={getFieldClassName('duration', 'w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent text-base')}
                     placeholder={getPlaceholders(metadata.language).duration}
                   />
+                  {getFieldError('duration') && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{getFieldError('duration')}</p>
+                  )}
                 </div>
               </div>
               <div>
@@ -348,7 +433,11 @@ const MetadataPanel = () => {
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="px-4 py-3">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => {
+                const newExpanded = !isExpanded;
+                setIsExpanded(newExpanded);
+                localStorage.setItem('qmaker-metadata-expanded', JSON.stringify(newExpanded));
+              }}
               className="flex items-center justify-between w-full text-left p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 group"
             >
               <div className="flex items-center gap-3">

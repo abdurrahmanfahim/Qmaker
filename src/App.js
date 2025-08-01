@@ -5,6 +5,8 @@ import Header from './components/Header';
 import MetadataPanel from './components/MetadataPanel';
 import SectionEditor from './components/SectionEditor';
 import PreviewPanel from './components/PreviewPanel';
+import ErrorBoundary from './components/ErrorBoundary';
+import { ToastProvider } from './components/Toast';
 
 function App() {
   const { darkMode, previewMode, initialize } = usePaperStore();
@@ -15,18 +17,30 @@ function App() {
 
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <Layout>
-        <Header />
-        
-        {previewMode ? (
-          <PreviewPanel />
-        ) : (
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <MetadataPanel />
-            <SectionEditor />
-          </div>
-        )}
-      </Layout>
+      <ToastProvider>
+        <ErrorBoundary fallbackMessage="The application encountered an error. Your work is automatically saved.">
+          <Layout>
+          <ErrorBoundary fallbackMessage="Header component failed to load.">
+            <Header />
+          </ErrorBoundary>
+          
+          {previewMode ? (
+            <ErrorBoundary fallbackMessage="Preview failed to load. Try switching back to edit mode.">
+              <PreviewPanel />
+            </ErrorBoundary>
+          ) : (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <ErrorBoundary fallbackMessage="Paper information panel failed to load.">
+                <MetadataPanel />
+              </ErrorBoundary>
+              <ErrorBoundary fallbackMessage="Section editor failed to load.">
+                <SectionEditor />
+              </ErrorBoundary>
+            </div>
+          )}
+          </Layout>
+        </ErrorBoundary>
+      </ToastProvider>
     </div>
   );
 }

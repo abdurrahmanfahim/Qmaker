@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Bold from '@tiptap/extension-bold';
-import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableHeader from '@tiptap/extension-table-header';
+import TableCell from '@tiptap/extension-table-cell';
 import { 
   TrashIcon,
   Bars3BottomLeftIcon,
@@ -17,9 +16,14 @@ import {
   ItalicIcon,
   UnderlineIcon,
   ListBulletIcon,
-  NumberedListIcon
+  NumberedListIcon,
+  TableCellsIcon,
+  PlusIcon,
+  MinusIcon,
+  VariableIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
+import MathEquation from './MathEquation';
 
 const SubQuestionEditor = ({ 
   subQuestion, 
@@ -29,19 +33,49 @@ const SubQuestionEditor = ({
   onClick 
 }) => {
   const { updateSubQuestion, deleteSubQuestion } = usePaperStore();
+  const [showMathModal, setShowMathModal] = useState(false);
+  
+  const getNextAlignment = () => {
+    if (editor?.isActive({ textAlign: 'left' })) return 'center';
+    if (editor?.isActive({ textAlign: 'center' })) return 'right';
+    return 'left';
+  };
+  
+  const getCurrentAlignmentIcon = () => {
+    if (editor?.isActive({ textAlign: 'center' })) return <Bars3Icon className="w-4 h-4" />;
+    if (editor?.isActive({ textAlign: 'right' })) return <Bars3BottomRightIcon className="w-4 h-4" />;
+    return <Bars3BottomLeftIcon className="w-4 h-4" />;
+  };
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Bold,
-      Italic,
+      StarterKit.configure({
+        bulletList: {
+          HTMLAttributes: {
+            class: 'prose-bullet-list',
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: 'prose-ordered-list',
+          },
+        },
+        listItem: {
+          HTMLAttributes: {
+            class: 'prose-list-item',
+          },
+        },
+      }),
       Underline,
-      BulletList,
-      OrderedList,
-      ListItem,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content: subQuestion.content,
     onUpdate: ({ editor }) => {
@@ -113,9 +147,7 @@ const SubQuestionEditor = ({
                 placeholder="0"
                 min="0"
               />
-              <span className={`text-xs text-gray-500 dark:text-gray-400 hidden sm:inline ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-left' : ''}`}>marks</span>
-              
-
+              <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">marks</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -132,106 +164,299 @@ const SubQuestionEditor = ({
           {/* Rich Text Editor */}
           <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
             {editor && (
-              <div className="border-b border-gray-300 dark:border-gray-600 p-1 sm:p-2 flex items-center gap-1 sm:gap-2 bg-gray-50 dark:bg-gray-700 overflow-x-auto">
-                <button
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive('bold') 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                  title="Bold"
-                >
-                  <BoldIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
+              <div className="border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+                {/* Mobile: UX-optimized layout with priority-based grouping */}
+                <div className="flex flex-col sm:hidden">
+                  {/* Primary tools: Most frequently used */}
+                  <div className="flex items-center justify-between px-2 py-1">
+                    {/* Essential formatting group */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center ${
+                          editor.isActive('bold') 
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                        title="Bold"
+                      >
+                        <BoldIcon className="w-5 h-5" />
+                      </button>
+                      
+                      <button
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center ${
+                          editor.isActive('italic') 
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                        title="Italic"
+                      >
+                        <ItalicIcon className="w-5 h-5" />
+                      </button>
+                      
+                      <button
+                        onClick={() => editor.chain().focus().toggleUnderline().run()}
+                        className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center ${
+                          editor.isActive('underline') 
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                        title="Underline"
+                      >
+                        <UnderlineIcon className="w-5 h-5" />
+                      </button>
+                      
+                      <button
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
+                        className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center ${
+                          editor.isActive('bulletList') 
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                        title="Bullet List"
+                      >
+                        <ListBulletIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    {/* Alignment toggle */}
+                    <button
+                      onClick={() => editor.chain().focus().setTextAlign(getNextAlignment()).run()}
+                      className={`min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center ${
+                        editor.isActive({ textAlign: 'left' }) || editor.isActive({ textAlign: 'center' }) || editor.isActive({ textAlign: 'right' })
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                      title="Text Alignment"
+                    >
+                      {getCurrentAlignmentIcon()}
+                    </button>
+                    
+                    {/* Insert tools group */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setShowMathModal(true)}
+                        className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        title="Math Equation"
+                      >
+                        <VariableIcon className="w-5 h-5" />
+                      </button>
+                      
+                      <button
+                        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                        className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        title="Table"
+                      >
+                        <TableCellsIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Contextual tools: Progressive disclosure */}
+                  {editor?.isActive('table') && (
+                    <div className="flex items-center justify-center gap-2 px-2 py-1 border-t border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
+                      <button
+                        onClick={() => editor.chain().focus().addRowAfter().run()}
+                        className="min-h-[44px] px-3 rounded-lg transition-colors flex items-center bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                        title="Add Row"
+                      >
+                        <PlusIcon className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-medium">Row</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => editor.chain().focus().addColumnAfter().run()}
+                        className="min-h-[44px] px-3 rounded-lg transition-colors flex items-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                        title="Add Column"
+                      >
+                        <PlusIcon className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-medium">Col</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => editor.chain().focus().deleteTable().run()}
+                        className="min-h-[44px] px-3 rounded-lg transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
+                        title="Delete Table"
+                      >
+                        <TrashIcon className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-medium">Delete</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
                 
-                <button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive('italic') 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                  title="Italic"
-                >
-                  <ItalicIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
-                
-                <button
-                  onClick={() => editor.chain().focus().toggleUnderline().run()}
-                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive('underline') 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                  title="Underline"
-                >
-                  <UnderlineIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
-                
-                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                
-                <button
-                  onClick={() => editor.chain().focus().toggleBulletList().run()}
-                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive('bulletList') 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                  title="Bullet List"
-                >
-                  <ListBulletIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
-                
-                <button
-                  onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                  className={`p-1.5 sm:p-2 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive('orderedList') 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                  title="Numbered List"
-                >
-                  <NumberedListIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
-                
-                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                
-                <button
-                  onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive({ textAlign: 'left' }) 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <span className="hidden sm:inline">Left</span>
-                  <Bars3BottomLeftIcon className="w-3 h-3 sm:hidden" />
-                </button>
-                
-                <button
-                  onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive({ textAlign: 'center' }) 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <span className="hidden sm:inline">Center</span>
-                  <Bars3Icon className="w-3 h-3 sm:hidden" />
-                </button>
-                
-                <button
-                  onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                  className={`px-1.5 sm:px-2 py-1 text-xs rounded transition-colors flex-shrink-0 flex items-center justify-center ${
-                    editor.isActive({ textAlign: 'right' }) 
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <span className="hidden sm:inline">Right</span>
-                  <Bars3BottomRightIcon className="w-3 h-3 sm:hidden" />
-                </button>
+                {/* Desktop: Single compact row */}
+                <div className="hidden sm:flex items-center gap-1 p-1.5 overflow-x-auto">
+                  <button
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive('bold') 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    title="Bold"
+                  >
+                    <BoldIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive('italic') 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    title="Italic"
+                  >
+                    <ItalicIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive('underline') 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    title="Underline"
+                  >
+                    <UnderlineIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive('bulletList') 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    title="Bullet List"
+                  >
+                    <ListBulletIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive('orderedList') 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    title="Numbered List"
+                  >
+                    <NumberedListIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive({ textAlign: 'left' }) 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <Bars3BottomLeftIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive({ textAlign: 'center' }) 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <Bars3Icon className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                    className={`p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center ${
+                      editor.isActive({ textAlign: 'right' }) 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <Bars3BottomRightIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                    className="p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    title="Insert Table"
+                  >
+                    <TableCellsIcon className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowMathModal(true)}
+                    className="p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    title="Insert Math Equation"
+                  >
+                    <VariableIcon className="w-4 h-4" />
+                  </button>
+                  
+                  {editor?.isActive('table') && (
+                    <>
+                      <div className="flex items-center gap-0.5 ml-1">
+                        <button
+                          onClick={() => editor.chain().focus().addRowAfter().run()}
+                          className="px-1.5 py-1 rounded transition-colors flex items-center bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                          title="Add Row"
+                        >
+                          <PlusIcon className="w-3 h-3 mr-0.5" />
+                          <span className="text-xs">R</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => editor.chain().focus().addColumnAfter().run()}
+                          className="px-1.5 py-1 rounded transition-colors flex items-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                          title="Add Column"
+                        >
+                          <PlusIcon className="w-3 h-3 mr-0.5" />
+                          <span className="text-xs">C</span>
+                        </button>
+                      </div>
+                      
+                      <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                      
+                      <div className="flex items-center gap-0.5">
+                        <button
+                          onClick={() => editor.chain().focus().deleteRow().run()}
+                          className="px-1.5 py-1 rounded transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
+                          title="Delete Row"
+                        >
+                          <MinusIcon className="w-3 h-3 mr-0.5" />
+                          <span className="text-xs">R</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => editor.chain().focus().deleteColumn().run()}
+                          className="px-1.5 py-1 rounded transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
+                          title="Delete Column"
+                        >
+                          <MinusIcon className="w-3 h-3 mr-0.5" />
+                          <span className="text-xs">C</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => editor.chain().focus().deleteTable().run()}
+                          className="p-1.5 rounded transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
+                          title="Delete Table"
+                        >
+                          <TrashIcon className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
             
@@ -241,9 +466,49 @@ const SubQuestionEditor = ({
             />
           </div>
 
+          {/* Answer Section */}
+          {subQuestion.showAnswer && (
+            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <h4 className={`text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${getFontClass(sectionLanguage)}`}>
+                {sectionLanguage === 'arabic' ? 'الإجابة:' : 
+                 sectionLanguage === 'bangla' ? 'উত্তর:' :
+                 sectionLanguage === 'urdu' ? 'جواب:' : 'Answer:'}
+              </h4>
+              <textarea
+                value={subQuestion.answer || ''}
+                onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { answer: e.target.value })}
+                className={`w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+                placeholder={getAnswerPlaceholder(sectionLanguage)}
+                rows="3"
+              />
+            </div>
+          )}
 
+          {/* Show/Hide Answer Toggle */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => updateSubQuestion(sectionId, subQuestion.id, { showAnswer: !subQuestion.showAnswer })}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                subQuestion.showAnswer
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {subQuestion.showAnswer ? 'Hide Answer' : 'Show Answer'}
+            </button>
+          </div>
         </div>
       </div>
+      
+      {/* Math Equation Modal */}
+      {showMathModal && (
+        <MathEquation
+          onInsert={(mathText) => {
+            editor?.chain().focus().insertContent(mathText).run();
+          }}
+          onClose={() => setShowMathModal(false)}
+        />
+      )}
     </div>
   );
 };

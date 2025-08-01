@@ -1,59 +1,73 @@
-import React from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import TemplateSelector from './TemplateSelector';
+import React, { useState } from 'react';
+import { 
+  XMarkIcon,
+  DocumentTextIcon,
+  CheckCircleIcon,
+  PencilSquareIcon,
+  BookOpenIcon,
+  LanguageIcon,
+  ClipboardDocumentListIcon
+} from '@heroicons/react/24/outline';
+
+const templates = {
+  text: {
+    name: 'Text Question',
+    icon: DocumentTextIcon,
+    content: '<p>Write your question here...</p>',
+    marks: 5
+  },
+  mcq: {
+    name: 'Multiple Choice',
+    icon: CheckCircleIcon,
+    content: '<p>Question text here:</p><p>a) Option A</p><p>b) Option B</p><p>c) Option C</p><p>d) Option D</p>',
+    marks: 1
+  },
+  fillBlanks: {
+    name: 'Fill in the Blanks',
+    icon: PencilSquareIcon,
+    content: '<p>Complete the sentence: The capital of Bangladesh is _______.</p>',
+    marks: 2
+  },
+  shortAnswer: {
+    name: 'Short Answer',
+    icon: ClipboardDocumentListIcon,
+    content: '<p>Answer in 2-3 sentences:</p>',
+    marks: 3
+  },
+  essay: {
+    name: 'Essay Question',
+    icon: BookOpenIcon,
+    content: '<p>Write a detailed essay on:</p>',
+    marks: 10
+  },
+  translation: {
+    name: 'Translation',
+    icon: LanguageIcon,
+    content: '<p>Translate the following:</p><p><strong>English:</strong> </p><p><strong>বাংলা:</strong> </p>',
+    marks: 5
+  }
+};
 
 const TemplateModal = ({ isOpen, onClose, onSelect, language }) => {
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+
   if (!isOpen) return null;
 
-  const getModalText = (language) => {
-    switch (language) {
-      case 'arabic':
-        return {
-          title: 'اختر نموذج السؤال',
-          subtitle: 'اختر نوع السؤال الذي تريد إضافته',
-          close: 'إغلاق'
-        };
-      case 'bangla':
-        return {
-          title: 'প্রশ্নের টেমপ্লেট নির্বাচন করুন',
-          subtitle: 'আপনি যে ধরনের প্রশ্ন যোগ করতে চান তা নির্বাচন করুন',
-          close: 'বন্ধ করুন'
-        };
-      case 'urdu':
-        return {
-          title: 'سوال کا نمونہ منتخب کریں',
-          subtitle: 'آپ جو قسم کا سوال شامل کرنا چاہتے ہیں اسے منتخب کریں',
-          close: 'بند کریں'
-        };
-      default:
-        return {
-          title: 'Select Question Template',
-          subtitle: 'Choose the type of question you want to add',
-          close: 'Close'
-        };
+  const handleSelect = () => {
+    if (selectedTemplate) {
+      onSelect(templates[selectedTemplate]);
+      onClose();
+      setSelectedTemplate(null);
     }
-  };
-
-  const text = getModalText(language);
-  const isRTL = ['arabic', 'urdu'].includes(language);
-
-  const handleSelect = (template) => {
-    onSelect(template);
-    onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div className={`flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 ${isRTL ? 'rtl' : 'ltr'}`}>
-          <div>
-            <h2 className={`text-lg font-semibold text-gray-900 dark:text-white ${isRTL ? 'font-arabic' : ''}`}>
-              {text.title}
-            </h2>
-            <p className={`text-sm text-gray-600 dark:text-gray-400 mt-1 ${isRTL ? 'font-arabic' : ''}`}>
-              {text.subtitle}
-            </p>
-          </div>
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Choose Question Template
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -61,9 +75,53 @@ const TemplateModal = ({ isOpen, onClose, onSelect, language }) => {
             <XMarkIcon className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        
-        <div className="p-4 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <TemplateSelector onSelect={handleSelect} language={language} />
+
+        <div className="p-6 overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {Object.entries(templates).map(([key, template]) => (
+              <button
+                key={key}
+                onClick={() => setSelectedTemplate(key)}
+                className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${
+                  selectedTemplate === key
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <template.icon className="w-8 h-8 text-gray-400" />
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      {template.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {template.marks} marks
+                    </p>
+                  </div>
+                </div>
+                <div 
+                  className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: template.content }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSelect}
+            disabled={!selectedTemplate}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Use Template
+          </button>
         </div>
       </div>
     </div>

@@ -5,6 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 const usePaperStore = create(
   persist(
     (set, get) => ({
+      // History for undo/redo
+      history: [],
+      historyIndex: -1,
+      maxHistorySize: 50,
       // Paper metadata
       metadata: {
         language: 'bangla',
@@ -15,7 +19,8 @@ const usePaperStore = create(
         book: '',
         fullMarks: '',
         duration: '',
-        instructions: ''
+        instructions: '',
+        numberingStyle: 'letters'
       },
 
       // Sections array
@@ -32,9 +37,61 @@ const usePaperStore = create(
       activeSubQuestionId: null,
       previewMode: false,
       darkMode: false,
+      
+      // History actions
+      saveToHistory: () => {
+        const state = get();
+        const snapshot = {
+          metadata: { ...state.metadata },
+          sections: JSON.parse(JSON.stringify(state.sections)),
+          timestamp: Date.now()
+        };
+        
+        const newHistory = state.history.slice(0, state.historyIndex + 1);
+        newHistory.push(snapshot);
+        
+        if (newHistory.length > state.maxHistorySize) {
+          newHistory.shift();
+        }
+        
+        set({ 
+          history: newHistory, 
+          historyIndex: newHistory.length - 1 
+        });
+      },
+      
+      undo: () => {
+        const state = get();
+        if (state.historyIndex > 0) {
+          const prevState = state.history[state.historyIndex - 1];
+          set({
+            metadata: prevState.metadata,
+            sections: prevState.sections,
+            historyIndex: state.historyIndex - 1
+          });
+        }
+      },
+      
+      redo: () => {
+        const state = get();
+        if (state.historyIndex < state.history.length - 1) {
+          const nextState = state.history[state.historyIndex + 1];
+          set({
+            metadata: nextState.metadata,
+            sections: nextState.sections,
+            historyIndex: state.historyIndex + 1
+          });
+        }
+      },
+      
+      canUndo: () => get().historyIndex > 0,
+      canRedo: () => get().historyIndex < get().history.length - 1,
 
       // Actions
-      setMetadata: (metadata) => set({ metadata }),
+      setMetadata: (metadata) => {
+        get().saveToHistory();
+        set({ metadata });
+      },
       setLanguage: (language) => {
         set(state => {
           const getSectionTitle = (index, lang) => {
@@ -75,6 +132,7 @@ const usePaperStore = create(
 
       // Section management
       addSection: () => {
+        get().saveToHistory();
         const getSectionTitle = (index, language) => {
           const ordinals = {
             english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
@@ -98,6 +156,7 @@ const usePaperStore = create(
       },
 
       deleteSection: (sectionId) => {
+        get().saveToHistory();
         set(state => {
           const newSections = state.sections.filter(s => s.id !== sectionId);
           return {
@@ -108,6 +167,7 @@ const usePaperStore = create(
       },
 
       updateSection: (sectionId, updates) => {
+        get().saveToHistory();
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId ? { ...s, ...updates } : s
@@ -128,6 +188,7 @@ const usePaperStore = create(
 
       // Sub-question management
       addSubQuestion: (sectionId, template = null) => {
+        get().saveToHistory();
         const section = get().sections.find(s => s.id === sectionId);
         if (!section) return;
 
@@ -163,6 +224,7 @@ const usePaperStore = create(
       },
 
       updateSubQuestion: (sectionId, subQuestionId, updates) => {
+        get().saveToHistory();
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId 
@@ -178,6 +240,7 @@ const usePaperStore = create(
       },
 
       deleteSubQuestion: (sectionId, subQuestionId) => {
+        get().saveToHistory();
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId 
