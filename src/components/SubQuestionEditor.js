@@ -20,12 +20,10 @@ import {
   TableCellsIcon,
   PlusIcon,
   MinusIcon,
-  VariableIcon,
-  ArchiveBoxIcon
+  VariableIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import MathEquation from './MathEquation';
-import QuestionBank from './QuestionBank';
 
 const SubQuestionEditor = ({ 
   subQuestion, 
@@ -36,7 +34,6 @@ const SubQuestionEditor = ({
 }) => {
   const { updateSubQuestion, deleteSubQuestion } = usePaperStore();
   const [showMathModal, setShowMathModal] = useState(false);
-  const [showQuestionBank, setShowQuestionBank] = useState(false);
   
   const getNextAlignment = () => {
     if (editor?.isActive({ textAlign: 'left' })) return 'center';
@@ -108,14 +105,7 @@ const SubQuestionEditor = ({
     }
   };
 
-  const getAnswerPlaceholder = (language) => {
-    switch (language) {
-      case 'arabic': return 'أدخل الإجابة...';
-      case 'bangla': return 'উত্তর লিখুন...';
-      case 'urdu': return 'جواب داخل کریں...';
-      default: return 'Enter the answer...';
-    }
-  };
+
 
   return (
     <div
@@ -246,13 +236,7 @@ const SubQuestionEditor = ({
                         <VariableIcon className="w-5 h-5" />
                       </button>
                       
-                      <button
-                        onClick={() => setShowQuestionBank(true)}
-                        className="min-h-[44px] min-w-[44px] rounded-lg transition-colors flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        title="Question Bank"
-                      >
-                        <ArchiveBoxIcon className="w-5 h-5" />
-                      </button>
+
                       
                       <button
                         onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
@@ -264,34 +248,53 @@ const SubQuestionEditor = ({
                     </div>
                   </div>
                   
-                  {/* Contextual tools: Progressive disclosure */}
+                  {/* Table controls for mobile */}
                   {editor?.isActive('table') && (
-                    <div className="flex items-center justify-center gap-2 px-2 py-1 border-t border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
-                      <button
-                        onClick={() => editor.chain().focus().addRowAfter().run()}
-                        className="min-h-[44px] px-3 rounded-lg transition-colors flex items-center bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
-                        title="Add Row"
-                      >
-                        <PlusIcon className="w-4 h-4 mr-1" />
-                        <span className="text-sm font-medium">Row</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => editor.chain().focus().addColumnAfter().run()}
-                        className="min-h-[44px] px-3 rounded-lg transition-colors flex items-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                        title="Add Column"
-                      >
-                        <PlusIcon className="w-4 h-4 mr-1" />
-                        <span className="text-sm font-medium">Col</span>
-                      </button>
+                    <div className="border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Add</div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => editor.chain().focus().addRowAfter().run()}
+                              className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 text-xs font-medium"
+                            >
+                              +Row
+                            </button>
+                            <button
+                              onClick={() => editor.chain().focus().addColumnAfter().run()}
+                              className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50 text-xs font-medium"
+                            >
+                              +Col
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Remove</div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => editor.chain().focus().deleteRow().run()}
+                              className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs font-medium"
+                            >
+                              -Row
+                            </button>
+                            <button
+                              onClick={() => editor.chain().focus().deleteColumn().run()}
+                              className="flex-1 min-h-[40px] px-2 rounded-lg transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs font-medium"
+                            >
+                              -Col
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                       
                       <button
                         onClick={() => editor.chain().focus().deleteTable().run()}
-                        className="min-h-[44px] px-3 rounded-lg transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
-                        title="Delete Table"
+                        className="w-full mt-2 min-h-[40px] px-3 rounded-lg transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs font-medium flex items-center justify-center gap-1"
                       >
-                        <TrashIcon className="w-4 h-4 mr-1" />
-                        <span className="text-sm font-medium">Delete</span>
+                        <TrashIcon className="w-4 h-4" />
+                        Delete Table
                       </button>
                     </div>
                   )}
@@ -414,64 +417,78 @@ const SubQuestionEditor = ({
                     <VariableIcon className="w-4 h-4" />
                   </button>
                   
-                  <button
-                    onClick={() => setShowQuestionBank(true)}
-                    className="p-1.5 rounded transition-colors flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    title="Question Bank"
-                  >
-                    <ArchiveBoxIcon className="w-4 h-4" />
-                  </button>
+
                   
                   {editor?.isActive('table') && (
                     <>
-                      <div className="flex items-center gap-0.5 ml-1">
-                        <button
-                          onClick={() => editor.chain().focus().addRowAfter().run()}
-                          className="px-1.5 py-1 rounded transition-colors flex items-center bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
-                          title="Add Row"
-                        >
-                          <PlusIcon className="w-3 h-3 mr-0.5" />
-                          <span className="text-xs">R</span>
-                        </button>
-                        
-                        <button
-                          onClick={() => editor.chain().focus().addColumnAfter().run()}
-                          className="px-1.5 py-1 rounded transition-colors flex items-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                          title="Add Column"
-                        >
-                          <PlusIcon className="w-3 h-3 mr-0.5" />
-                          <span className="text-xs">C</span>
-                        </button>
-                      </div>
-                      
                       <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                       
-                      <div className="flex items-center gap-0.5">
-                        <button
-                          onClick={() => editor.chain().focus().deleteRow().run()}
-                          className="px-1.5 py-1 rounded transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
-                          title="Delete Row"
-                        >
-                          <MinusIcon className="w-3 h-3 mr-0.5" />
-                          <span className="text-xs">R</span>
-                        </button>
+                      <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded-lg">
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => editor.chain().focus().addRowBefore().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+                            title="Add Row Above"
+                          >
+                            +Row↑
+                          </button>
+                          
+                          <button
+                            onClick={() => editor.chain().focus().addRowAfter().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+                            title="Add Row Below"
+                          >
+                            +Row↓
+                          </button>
+                        </div>
                         
-                        <button
-                          onClick={() => editor.chain().focus().deleteColumn().run()}
-                          className="px-1.5 py-1 rounded transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
-                          title="Delete Column"
-                        >
-                          <MinusIcon className="w-3 h-3 mr-0.5" />
-                          <span className="text-xs">C</span>
-                        </button>
+                        <div className="w-px h-4 bg-gray-300 dark:bg-gray-500"></div>
                         
-                        <button
-                          onClick={() => editor.chain().focus().deleteTable().run()}
-                          className="p-1.5 rounded transition-colors flex items-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
-                          title="Delete Table"
-                        >
-                          <TrashIcon className="w-3 h-3" />
-                        </button>
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => editor.chain().focus().addColumnBefore().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50"
+                            title="Add Column Left"
+                          >
+                            +Col←
+                          </button>
+                          
+                          <button
+                            onClick={() => editor.chain().focus().addColumnAfter().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50"
+                            title="Add Column Right"
+                          >
+                            +Col→
+                          </button>
+                        </div>
+                        
+                        <div className="w-px h-4 bg-gray-300 dark:bg-gray-500"></div>
+                        
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => editor.chain().focus().deleteRow().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                            title="Delete Row"
+                          >
+                            -Row
+                          </button>
+                          
+                          <button
+                            onClick={() => editor.chain().focus().deleteColumn().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                            title="Delete Column"
+                          >
+                            -Col
+                          </button>
+                          
+                          <button
+                            onClick={() => editor.chain().focus().deleteTable().run()}
+                            className="px-2 py-1 rounded text-xs font-medium transition-colors bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                            title="Delete Table"
+                          >
+                            <TrashIcon className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}
@@ -485,37 +502,7 @@ const SubQuestionEditor = ({
             />
           </div>
 
-          {/* Answer Section */}
-          {subQuestion.showAnswer && (
-            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
-              <h4 className={`text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${getFontClass(sectionLanguage)}`}>
-                {sectionLanguage === 'arabic' ? 'الإجابة:' : 
-                 sectionLanguage === 'bangla' ? 'উত্তর:' :
-                 sectionLanguage === 'urdu' ? 'جواب:' : 'Answer:'}
-              </h4>
-              <textarea
-                value={subQuestion.answer || ''}
-                onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { answer: e.target.value })}
-                className={`w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
-                placeholder={getAnswerPlaceholder(sectionLanguage)}
-                rows="3"
-              />
-            </div>
-          )}
 
-          {/* Show/Hide Answer Toggle */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => updateSubQuestion(sectionId, subQuestion.id, { showAnswer: !subQuestion.showAnswer })}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                subQuestion.showAnswer
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              {subQuestion.showAnswer ? 'Hide Answer' : 'Show Answer'}
-            </button>
-          </div>
         </div>
       </div>
       
@@ -529,13 +516,7 @@ const SubQuestionEditor = ({
         />
       )}
       
-      {/* Question Bank Modal */}
-      {showQuestionBank && (
-        <QuestionBank
-          isOpen={showQuestionBank}
-          onClose={() => setShowQuestionBank(false)}
-        />
-      )}
+
     </div>
   );
 };
