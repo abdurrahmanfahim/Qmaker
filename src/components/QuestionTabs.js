@@ -52,7 +52,7 @@ const QuestionTabs = () => {
                         {...provided.draggableProps}
                         className={`flex items-center space-x-1 px-3 py-2 rounded-lg border transition-all ${
                           activeQuestionId === question.id
-                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
+                            ? 'bg-[#105654]/10 dark:bg-[#105654] border-[#105654]/30 dark:border-[#105654]'
                             : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
                         } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
                       >
@@ -63,7 +63,7 @@ const QuestionTabs = () => {
                         >
                           <span className={`text-sm font-medium ${
                             activeQuestionId === question.id
-                              ? 'text-blue-700 dark:text-blue-300'
+                              ? 'text-[#105654] dark:text-white'
                               : 'text-gray-700 dark:text-gray-300'
                           }`}>
                             {question.title}
@@ -113,7 +113,7 @@ const QuestionTabs = () => {
         
         <button
           onClick={addQuestion}
-          className="flex items-center space-x-1 px-3 py-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-800 transition-colors whitespace-nowrap"
+          className="flex items-center space-x-1 px-3 py-2 bg-emerald-500 dark:bg-emerald-600 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-700 transition-colors whitespace-nowrap shadow-sm"
         >
           <PlusIcon className="w-4 h-4" />
           <span className="text-sm font-medium">Add Question</span>

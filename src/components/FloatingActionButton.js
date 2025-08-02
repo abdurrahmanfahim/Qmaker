@@ -123,7 +123,7 @@ const FloatingActionButton = ({ onAddSection, onAddQuestion, onAddImage, onOpenT
       <button
         {...longPressProps}
         onClick={handleMainClick}
-        className={`fixed bottom-20 right-4 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-200 hover:scale-110 active:scale-95 md:hidden ${
+        className={`fixed bottom-20 right-4 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-200 hover:scale-110 active:scale-95 md:hidden ${
           isExpanded ? 'rotate-45' : ''
         }`}
       >

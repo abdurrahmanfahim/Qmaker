@@ -7,6 +7,7 @@ import SectionEditor from './components/SectionEditor';
 import LazyPreviewPanel from './components/LazyPreviewPanel';
 import ErrorBoundary from './components/ErrorBoundary';
 import WelcomeScreen from './components/WelcomeScreen';
+import { EditorProvider } from './contexts/EditorContext';
 import './styles/typography.css';
 
 function App() {
@@ -43,22 +44,24 @@ function App() {
         Skip to main content
       </a>
       <ErrorBoundary fallbackMessage="Application error occurred.">
-        <Layout>
+        <EditorProvider>
+          <Layout>
           <Header />
           <main id="main-content" className="flex-1 flex flex-col overflow-hidden" role="main" aria-label="Question paper editor">
-            <MetadataPanel />
+            {!previewMode && <MetadataPanel />}
             <div className="flex-1 flex overflow-hidden">
               <div className="flex-1 flex flex-col overflow-hidden">
                 <SectionEditor />
               </div>
               {previewMode && (
-                <aside className="w-full md:w-1/2 border-l border-gray-200" role="complementary" aria-label="Question paper preview">
+                <aside className="w-full md:w-1/2 border-l border-gray-200">
                   <LazyPreviewPanel />
                 </aside>
               )}
             </div>
           </main>
-        </Layout>
+          </Layout>
+        </EditorProvider>
       </ErrorBoundary>
     </div>
   );

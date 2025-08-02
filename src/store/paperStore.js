@@ -115,7 +115,6 @@ const usePaperStore = create(
        * @param {Object} metadata - Updated metadata object
        */
       setMetadata: (metadata) => {
-        get().saveToHistory();
         set({ metadata });
       },
       /**
@@ -165,7 +164,6 @@ const usePaperStore = create(
        * Automatically sets the new section as active
        */
       addSection: () => {
-        get().saveToHistory();
         const getSectionTitle = (index, language) => {
           const ordinals = {
             english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
@@ -218,7 +216,6 @@ const usePaperStore = create(
        * @param {string} sectionId - ID of section to delete
        */
       deleteSection: (sectionId) => {
-        get().saveToHistory();
         set(state => {
           const newSections = state.sections.filter(s => s.id !== sectionId);
           return {
@@ -234,7 +231,10 @@ const usePaperStore = create(
        * @param {Object} updates - Properties to update
        */
       updateSection: (sectionId, updates) => {
-        get().saveToHistory();
+        // Only save to history for text content changes
+        if (updates.title) {
+          get().saveToHistory();
+        }
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId ? { ...s, ...updates } : s
@@ -259,7 +259,6 @@ const usePaperStore = create(
        * @param {Object|null} template - Optional template with predefined content
        */
       addSubQuestion: (sectionId, template = null) => {
-        get().saveToHistory();
         const section = get().sections.find(s => s.id === sectionId);
         if (!section) return;
 
@@ -301,7 +300,10 @@ const usePaperStore = create(
        * @param {Object} updates - Properties to update
        */
       updateSubQuestion: (sectionId, subQuestionId, updates) => {
-        get().saveToHistory();
+        // Only save to history for text content changes
+        if (updates.content || updates.heading) {
+          get().saveToHistory();
+        }
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId 
@@ -322,7 +324,6 @@ const usePaperStore = create(
        * @param {string} subQuestionId - Sub-question ID to delete
        */
       deleteSubQuestion: (sectionId, subQuestionId) => {
-        get().saveToHistory();
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId 

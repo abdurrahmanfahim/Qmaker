@@ -191,7 +191,7 @@ const HamburgerMenu = () => {
                           key={itemIndex}
                           onClick={item.action}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                            item.active ? 'bg-[#09302f] text-white hover:bg-[#072625]' : 'text-gray-700 dark:text-gray-300'
+                            item.active ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'text-gray-700 dark:text-gray-300'
                           }`}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />

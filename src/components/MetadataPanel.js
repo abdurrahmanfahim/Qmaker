@@ -38,7 +38,7 @@ const MetadataPanel = () => {
               </span>
               <button
                 onClick={() => setIsExpanded(true)}
-                className="text-sm text-[#09302f] hover:text-[#072625] font-medium px-3 py-1 rounded"
+                className="text-sm text-[#09302f] hover:text-[#072625] dark:text-[#4ade80] dark:hover:text-[#22c55e] font-medium px-3 py-1 rounded"
                 aria-label="Edit paper information"
               >
                 Edit
@@ -51,7 +51,7 @@ const MetadataPanel = () => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Paper Information</h3>
                   <button
                     onClick={() => setIsExpanded(false)}
-                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-3 py-1 rounded"
+                    className="text-sm bg-[#09302f] text-white hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] font-medium px-3 py-1 rounded"
                   >
                     Done
                   </button>

@@ -12,13 +12,17 @@ import {
   BoldIcon,
   ItalicIcon,
   UnderlineIcon,
-  EllipsisVerticalIcon,
   Bars3BottomLeftIcon,
   Bars3Icon,
   Bars3BottomRightIcon,
-  TableCellsIcon
+  TableCellsIcon,
+  NumberedListIcon,
+  EllipsisHorizontalIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
+import { useEditorContext } from '../contexts/EditorContext';
+
+
 
 const SubQuestionEditor = ({ 
   subQuestion, 
@@ -28,26 +32,48 @@ const SubQuestionEditor = ({
   onClick 
 }) => {
   const { updateSubQuestion, deleteSubQuestion } = usePaperStore();
-  const [showMenu, setShowMenu] = useState(false);
-  const [textAlign, setTextAlign] = useState('left');
+  const { setActiveEditor } = useEditorContext();
+
   const [showTableModal, setShowTableModal] = useState(false);
-  const menuRef = useRef(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'saving', 'saved', 'error'
+  const moreMenuRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowMenu(false);
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
+        setShowMoreMenu(false);
       }
     };
 
-    if (showMenu) {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setShowMoreMenu(false);
+      }
+    };
+
+
+    
+    if (showMoreMenu) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showMenu]);
+  }, [showMoreMenu]);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
   
 
 
@@ -64,14 +90,30 @@ const SubQuestionEditor = ({
       TableRow,
       TableHeader,
       TableCell,
+
     ],
     content: subQuestion.content,
     onUpdate: ({ editor }) => {
-      try {
-        updateSubQuestion(sectionId, subQuestion.id, { content: editor.getHTML() });
-      } catch (error) {
-        console.error('Failed to save question content:', error);
+      setSaveStatus('saving');
+      
+      // Clear existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
+      
+      // Debounced save
+      saveTimeoutRef.current = setTimeout(() => {
+        try {
+          updateSubQuestion(sectionId, subQuestion.id, { content: editor.getHTML() });
+          setSaveStatus('saved');
+        } catch (error) {
+          console.error('Failed to save question content:', error);
+          setSaveStatus('error');
+        }
+      }, 500);
+    },
+    onFocus: () => {
+      setActiveEditor(editor);
     },
     onError: (error) => {
       console.error('Editor error:', error);
@@ -100,69 +142,98 @@ const SubQuestionEditor = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg border transition-colors ${
-        isActive ? 'border-[#09302f] shadow-sm' : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+      className={`bg-white dark:bg-gray-800 rounded-xl border-2 transition-all duration-300 focus-within:ring-4 focus-within:ring-[#09302f] focus-within:ring-opacity-20 ${
+        isActive 
+          ? 'border-[#09302f] shadow-xl dark:border-[#4ade80] transform scale-[1.02]' 
+          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-lg hover:transform hover:scale-[1.01]'
       }`}
       onClick={onClick}
+      role="article"
+      aria-label={`Question ${subQuestion.label}`}
     >
-      <div className="p-2 sm:p-4">
+      <div className="p-4 sm:p-6">
         <div className="space-y-6">
           {/* Question Header */}
-          <div className={`flex items-start gap-4 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
-            <div className="flex-shrink-0">
-              <span className="inline-flex items-center justify-center w-10 h-10 bg-[#09302f] text-white rounded-full text-sm font-semibold">
-                {subQuestion.label}
-              </span>
+          <div className="space-y-4">
+            <div className={`flex items-center gap-4 ${['arabic', 'urdu'].includes(sectionLanguage) ? 'flex-row-reverse' : ''}`}>
+              {/* Question Label */}
+              <div className="flex-shrink-0">
+                <span className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#09302f] to-[#072625] dark:from-[#4ade80] dark:to-[#22c55e] text-white dark:text-gray-900 rounded-lg text-sm font-bold shadow-md" aria-hidden="true">
+                  {subQuestion.label}
+                </span>
+              </div>
+              
+              {/* Spacer */}
+              <div className="flex-1"></div>
+              
+              {/* Marks Input */}
+              <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700/50 rounded px-2 border border-gray-200 dark:border-gray-600" style={{ minHeight: '40px' }}>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Marks</span>
+                <input
+                  type="number"
+                  onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { marks: e.target.value === '' ? '' : parseInt(e.target.value) || 0 })}
+                  className={`w-8 px-1 py-1 border-0 rounded text-sm font-bold text-center appearance-none bg-transparent text-gray-900 dark:text-white focus:outline-none ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
+                  style={{ MozAppearance: 'textfield' }}
+                  placeholder="5"
+                  min="0"
+                  max="99"
+                />
+              </div>
+              
+              {/* Delete Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const confirmDelete = window.confirm(
+                    `Are you sure you want to delete Question ${subQuestion.label}?\n\nThis action cannot be undone.`
+                  );
+                  if (confirmDelete) {
+                    try {
+                      deleteSubQuestion(sectionId, subQuestion.id);
+                    } catch (error) {
+                      alert('Failed to delete question. Please try again.');
+                      console.error('Delete error:', error);
+                    }
+                  }
+                }}
+                className="flex-shrink-0 text-red-500 hover:text-white hover:bg-red-500 dark:text-red-400 dark:hover:text-white dark:hover:bg-red-500 transition-all duration-200 touch-manipulation flex items-center justify-center rounded-lg focus:ring-2 focus:ring-red-400 focus:outline-none transform hover:scale-105 active:scale-95 border border-red-200 dark:border-red-600 hover:border-red-500"
+                style={{ minWidth: '36px', minHeight: '36px' }}
+                aria-label={`Delete Question ${subQuestion.label}`}
+                title="Delete Question"
+              >
+                <TrashIcon className="w-4 h-4" />
+              </button>
             </div>
             
-            <div className="flex-1 min-w-0">
+            <div className="relative">
               <input
                 type="text"
                 value={subQuestion.heading}
                 onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { heading: e.target.value })}
-                className={`w-full px-2 py-2 border-0 focus:outline-none text-base bg-transparent text-gray-900 dark:text-gray-100 ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+                className={`w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] rounded-lg text-base font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
                 placeholder={getQuestionPlaceholder(sectionLanguage)}
+                aria-label={`Question ${subQuestion.label} heading`}
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey)) {
+                    if (e.key === 'z' && !e.shiftKey) {
+                      e.preventDefault();
+                      document.execCommand('undo');
+                    } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
+                      e.preventDefault();
+                      document.execCommand('redo');
+                    }
+                  }
+                }}
               />
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                value={subQuestion.marks}
-                onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { marks: parseInt(e.target.value) || 0 })}
-                className={`w-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs text-center appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
-                style={{ MozAppearance: 'textfield' }}
-                placeholder="5"
-                min="0"
-                max="99"
-              />
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMenu(!showMenu);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center justify-center w-6 h-6"
-                  aria-label="More options"
-                >
-                  <EllipsisVerticalIcon className="w-3 h-3" />
-                </button>
-                {showMenu && (
-                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded shadow-lg z-10 min-w-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm('Delete this question?')) {
-                          deleteSubQuestion(sectionId, subQuestion.id);
-                        }
-                        setShowMenu(false);
-                      }}
-                      className="w-full px-2 py-1 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-1 text-xs"
-                    >
-                      <TrashIcon className="w-3 h-3" />
-                      Delete
-                    </button>
-                  </div>
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                {saveStatus === 'saving' && (
+                  <div className="w-3 h-3 border border-[#09302f] border-t-transparent rounded-full animate-spin" aria-hidden="true"></div>
+                )}
+                {saveStatus === 'saved' && (
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" aria-hidden="true" title="Saved"></div>
+                )}
+                {saveStatus === 'error' && (
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" aria-hidden="true" title="Save failed"></div>
                 )}
               </div>
             </div>
@@ -170,48 +241,48 @@ const SubQuestionEditor = ({
 
           {/* Rich Text Editor */}
           <div>
-            <div className="border border-gray-300 dark:border-gray-500 rounded-lg overflow-hidden">
+            <div className="border-2 border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden shadow-inner">
             {editor ? (
-              <div className="border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
-                <div className="flex items-center gap-1 p-1">
+              <div className="border-b-2 border-gray-200 dark:border-gray-600 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                <div className="flex items-center gap-2 p-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                   <button
                     onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={`p-2 rounded transition-colors ${
+                    className={`p-2 rounded-lg transition-all duration-200 touch-manipulation transform hover:scale-110 active:scale-95 ${
                       editor.isActive('bold') 
-                        ? 'bg-[#09302f] text-white' 
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900 shadow-lg' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-md focus:ring-2 focus:ring-[#09302f] focus:outline-none'
                     }`}
                     aria-label="Bold text"
                     aria-pressed={editor.isActive('bold')}
-                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    style={{ minWidth: '44px', minHeight: '44px' }}
                   >
                     <BoldIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   
                   <button
                     onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={`p-1 rounded transition-colors ${
+                    className={`p-2 rounded-lg transition-colors touch-manipulation ${
                       editor.isActive('italic') 
-                        ? 'bg-[#09302f] text-white' 
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none'
                     }`}
                     aria-label="Italic text"
                     aria-pressed={editor.isActive('italic')}
-                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    style={{ minWidth: '44px', minHeight: '44px' }}
                   >
                     <ItalicIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   
                   <button
                     onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={`p-1 rounded transition-colors ${
+                    className={`p-2 rounded-lg transition-colors touch-manipulation ${
                       editor.isActive('underline') 
-                        ? 'bg-[#09302f] text-white' 
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none'
                     }`}
                     aria-label="Underline text"
                     aria-pressed={editor.isActive('underline')}
-                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    style={{ minWidth: '44px', minHeight: '44px' }}
                   >
                     <UnderlineIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -227,15 +298,14 @@ const SubQuestionEditor = ({
                                        currentAlign === 'center' ? 'right' : 'left';
                       
                       editor.chain().focus().setTextAlign(nextAlign).run();
-                      setTextAlign(nextAlign);
                     }}
-                    className={`p-2 rounded transition-colors ${
+                    className={`p-2 rounded-lg transition-colors touch-manipulation ${
                       editor?.isActive({ textAlign: 'center' }) || editor?.isActive({ textAlign: 'right' })
-                        ? 'bg-[#09302f] text-white'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none'
                     }`}
                     aria-label="Toggle text alignment"
-                    style={{ minWidth: '40px', minHeight: '40px' }}
+                    style={{ minWidth: '44px', minHeight: '44px' }}
                   >
                     {editor?.isActive({ textAlign: 'center' }) ? (
                       <Bars3Icon className="w-4 h-4" aria-hidden="true" />
@@ -249,33 +319,93 @@ const SubQuestionEditor = ({
                   <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                   
                   <button
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    className={`p-2 rounded-lg transition-colors touch-manipulation ${
+                      editor.isActive('orderedList') 
+                        ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none'
+                    }`}
+                    aria-label="Numbered list"
+                    style={{ minWidth: '44px', minHeight: '44px' }}
+                  >
+                    <NumberedListIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                  
+                  <button
                     onClick={() => setShowTableModal(true)}
-                    className="p-1 rounded transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
                     aria-label="Insert table"
-                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    style={{ minWidth: '44px', minHeight: '44px' }}
                   >
                     <TableCellsIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
+                  
+                  <div className="relative" ref={moreMenuRef}>
+                    <button
+                      onClick={() => setShowMoreMenu(!showMoreMenu)}
+                      className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+                      aria-label="More formatting options"
+                      aria-expanded={showMoreMenu}
+                      aria-haspopup="menu"
+                      style={{ minWidth: '44px', minHeight: '44px' }}
+                    >
+                      <EllipsisHorizontalIcon className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                    
+                    {showMoreMenu && (
+                      <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl z-20 min-w-48 py-1" role="menu" aria-label="Formatting options">
+                        <button
+                          onClick={() => { editor.chain().focus().toggleStrike().run(); setShowMoreMenu(false); }}
+                          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none touch-manipulation"
+                          role="menuitem"
+                          tabIndex={0}
+                        >
+                          <span className="line-through font-bold text-base">S</span> Strikethrough
+                        </button>
+                        <button
+                          onClick={() => { editor.chain().focus().insertContent('<hr>').run(); setShowMoreMenu(false); }}
+                          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none touch-manipulation"
+                          role="menuitem"
+                          tabIndex={0}
+                        >
+                          <span className="text-base">───</span> Horizontal Rule
+                        </button>
+
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 p-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-[#09302f] border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Loading editor...</span>
+              <div className="border-b-2 border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 p-4" role="status" aria-live="polite">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-5 h-5 border-2 border-[#09302f] border-t-transparent rounded-full animate-spin" aria-hidden="true"></div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Loading editor...</span>
+                </div>
+                <div className="mt-3 space-y-2">
+                  <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded animate-pulse w-3/4"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded animate-pulse w-1/2"></div>
                 </div>
               </div>
             )}
             
-            <EditorContent 
-              editor={editor} 
-              className={`prose prose-sm max-w-none p-4 sm:p-6 min-h-[120px] sm:min-h-[140px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-base leading-relaxed ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
-              style={{ textAlign: 'inherit' }}
-              role="textbox"
-              aria-label="Question content editor"
-              aria-multiline="true"
-              spellCheck="true"
-            />
+            <div>
+              <EditorContent 
+                editor={editor} 
+                className={`prose prose-sm max-w-none p-4 min-h-[120px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-base leading-relaxed ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+                style={{ textAlign: 'inherit' }}
+                role="textbox"
+                aria-label={`Question content editor for ${subQuestion.label}`}
+                aria-multiline="true"
+                aria-describedby={`question-${subQuestion.id}-help`}
+                spellCheck="true"
+
+              />
+            </div>
+            <div id={`question-${subQuestion.id}-help`} className="sr-only">
+              Use the toolbar above to format your question content. Press Tab to navigate between tools.
+            </div>
           </div>
           </div>
         </div>
@@ -317,61 +447,55 @@ const SubQuestionEditor = ({
                 />
                 <label htmlFor="table-header" className="text-sm text-gray-700 dark:text-gray-300">Include header row</label>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="table-listing"
-                  className="mr-2"
-                  defaultChecked
-                />
-                <label htmlFor="table-listing" className="text-sm text-gray-700 dark:text-gray-300">With listing (a, b, c...)</label>
-              </div>
+
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={() => setShowTableModal(false)}
-                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-lg transition-colors focus:ring-2 focus:ring-gray-300 focus:outline-none touch-manipulation"
               >
                 Cancel
               </button>
               <button
                 onClick={() => {
-                  const rows = parseInt(document.getElementById('table-rows').value);
-                  const cols = parseInt(document.getElementById('table-cols').value);
-                  const withHeader = document.getElementById('table-header').checked;
-                  const withListing = document.getElementById('table-listing').checked;
-                  
-                  editor.chain().focus().insertTable({ rows, cols, withHeaderRow: false }).run();
-                  
-                  setTimeout(() => {
-                    if (withListing) {
-                      const letters = sectionLanguage === 'arabic' ? ['أ', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ي'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
-                      const tables = editor.view.dom.querySelectorAll('table');
-                      const table = tables[tables.length - 1];
-                      const cells = table.querySelectorAll('td');
-                      for (let i = 0; i < cells.length; i++) {
-                        cells[i].innerHTML = `<p>${letters[i] || (i + 1)}.</p>`;
-                      }
+                  try {
+                    const rows = parseInt(document.getElementById('table-rows').value);
+                    const cols = parseInt(document.getElementById('table-cols').value);
+
+                    
+                    if (rows < 1 || cols < 1 || rows > 10 || cols > 10) {
+                      alert('Please enter valid table dimensions (1-10 rows and columns)');
+                      return;
                     }
                     
-                    const table = editor.view.dom.querySelector('table:last-of-type');
-                    const addRowBtn = document.createElement('button');
-                    addRowBtn.className = 'table-add-row';
-                    addRowBtn.innerHTML = '+';
-                    addRowBtn.onclick = () => editor.chain().focus().addRowAfter().run();
+                    editor.chain().focus().insertTable({ rows, cols, withHeaderRow: document.getElementById('table-header').checked }).run();
                     
-                    const addColBtn = document.createElement('button');
-                    addColBtn.className = 'table-add-col';
-                    addColBtn.innerHTML = '+';
-                    addColBtn.onclick = () => editor.chain().focus().addColumnAfter().run();
+                    setTimeout(() => {
+                      // Add hover controls for table expansion
+                      const table = document.querySelector('.ProseMirror table:last-of-type');
+                      if (table && !table.querySelector('.table-add-row')) {
+                        const addRowBtn = document.createElement('button');
+                        addRowBtn.className = 'table-add-row';
+                        addRowBtn.innerHTML = '+';
+                        addRowBtn.onclick = () => editor.chain().focus().addRowAfter().run();
+                        
+                        const addColBtn = document.createElement('button');
+                        addColBtn.className = 'table-add-col';
+                        addColBtn.innerHTML = '+';
+                        addColBtn.onclick = () => editor.chain().focus().addColumnAfter().run();
+                        
+                        table.appendChild(addRowBtn);
+                        table.appendChild(addColBtn);
+                      }
+                    }, 500);
                     
-                    table.appendChild(addRowBtn);
-                    table.appendChild(addColBtn);
-                  }, 100);
-                  
-                  setShowTableModal(false);
+                    setShowTableModal(false);
+                  } catch (error) {
+                    alert('Failed to insert table. Please try again.');
+                    console.error('Table insertion error:', error);
+                  }
                 }}
-                className="px-4 py-2 bg-[#09302f] text-white rounded hover:bg-[#072625]"
+                className="px-6 py-2 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none touch-manipulation"
               >
                 Insert
               </button>

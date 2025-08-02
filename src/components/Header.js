@@ -6,14 +6,14 @@
  * @since 2024
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { 
-  CheckCircleIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
+import { useEditorContext } from '../contexts/EditorContext';
 import HamburgerMenu from './HamburgerMenu';
 
 /**
@@ -22,19 +22,15 @@ import HamburgerMenu from './HamburgerMenu';
  * @returns {JSX.Element} Rendered header component
  */
 const Header = () => {
-  const [autoSaveStatus, setAutoSaveStatus] = useState('saved');
-  
   const { 
     exportData,
     metadata,
     sections,
     previewMode,
-    togglePreviewMode,
-    undo,
-    redo,
-    canUndo,
-    canRedo
+    togglePreviewMode
   } = usePaperStore();
+  
+  const { activeEditor } = useEditorContext();
 
   // Simple auto-save
   useEffect(() => {
@@ -42,50 +38,36 @@ const Header = () => {
       try {
         const data = exportData();
         localStorage.setItem('qmaker-autosave', JSON.stringify(data));
-        setAutoSaveStatus('saved');
       } catch (error) {
         console.error('Auto-save failed:', error);
-        setAutoSaveStatus('error');
       }
     }, 2000);
     return () => clearTimeout(timer);
   }, [metadata, sections, exportData]);
 
-  // Keyboard shortcuts for undo/redo
+  // Keyboard shortcuts for editor undo/redo
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z' && !e.shiftKey) {
           e.preventDefault();
-          if (canUndo()) undo();
+          if (activeEditor && activeEditor.can().undo()) {
+            activeEditor.chain().focus().undo().run();
+          }
         } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
           e.preventDefault();
-          if (canRedo()) redo();
+          if (activeEditor && activeEditor.can().redo()) {
+            activeEditor.chain().focus().redo().run();
+          }
         }
       }
     };
     
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, canUndo, canRedo]);
+  }, [activeEditor]);
 
-  // Keyboard shortcuts for undo/redo
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z' && !e.shiftKey) {
-          e.preventDefault();
-          if (canUndo()) undo();
-        } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
-          e.preventDefault();
-          if (canRedo()) redo();
-        }
-      }
-    };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, canUndo, canRedo]);
+
 
 
 
@@ -95,34 +77,62 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo & Status */}
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-[#09302f] dark:text-[#d59145] tracking-tight">
-              <span className="sm:hidden">Q</span>
-              <span className="hidden sm:inline">Qmaker</span>
-            </h1>
+            <div className="flex items-center">
+              <img 
+                src="/images/logo/QMaker-logo-sm-primary.png" 
+                alt="Qmaker" 
+                className="h-8 w-auto sm:hidden dark:hidden"
+              />
+              <img 
+                src="/images/logo/QMaker-logo-sm.png" 
+                alt="Qmaker" 
+                className="h-8 w-auto sm:hidden hidden dark:block"
+              />
+              <img 
+                src="/images/logo/QMaker-logo-lg-primary.png" 
+                alt="Qmaker" 
+                className="h-8 w-auto hidden sm:block dark:hidden"
+              />
+              <img 
+                src="/images/logo/QMaker-logo-lg.png" 
+                alt="Qmaker" 
+                className="h-8 w-auto hidden sm:dark:block"
+              />
+            </div>
 
           </div>
         
           {/* Actions */}
           <div className="flex items-center gap-2">
             {/* Undo/Redo */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <button
-                onClick={undo}
-                disabled={!canUndo()}
-                className="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Undo last action"
-                title="Undo (Ctrl+Z)"
+                onClick={() => {
+                  if (activeEditor && activeEditor.can().undo()) {
+                    activeEditor.chain().focus().undo().run();
+                  }
+                }}
+                disabled={!activeEditor || !activeEditor.can().undo()}
+                className="p-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation active:scale-95 shadow-sm hover:shadow-md"
+                aria-label="Undo text changes"
+                title="Undo"
+                style={{ minWidth: '48px', minHeight: '48px' }}
               >
-                <ArrowUturnLeftIcon className="w-4 h-4" />
+                <ArrowUturnLeftIcon className="w-5 h-5" />
               </button>
               <button
-                onClick={redo}
-                disabled={!canRedo()}
-                className="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Redo last action"
-                title="Redo (Ctrl+Y)"
+                onClick={() => {
+                  if (activeEditor && activeEditor.can().redo()) {
+                    activeEditor.chain().focus().redo().run();
+                  }
+                }}
+                disabled={!activeEditor || !activeEditor.can().redo()}
+                className="p-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation active:scale-95 shadow-sm hover:shadow-md"
+                aria-label="Redo text changes"
+                title="Redo"
+                style={{ minWidth: '48px', minHeight: '48px' }}
               >
-                <ArrowUturnRightIcon className="w-4 h-4" />
+                <ArrowUturnRightIcon className="w-5 h-5" />
               </button>
             </div>
             
@@ -131,7 +141,7 @@ const Header = () => {
               onClick={togglePreviewMode}
               className={`p-2 rounded-lg transition-colors ${
                 previewMode 
-                  ? 'bg-[#09302f] text-white shadow-sm' 
+                  ? 'bg-[#09302f] dark:bg-[#4ade80] text-white dark:text-gray-900 shadow-sm' 
                   : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
               }`}
               aria-label={previewMode ? 'Exit preview mode' : 'Enter preview mode'}

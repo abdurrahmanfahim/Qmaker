@@ -5,8 +5,7 @@ import {
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import SubQuestionEditor from './SubQuestionEditor';
-import TemplateSelector from './TemplateSelector';
-import TemplateModal from './TemplateModal';
+
 
 const SectionEditor = () => {
   const { 
@@ -23,7 +22,7 @@ const SectionEditor = () => {
     setActiveSubQuestion
   } = usePaperStore();
 
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
+
 
   const activeSection = sections.find(s => s.id === activeSectionId);
 
@@ -74,12 +73,7 @@ const SectionEditor = () => {
   };
 
   const handleAddSubQuestion = () => {
-    setShowTemplateModal(true);
-  };
-
-  const handleTemplateSelect = (template) => {
-    addSubQuestion(activeSectionId, template);
-    setShowTemplateModal(false);
+    addSubQuestion(activeSectionId);
   };
 
 
@@ -94,17 +88,11 @@ const SectionEditor = () => {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowLeft' && index > 0) {
-                    setActiveSection(sections[index - 1].id);
-                  } else if (e.key === 'ArrowRight' && index < sections.length - 1) {
-                    setActiveSection(sections[index + 1].id);
-                  }
-                }}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${
+
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
                   section.id === activeSectionId
-                    ? 'bg-[#09302f] text-white shadow-sm'
-                    : 'text-gray-700 dark:text-gray-200 hover:text-[#09302f] hover:bg-white dark:hover:bg-gray-600'
+                    ? 'bg-[#09302f] text-white shadow-lg dark:bg-[#4ade80] dark:text-gray-900 transform scale-105'
+                    : 'text-gray-700 dark:text-gray-200 hover:text-[#09302f] hover:bg-white dark:hover:bg-gray-600 hover:shadow-md'
                 }`}
                 role="tab"
                 aria-selected={section.id === activeSectionId}
@@ -134,7 +122,7 @@ const SectionEditor = () => {
                   console.error('Failed to add section:', error);
                 }
               }}
-              className="px-3 py-2 text-[#d59145] hover:bg-white dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
+              className="px-4 py-3 text-[#09302f] dark:text-[#4ade80] hover:bg-white dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none hover:shadow-md"
               aria-label="Add new section"
             >
               + Add Section
@@ -160,7 +148,7 @@ const SectionEditor = () => {
                 </p>
                 <button
                   onClick={handleAddSubQuestion}
-                  className="px-6 py-2 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] text-sm font-medium transition-colors mx-auto block"
+                  className="px-8 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] text-sm font-semibold transition-all duration-200 mx-auto block shadow-lg hover:shadow-xl transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none touch-manipulation"
                 >
                   {getEmptyStateText(metadata.language).addSubQuestion}
                 </button>
@@ -190,7 +178,7 @@ const SectionEditor = () => {
                           console.error('Failed to add question:', error);
                         }
                       }}
-                      className="px-6 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] text-sm font-semibold transition-colors"
+                      className="px-6 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none touch-manipulation"
                       aria-label="Add new question to this section"
                     >
                       Add Question
@@ -223,12 +211,7 @@ const SectionEditor = () => {
         </div>
       )}
       
-      <TemplateModal
-        isOpen={showTemplateModal}
-        onClose={() => setShowTemplateModal(false)}
-        onSelect={handleTemplateSelect}
-        language={metadata.language}
-      />
+
     </div>
   );
 };
