@@ -40,7 +40,18 @@ const usePaperStore = create(
         {
           id: uuidv4(), // Unique identifier for each section
           title: 'First Question', // Section heading
-          subQuestions: [] // Array of sub-questions within this section
+          subQuestions: [
+            {
+              id: uuidv4(),
+              label: '(ক)',
+              heading: '',
+              content: '<p></p>',
+              marks: 5,
+              showAnswer: false,
+              answer: '',
+              type: 'text'
+            }
+          ] // Array of sub-questions within this section
         }
       ],
 

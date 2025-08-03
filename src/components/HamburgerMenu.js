@@ -7,13 +7,15 @@ import {
   DocumentArrowDownIcon,
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { exportToPDF } from '../utils/pdfExport';
 
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showPaperInfo, setShowPaperInfo] = useState(false);
   const menuRef = useRef(null);
   
   const {
@@ -21,6 +23,7 @@ const HamburgerMenu = () => {
     toggleDarkMode,
     metadata,
     setLanguage,
+    setMetadata,
     exportData,
     importData
   } = usePaperStore();
@@ -92,6 +95,16 @@ const HamburgerMenu = () => {
   };
 
   const menuItems = [
+    {
+      section: 'Paper',
+      items: [
+        {
+          icon: DocumentTextIcon,
+          label: 'Paper Info',
+          action: () => setShowPaperInfo(true)
+        }
+      ]
+    },
     {
       section: 'Export',
       items: [
@@ -210,6 +223,105 @@ const HamburgerMenu = () => {
                   <span>Qmaker v1.0.0</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Paper Info Modal */}
+      {showPaperInfo && (
+        <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Paper Information</h3>
+                <button
+                  onClick={() => setShowPaperInfo(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto flex-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
+                <input
+                  type="text"
+                  value={metadata.subject || ''}
+                  onChange={(e) => setMetadata({ ...metadata, subject: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="Mathematics"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
+                <input
+                  type="text"
+                  value={metadata.className || ''}
+                  onChange={(e) => setMetadata({ ...metadata, className: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="Class 10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">School Name</label>
+                <input
+                  type="text"
+                  value={metadata.schoolName || ''}
+                  onChange={(e) => setMetadata({ ...metadata, schoolName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="School/Institution Name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Exam Name</label>
+                <input
+                  type="text"
+                  value={metadata.examName || ''}
+                  onChange={(e) => setMetadata({ ...metadata, examName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="First Term Examination 2024"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={metadata.date || ''}
+                  onChange={(e) => setMetadata({ ...metadata, date: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time</label>
+                <input
+                  type="text"
+                  value={metadata.duration || ''}
+                  onChange={(e) => setMetadata({ ...metadata, duration: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="3 hours"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Marks</label>
+                <input
+                  type="number"
+                  value={metadata.fullMarks || ''}
+                  onChange={(e) => setMetadata({ ...metadata, fullMarks: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="100"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowPaperInfo(false)}
+                className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>

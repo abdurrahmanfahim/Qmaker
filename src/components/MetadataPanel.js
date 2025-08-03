@@ -29,7 +29,7 @@ const MetadataPanel = () => {
   return (
     <>
       {/* Clean Info Bar */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hidden md:block">
         <div className="px-6 py-2">
           {!isExpanded ? (
             <div className="flex items-center justify-between">

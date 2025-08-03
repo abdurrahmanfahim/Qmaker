@@ -41,8 +41,12 @@ const MobileEditor = ({ content, onChange, placeholder = "Type your question..."
         }
         
         if (editorRef.current) {
+          const sanitizedTranscript = transcript.replace(/[<>"'&]/g, (match) => {
+            const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+            return entities[match];
+          });
           const currentContent = editorRef.current.innerHTML;
-          editorRef.current.innerHTML = currentContent + transcript;
+          editorRef.current.innerHTML = currentContent + sanitizedTranscript;
           onChange(editorRef.current.innerHTML);
         }
       };

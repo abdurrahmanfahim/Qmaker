@@ -774,6 +774,22 @@
   pointer-events: none;
 }
 
+/* Mobile-friendly table column resizing */
+@media (max-width: 768px) {
+  .ProseMirror table .column-resize-handle {
+    width: 12px;
+    right: -6px;
+    background-color: #3b82f6;
+    opacity: 0.8;
+    touch-action: pan-x;
+  }
+  
+  .ProseMirror table .column-resize-handle:active {
+    background-color: #2563eb;
+    opacity: 1;
+  }
+}
+
 .ProseMirror table p {
   margin: 0;
 }

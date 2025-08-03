@@ -17,7 +17,7 @@ import {
   Bars3BottomRightIcon,
   TableCellsIcon,
   NumberedListIcon,
-  EllipsisHorizontalIcon
+
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { useEditorContext } from '../contexts/EditorContext';
@@ -35,36 +35,10 @@ const SubQuestionEditor = ({
   const { setActiveEditor } = useEditorContext();
 
   const [showTableModal, setShowTableModal] = useState(false);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saving', 'saved', 'error'
-  const moreMenuRef = useRef(null);
   const saveTimeoutRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
-        setShowMoreMenu(false);
-      }
-    };
 
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setShowMoreMenu(false);
-      }
-    };
-
-
-    
-    if (showMoreMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showMoreMenu]);
   
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -107,7 +81,7 @@ const SubQuestionEditor = ({
           updateSubQuestion(sectionId, subQuestion.id, { content: editor.getHTML() });
           setSaveStatus('saved');
         } catch (error) {
-          console.error('Failed to save question content:', error);
+          console.error('Failed to save question content:', encodeURIComponent(error.message));
           setSaveStatus('error');
         }
       }, 500);
@@ -340,40 +314,28 @@ const SubQuestionEditor = ({
                     <TableCellsIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   
-                  <div className="relative" ref={moreMenuRef}>
-                    <button
-                      onClick={() => setShowMoreMenu(!showMoreMenu)}
-                      className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
-                      aria-label="More formatting options"
-                      aria-expanded={showMoreMenu}
-                      aria-haspopup="menu"
-                      style={{ minWidth: '44px', minHeight: '44px' }}
-                    >
-                      <EllipsisHorizontalIcon className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                    
-                    {showMoreMenu && (
-                      <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl z-20 min-w-48 py-1" role="menu" aria-label="Formatting options">
-                        <button
-                          onClick={() => { editor.chain().focus().toggleStrike().run(); setShowMoreMenu(false); }}
-                          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none touch-manipulation"
-                          role="menuitem"
-                          tabIndex={0}
-                        >
-                          <span className="line-through font-bold text-base">S</span> Strikethrough
-                        </button>
-                        <button
-                          onClick={() => { editor.chain().focus().insertContent('<hr>').run(); setShowMoreMenu(false); }}
-                          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none touch-manipulation"
-                          role="menuitem"
-                          tabIndex={0}
-                        >
-                          <span className="text-base">───</span> Horizontal Rule
-                        </button>
-
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => editor.chain().focus().toggleStrike().run()}
+                    className={`p-2 rounded-lg transition-colors touch-manipulation ${
+                      editor.isActive('strike') 
+                        ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none'
+                    }`}
+                    aria-label="Strikethrough text"
+                    aria-pressed={editor.isActive('strike')}
+                    style={{ minWidth: '44px', minHeight: '44px' }}
+                  >
+                    <span className="line-through font-bold text-sm" aria-hidden="true">S</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => editor.chain().focus().insertContent('<hr>').run()}
+                    className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+                    aria-label="Insert horizontal rule"
+                    style={{ minWidth: '44px', minHeight: '44px' }}
+                  >
+                    <span className="text-sm" aria-hidden="true">───</span>
+                  </button>
                 </div>
               </div>
             ) : (
