@@ -38,10 +38,10 @@
   "scripts": {
     "start": "react-scripts start",
     "start:mobile": "set HOST=0.0.0.0&& react-scripts start",
-    "build": "react-scripts build && npm run generate-sitemap",
+    "build": "react-scripts build",
     "build:vercel": "react-scripts build",
     "build:netlify": "react-scripts build",
-    "generate-sitemap": "node -e \"require('fs').writeFileSync('build/sitemap.xml', '<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><urlset xmlns=\\\"http://www.sitemaps.org/schemas/sitemap/0.9\\\"><url><loc>https://qmaker.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>')\"",
+    "postbuild": "node -e \"require('fs').writeFileSync('build/sitemap.xml', '<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><urlset xmlns=\\\"http://www.sitemaps.org/schemas/sitemap/0.9\\\"><url><loc>https://qmaker.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>')\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "version:patch": "npm version patch",
