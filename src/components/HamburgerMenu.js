@@ -221,6 +221,17 @@ const HamburgerMenu = () => {
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <InformationCircleIcon className="w-4 h-4" />
                   <span>Qmaker v1.0.0</span>
+                  <span>
+                    <a
+                      href="https://github.com/abdurrahmanfahim"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-emerald-600"
+                      aria-label="Visit the developer's GitHub profile"
+                    >
+                      abdurrahmanfahim
+                    </a>
+                  </span>
                 </div>
               </div>
             </div>
