@@ -5,6 +5,7 @@
   "dependencies": {
     "@hello-pangea/dnd": "^16.3.0",
     "@heroicons/react": "^2.0.18",
+    "@tiptap/core": "^2.1.11",
     "@tiptap/extension-bold": "^2.1.11",
     "@tiptap/extension-bullet-list": "^2.1.11",
     "@tiptap/extension-document": "^2.1.11",
@@ -22,12 +23,12 @@
     "@tiptap/extension-text": "^2.1.11",
     "@tiptap/extension-text-align": "^2.26.1",
     "@tiptap/extension-underline": "^2.1.11",
-    "@tiptap/core": "^2.1.11",
     "@tiptap/react": "^2.1.11",
     "@tiptap/starter-kit": "^2.1.11",
     "html2pdf.js": "^0.10.1",
     "katex": "^0.16.8",
     "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "uuid": "^9.0.1",
@@ -36,7 +37,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start:mobile": "set HOST=0.0.0.0&& react-scripts start",
+    "build": "react-scripts build && npm run generate-sitemap",
+    "build:vercel": "react-scripts build",
+    "build:netlify": "react-scripts build",
     "generate-sitemap": "node -e \"require('fs').writeFileSync('build/sitemap.xml', '<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><urlset xmlns=\\\"http://www.sitemaps.org/schemas/sitemap/0.9\\\"><url><loc>https://qmaker.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>')\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -63,9 +67,10 @@
     ]
   },
   "engines": {
-    "node": "18.17.0",
-    "npm": ">=9.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
+  "homepage": ".",
   "devDependencies": {
     "tailwindcss": "^3.3.0"
   }

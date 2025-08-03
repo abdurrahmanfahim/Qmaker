@@ -1,0 +1,8 @@
+/* Minimal editor background fix */
+.ProseMirror {
+  background: white;
+}
+
+.dark .ProseMirror {
+  background: #1f2937;
+}

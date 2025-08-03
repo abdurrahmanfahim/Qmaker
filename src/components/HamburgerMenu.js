@@ -13,9 +13,8 @@ import {
 import usePaperStore from '../store/paperStore';
 import { exportToPDF } from '../utils/pdfExport';
 
-const HamburgerMenu = () => {
+const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showPaperInfo, setShowPaperInfo] = useState(false);
   const menuRef = useRef(null);
   
   const {
@@ -96,16 +95,6 @@ const HamburgerMenu = () => {
 
   const menuItems = [
     {
-      section: 'Paper',
-      items: [
-        {
-          icon: DocumentTextIcon,
-          label: 'Paper Info',
-          action: () => setShowPaperInfo(true)
-        }
-      ]
-    },
-    {
       section: 'Export',
       items: [
         {
@@ -157,7 +146,7 @@ const HamburgerMenu = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50" />
           <div
             ref={menuRef}
-            className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-900 shadow-xl transform transition-transform"
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-gray-900 shadow-xl transform transition-transform"
           >
             <div className="flex flex-col h-full">
               {/* Header */}
@@ -241,8 +230,8 @@ const HamburgerMenu = () => {
 
       {/* Paper Info Modal */}
       {showPaperInfo && (
-        <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm sm:max-w-md max-h-[90vh] sm:max-h-[80vh] flex flex-col">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Paper Information</h3>

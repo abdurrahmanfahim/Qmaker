@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import usePaperStore from './store/paperStore';
 import Layout from './components/Layout';
 import Header from './components/Header';
-import MetadataPanel from './components/MetadataPanel';
 import SectionEditor from './components/SectionEditor';
 import LazyPreviewPanel from './components/LazyPreviewPanel';
 import ErrorBoundary from './components/ErrorBoundary';
 import WelcomeScreen from './components/WelcomeScreen';
+import FloatingToolbar from './components/FloatingToolbar';
 import { EditorProvider } from './contexts/EditorContext';
 import './styles/typography.css';
 
 function App() {
   const { darkMode, previewMode, initialize, setLanguage } = usePaperStore();
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showTableModal, setShowTableModal] = useState(false);
 
   useEffect(() => {
     initialize();
@@ -48,7 +49,6 @@ function App() {
           <Layout>
           <Header />
           <main id="main-content" className="flex-1 flex flex-col overflow-hidden" role="main" aria-label="Question paper editor">
-            {!previewMode && <MetadataPanel />}
             <div className="flex-1 flex overflow-hidden">
               <div className="flex-1 flex flex-col overflow-hidden">
                 <SectionEditor />
@@ -61,6 +61,7 @@ function App() {
             </div>
           </main>
           </Layout>
+          <FloatingToolbar showTableModal={showTableModal} setShowTableModal={setShowTableModal} />
         </EditorProvider>
       </ErrorBoundary>
     </div>

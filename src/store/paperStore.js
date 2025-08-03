@@ -330,17 +330,32 @@ const usePaperStore = create(
       },
 
       /**
-       * Delete sub-question from section
+       * Delete sub-question from section and re-label remaining ones
        * @param {string} sectionId - Parent section ID
        * @param {string} subQuestionId - Sub-question ID to delete
        */
       deleteSubQuestion: (sectionId, subQuestionId) => {
+        const getLabel = (index, language) => {
+          if (language === 'arabic') {
+            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
+            return `(${arabicLetters[index] || 'أ'})`;
+          }
+          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`;
+          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`;
+          return `(${String.fromCharCode(97 + index)})`;
+        };
+
         set(state => ({
           sections: state.sections.map(s => 
             s.id === sectionId 
               ? {
                   ...s,
-                  subQuestions: s.subQuestions.filter(sq => sq.id !== subQuestionId)
+                  subQuestions: s.subQuestions
+                    .filter(sq => sq.id !== subQuestionId)
+                    .map((sq, index) => ({
+                      ...sq,
+                      label: getLabel(index, state.metadata.language)
+                    }))
                 }
               : s
           )
@@ -348,13 +363,29 @@ const usePaperStore = create(
       },
 
       reorderSubQuestions: (sectionId, startIndex, endIndex) => {
+        const getLabel = (index, language) => {
+          if (language === 'arabic') {
+            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
+            return `(${arabicLetters[index] || 'أ'})`;
+          }
+          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`;
+          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`;
+          return `(${String.fromCharCode(97 + index)})`;
+        };
+
         set(state => ({
           sections: state.sections.map(s => {
             if (s.id === sectionId) {
               const result = Array.from(s.subQuestions);
               const [removed] = result.splice(startIndex, 1);
               result.splice(endIndex, 0, removed);
-              return { ...s, subQuestions: result };
+              return { 
+                ...s, 
+                subQuestions: result.map((sq, index) => ({
+                  ...sq,
+                  label: getLabel(index, state.metadata.language)
+                }))
+              };
             }
             return s;
           })

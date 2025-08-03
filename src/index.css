@@ -2,10 +2,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=SolaimanLipi&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
+@import './mobile-fix.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile keyboard viewport fix */
+@media (max-width: 768px) {
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  .ProseMirror {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
 
 /* Font Classes */
 .font-arabic {

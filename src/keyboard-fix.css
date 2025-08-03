@@ -1,0 +1,38 @@
+/* Mobile keyboard safe area support */
+@supports (bottom: env(keyboard-inset-height)) {
+  .floating-toolbar {
+    bottom: env(keyboard-inset-height) !important;
+  }
+}
+
+/* Dynamic keyboard height */
+:root {
+  --keyboard-height: 0px;
+}
+
+/* Force fixed positioning with keyboard support */
+body .floating-toolbar {
+  position: fixed !important;
+  bottom: var(--keyboard-height, 0px) !important;
+}
+
+.floating-toolbar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 99999 !important;
+  width: 100vw !important;
+  height: 60px !important;
+}
+
+/* Viewport units for stable positioning */
+@media (max-width: 768px) {
+  .floating-toolbar {
+    position: fixed !important;
+    bottom: 0vh !important;
+    left: 0vw !important;
+    right: 0vw !important;
+    width: 100vw !important;
+  }
+}

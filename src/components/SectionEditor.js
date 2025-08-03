@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { 
   TrashIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import SubQuestionEditor from './SubQuestionEditor';
+import ConfirmModal from './ConfirmModal';
 
 
 const SectionEditor = () => {
@@ -18,9 +20,16 @@ const SectionEditor = () => {
     updateSection,
     setActiveSection,
     addSubQuestion,
-
-    setActiveSubQuestion
+    setActiveSubQuestion,
+    reorderSections
   } = usePaperStore();
+  
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    reorderSections(result.source.index, result.destination.index);
+  };
 
 
 
@@ -82,52 +91,64 @@ const SectionEditor = () => {
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
       {/* Clean Section Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="px-3 py-2 overflow-x-auto custom-scrollbar">
-          <div className="flex items-center gap-1 min-w-max">
-            {sections.map((section, index) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-
-                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
-                  section.id === activeSectionId
-                    ? 'bg-[#09302f] text-white shadow-lg dark:bg-[#4ade80] dark:text-gray-900 transform scale-105'
-                    : 'text-gray-700 dark:text-gray-200 hover:text-[#09302f] hover:bg-white dark:hover:bg-gray-600 hover:shadow-md'
-                }`}
-                role="tab"
-                aria-selected={section.id === activeSectionId}
-                aria-label={`Section: ${section.title || 'Untitled Section'}`}
-              >
-                <span>{section.title || 'Untitled Section'}</span>
-                {sections.length > 1 && section.id === activeSectionId && (
-                  <TrashIcon 
-                    className="w-3 h-3 text-red-300 hover:text-red-100 transition-colors" 
-                    onClick={(e) => {
-                      e.stopPropagation();
+        <div className="px-2 py-2 overflow-x-auto custom-scrollbar">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="sections" direction="horizontal">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="flex items-center gap-1 min-w-max"
+                >
+                  {sections.map((section, index) => (
+                    <Draggable key={section.id} draggableId={section.id} index={index}>
+                      {(provided, snapshot) => (
+                        <button
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          onClick={() => setActiveSection(section.id)}
+                          className={`px-2 py-2 sm:px-4 sm:py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
+                            section.id === activeSectionId
+                              ? 'bg-[#09302f] text-white shadow-lg dark:bg-[#4ade80] dark:text-gray-900 transform scale-105'
+                              : 'text-gray-700 dark:text-gray-200 hover:text-[#09302f] hover:bg-white dark:hover:bg-gray-600 hover:shadow-md'
+                          } ${snapshot.isDragging ? 'shadow-2xl' : ''}`}
+                          role="tab"
+                          aria-selected={section.id === activeSectionId}
+                          aria-label={`Section: ${section.title || 'Untitled Section'}`}
+                        >
+                          <span>{section.title || 'Untitled Section'}</span>
+                          {sections.length > 1 && section.id === activeSectionId && (
+                            <TrashIcon 
+                              className="w-3 h-3 text-red-500 hover:text-white dark:text-red-500 dark:hover:text-red-300 transition-colors" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDelete({ type: 'section', id: section.id, title: section.title });
+                              }}
+                            />
+                          )}
+                        </button>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  <button
+                    onClick={() => {
                       try {
-                        deleteSection(section.id);
+                        addSection();
                       } catch (error) {
-                        console.error('Failed to delete section:', error);
+                        console.error('Failed to add section:', error);
                       }
                     }}
-                  />
-                )}
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                try {
-                  addSection();
-                } catch (error) {
-                  console.error('Failed to add section:', error);
-                }
-              }}
-              className="px-4 py-3 text-[#09302f] dark:text-[#4ade80] hover:bg-white dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none hover:shadow-md"
-              aria-label="Add new section"
-            >
-              + Add Section
-            </button>
-          </div>
+                    className="px-2 py-2 sm:px-4 sm:py-3 text-[#09302f] dark:text-[#4ade80] hover:bg-white dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none hover:shadow-md"
+                    aria-label="Add new section"
+                  >
+                    + Add Section
+                  </button>
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       </div>
 
@@ -155,9 +176,9 @@ const SectionEditor = () => {
               </div>
             </div>
           ) : (
-            <div className="p-2 sm:p-4 space-y-4">
+            <div className="p-1 sm:p-2 md:p-4 space-y-2 sm:space-y-4">
               {/* Section Header */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-2 sm:p-4">
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Section Title</label>
@@ -196,6 +217,8 @@ const SectionEditor = () => {
                   sectionLanguage={metadata.language}
                   isActive={subQuestion.id === activeSubQuestionId}
                   onClick={() => setActiveSubQuestion(subQuestion.id)}
+                  questionIndex={index}
+                  totalQuestions={activeSection.subQuestions.length}
                 />
               ))}
             </div>
@@ -211,7 +234,20 @@ const SectionEditor = () => {
         </div>
       )}
       
-
+      <ConfirmModal
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          try {
+            deleteSection(confirmDelete.id);
+            setConfirmDelete(null);
+          } catch (error) {
+            console.error('Failed to delete section:', error);
+          }
+        }}
+        title="Delete Section"
+        message={`Are you sure you want to delete "${confirmDelete?.title || 'this section'}"? This action cannot be undone.`}
+      />
     </div>
   );
 };

@@ -10,7 +10,8 @@ import React, { useEffect } from 'react';
 import { 
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
-  EyeIcon
+  EyeIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { useEditorContext } from '../contexts/EditorContext';
@@ -31,6 +32,11 @@ const Header = () => {
   } = usePaperStore();
   
   const { activeEditor } = useEditorContext();
+  const [showPaperInfo, setShowPaperInfo] = React.useState(false);
+  
+  // Check if required fields are filled
+  const hasRequiredInfo = metadata.subject && metadata.className && metadata.examName;
+  const showError = !hasRequiredInfo;
 
   // Simple auto-save
   useEffect(() => {
@@ -45,27 +51,7 @@ const Header = () => {
     return () => clearTimeout(timer);
   }, [metadata, sections, exportData]);
 
-  // Keyboard shortcuts for editor undo/redo
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z' && !e.shiftKey) {
-          e.preventDefault();
-          if (activeEditor && activeEditor.can().undo()) {
-            activeEditor.chain().focus().undo().run();
-          }
-        } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
-          e.preventDefault();
-          if (activeEditor && activeEditor.can().redo()) {
-            activeEditor.chain().focus().redo().run();
-          }
-        }
-      }
-    };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [activeEditor]);
+
 
 
 
@@ -73,11 +59,11 @@ const Header = () => {
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-4">
+      <div className="px-2 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo & Status */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center">
+            <div className="flex items-center pl-2 sm:pl-0">
               <img 
                 src="/images/logo/QMaker-logo-sm-primary.png" 
                 alt="Qmaker" 
@@ -104,37 +90,24 @@ const Header = () => {
         
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {/* Undo/Redo */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  if (activeEditor && activeEditor.can().undo()) {
-                    activeEditor.chain().focus().undo().run();
-                  }
-                }}
-                disabled={!activeEditor || !activeEditor.can().undo()}
-                className="p-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation active:scale-95 shadow-sm hover:shadow-md"
-                aria-label="Undo text changes"
-                title="Undo"
-                style={{ minWidth: '48px', minHeight: '48px' }}
-              >
-                <ArrowUturnLeftIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => {
-                  if (activeEditor && activeEditor.can().redo()) {
-                    activeEditor.chain().focus().redo().run();
-                  }
-                }}
-                disabled={!activeEditor || !activeEditor.can().redo()}
-                className="p-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation active:scale-95 shadow-sm hover:shadow-md"
-                aria-label="Redo text changes"
-                title="Redo"
-                style={{ minWidth: '48px', minHeight: '48px' }}
-              >
-                <ArrowUturnRightIcon className="w-5 h-5" />
-              </button>
-            </div>
+
+            
+            {/* Page Info */}
+            <button
+              onClick={() => setShowPaperInfo(true)}
+              className={`relative p-2 rounded-lg transition-colors ${
+                showError 
+                  ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' 
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+              aria-label={showError ? 'Paper information - Missing required fields' : 'Paper information'}
+              title={showError ? 'Paper Info - Missing required fields' : 'Paper Info'}
+            >
+              <InformationCircleIcon className="w-4 h-4" />
+              {showError && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              )}
+            </button>
             
             {/* Preview */}
             <button
@@ -150,7 +123,7 @@ const Header = () => {
               <EyeIcon className="w-4 h-4" />
             </button>
             
-            <HamburgerMenu />
+            <HamburgerMenu showPaperInfo={showPaperInfo} setShowPaperInfo={setShowPaperInfo} />
           </div>
         </div>
       </div>
