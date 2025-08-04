@@ -88,7 +88,7 @@ const SectionEditor = () => {
 
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900" style={{ paddingBottom: '100px' }}>
       {/* Clean Section Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="px-2 py-2 overflow-x-auto custom-scrollbar">
@@ -154,7 +154,7 @@ const SectionEditor = () => {
 
       {/* Section Content */}
       {activeSection ? (
-        <div className="flex-1 overflow-auto custom-scrollbar">
+        <div className="flex-1 overflow-auto custom-scrollbar" style={{ paddingBottom: '80px' }}>
           {activeSection.subQuestions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-center max-w-sm">
@@ -221,6 +221,15 @@ const SectionEditor = () => {
                   totalQuestions={activeSection.subQuestions.length}
                 />
               ))}
+              {/* Dynamic transparent spacer - grows with sub-questions */}
+              <div 
+                className="w-full" 
+                style={{ 
+                  height: `${Math.max(100, activeSection.subQuestions.length * 60)}px`,
+                  visibility: 'hidden'
+                }} 
+                aria-hidden="true"
+              ></div>
             </div>
           )}
         </div>

@@ -246,7 +246,7 @@ const SubQuestionEditor = ({
             <div className="border-2 border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden shadow-inner">
               <EditorContent 
                 editor={editor} 
-                className={`prose prose-sm max-w-none px-2 pt-12 pb-2 sm:p-4 min-h-[100px] sm:min-h-[120px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-base leading-relaxed ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+                className={`prose prose-sm max-w-none p-2 min-h-[100px] sm:min-h-[120px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-base leading-relaxed ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
                 style={{ textAlign: 'inherit' }}
               />
             

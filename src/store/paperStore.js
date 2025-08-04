@@ -50,6 +50,26 @@ const usePaperStore = create(
               showAnswer: false,
               answer: '',
               type: 'text'
+            },
+            {
+              id: uuidv4(),
+              label: '(খ)',
+              heading: '',
+              content: '<p></p>',
+              marks: 5,
+              showAnswer: false,
+              answer: '',
+              type: 'text'
+            },
+            {
+              id: uuidv4(),
+              label: '(গ)',
+              heading: '',
+              content: '<p></p>',
+              marks: 5,
+              showAnswer: false,
+              answer: '',
+              type: 'text'
             }
           ] // Array of sub-questions within this section
         }
@@ -202,23 +222,45 @@ const usePaperStore = create(
           return `(${String.fromCharCode(97 + index)})`;
         };
         
-        const defaultSubQuestion = {
-          id: uuidv4(),
-          label: getLabel(0, currentLanguage),
-          heading: '',
-          content: '<p></p>',
-          marks: 5,
-          showAnswer: false,
-          answer: '',
-          type: 'text'
-        };
+        const defaultSubQuestions = [
+          {
+            id: uuidv4(),
+            label: getLabel(0, currentLanguage),
+            heading: '',
+            content: '<p></p>',
+            marks: 5,
+            showAnswer: false,
+            answer: '',
+            type: 'text'
+          },
+          {
+            id: uuidv4(),
+            label: getLabel(1, currentLanguage),
+            heading: '',
+            content: '<p></p>',
+            marks: 5,
+            showAnswer: false,
+            answer: '',
+            type: 'text'
+          },
+          {
+            id: uuidv4(),
+            label: getLabel(2, currentLanguage),
+            heading: '',
+            content: '<p></p>',
+            marks: 5,
+            showAnswer: false,
+            answer: '',
+            type: 'text'
+          }
+        ];
         
-        newSection.subQuestions = [defaultSubQuestion];
+        newSection.subQuestions = defaultSubQuestions;
         
         set(state => ({
           sections: [...state.sections, newSection],
           activeSectionId: newSection.id,
-          activeSubQuestionId: defaultSubQuestion.id
+          activeSubQuestionId: defaultSubQuestions[0].id
         }));
       },
 

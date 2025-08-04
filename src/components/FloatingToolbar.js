@@ -53,11 +53,20 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
       }
     };
 
+    const handleScroll = () => {
+      updateKeyboardHeight();
+    };
+
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
     }
     document.addEventListener('focusin', handleFocus);
     document.addEventListener('keydown', handleKeyDown);
+    
+    const scrollElement = document.querySelector('.custom-scrollbar');
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+    }
     
     return () => {
       clearTimeout(resizeTimeout);
@@ -66,6 +75,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
       }
       document.removeEventListener('focusin', handleFocus);
       document.removeEventListener('keydown', handleKeyDown);
+      
+      const scrollElement = document.querySelector('.custom-scrollbar');
+      if (scrollElement) {
+        scrollElement.removeEventListener('scroll', handleScroll);
+      }
     };
   }, [activeEditor]);
 
