@@ -11,6 +11,16 @@ import {
 } from '@heroicons/react/24/outline';
 import { getRecentPapers } from '../../utils/recentPapers';
 
+/**
+ * Reusable Paper Card component with actions menu and color tagging
+ * @param {Object} paper - Paper data object
+ * @param {boolean} isShared - Whether paper is shared (affects icon display)
+ * @param {Function} onOpenPaper - Handler for opening paper
+ * @param {Function} onUpdatePapers - Handler for updating papers list
+ * @param {boolean} showMenu - Show/hide actions menu
+ * @param {boolean} showColorTag - Show/hide color tagging feature
+ * @param {string} className - Additional CSS classes
+ */
 const PaperCard = ({ 
   paper, 
   isShared = false, 
@@ -20,17 +30,24 @@ const PaperCard = ({
   showColorTag = true,
   className = ""
 }) => {
+  /**
+   * Get default paper title based on language
+   * @param {string} language - Paper language (arabic, bangla, urdu, english)
+   * @returns {string} Localized default title
+   */
   const getDefaultTitle = (language) => {
     switch(language) {
-      case 'arabic': return 'ورقة أسئلة بدون عنوان';
-      case 'bangla': return 'শিরোনামহীন প্রশ্নপত্র';
-      case 'urdu': return 'بے نام سوالیہ کاغذ';
+      case 'arabic': return 'ورقة أسئلة بدون عنوان'; // Untitled Question Paper
+      case 'bangla': return 'শিরোনামহীন প্রশ্নপত্র'; // Untitled Question Paper
+      case 'urdu': return 'بے نام سوالیہ کاغذ'; // Untitled Question Paper
       default: return 'Untitled Paper';
     }
   };
+  // Component state for menu and color picker visibility
   const [activeMenu, setActiveMenu] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   
+  // Available color options for paper tagging
   const colors = [
     { name: 'None', value: null, bg: 'bg-transparent', border: 'border-gray-300' },
     { name: 'Red', value: 'red', bg: 'bg-red-100', border: 'border-red-300' },
@@ -40,14 +57,20 @@ const PaperCard = ({
     { name: 'Purple', value: 'purple', bg: 'bg-purple-100', border: 'border-purple-300' }
   ];
 
+  /**
+   * Handle color tag change for paper
+   * Updates both local storage and cloud storage
+   * @param {string|null} color - Selected color value
+   */
   const handleColorChange = (color) => {
+    // Update recent papers list with new color
     const recent = getRecentPapers();
     const updated = recent.map(p => 
       p.id === paper.id ? { ...p, colorTag: color } : p
     );
     localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
     
-    // Save to cloud if paper data exists
+    // Save to cloud storage if paper data exists
     if (paper.data) {
       const updatedPaperData = {
         ...paper.data,
@@ -59,6 +82,7 @@ const PaperCard = ({
       localStorage.setItem(`qmaker-paper-${paper.id}`, JSON.stringify(updatedPaperData));
     }
     
+    // Update parent component and close menus
     if (onUpdatePapers) onUpdatePapers(updated);
     setShowColorPicker(false);
     setActiveMenu(false);
@@ -95,12 +119,20 @@ const PaperCard = ({
     }
   };
 
+  /**
+   * Generate CSS classes for card based on color tag
+   * @returns {string} Combined CSS classes
+   */
   const getCardClasses = () => {
     const baseClasses = "bg-white dark:bg-gray-800 rounded-xl border p-4 hover:shadow-lg dark:hover:shadow-xl transition-all duration-200 active:scale-98 cursor-pointer";
+    
+    // Apply color tag styling if enabled and color is set
     if (showColorTag && paper.colorTag) {
       const colorConfig = colors.find(c => c.value === paper.colorTag);
       return `${baseClasses} ${colorConfig?.bg} dark:${colorConfig?.bg} ${colorConfig?.border} dark:${colorConfig?.border}`;
     }
+    
+    // Default styling without color tag
     return `${baseClasses} border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600`;
   };
 
@@ -117,11 +149,7 @@ const PaperCard = ({
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-gray-900 dark:text-white truncate">
-                {(() => {
-                  const lang = paper.language || paper.data?.metadata?.language || 'english';
-                  console.log('Paper:', paper.title, 'Language:', lang);
-                  return paper.title || getDefaultTitle(lang);
-                })()}
+                {paper.title || getDefaultTitle(paper.language || paper.data?.metadata?.language || 'english')}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {paper.subject} • {paper.className}

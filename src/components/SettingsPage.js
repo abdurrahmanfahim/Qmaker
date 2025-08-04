@@ -9,6 +9,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useHapticFeedback } from '../hooks/useSwipeGestures';
 import usePaperStore from '../store/paperStore';
+import Button from './common/Button';
+import Modal from './common/Modal';
 
 const SettingsPage = ({ onBack, onShowProfile }) => {
   const { darkMode, toggleDarkMode } = usePaperStore();
@@ -68,15 +70,17 @@ const SettingsPage = ({ onBack, onShowProfile }) => {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 lightTap();
                 onBack();
               }}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              className="p-2"
             >
-              <ArrowLeftIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
+              <ArrowLeftIcon className="w-5 h-5" />
+            </Button>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
               <p className="text-sm text-gray-600 dark:text-gray-300">Manage your preferences</p>

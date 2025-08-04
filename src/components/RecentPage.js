@@ -20,6 +20,9 @@ import { getRecentPapers } from '../utils/recentPapers';
 import BottomNavigation from './common/BottomNavigation';
 import SearchBar from './common/SearchBar';
 import PaperCard from './common/PaperCard';
+import Button from './common/Button';
+import EmptyState from './common/EmptyState';
+import PageHeader from './common/PageHeader';
 
 const RecentPage = ({ onBack, onOpenPaper, onNavigate }) => {
   const [recentPapers, setRecentPapers] = useState([]);
@@ -94,32 +97,21 @@ const RecentPage = ({ onBack, onOpenPaper, onNavigate }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => {
-                lightTap();
-                onBack();
-              }}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            >
-              <ArrowLeftIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Recent Papers</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-300">{filteredPapers.length} papers</p>
-            </div>
-          </div>
-
+      <PageHeader
+        title="Recent Papers"
+        subtitle={`${filteredPapers.length} papers`}
+        onBack={() => {
+          lightTap();
+          onBack();
+        }}
+        rightContent={
           <SearchBar
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search recent papers..."
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6 pb-20">
@@ -135,15 +127,11 @@ const RecentPage = ({ onBack, onOpenPaper, onNavigate }) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              {searchQuery ? 'No papers found' : 'No recent papers'}
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {searchQuery ? 'Try a different search term' : 'Your recent papers will appear here'}
-            </p>
-          </div>
+          <EmptyState
+            icon={DocumentTextIcon}
+            title={searchQuery ? 'No papers found' : 'No recent papers'}
+            description={searchQuery ? 'Try a different search term' : 'Your recent papers will appear here'}
+          />
         )}
       </div>
       

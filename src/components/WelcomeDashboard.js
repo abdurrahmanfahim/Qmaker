@@ -25,6 +25,8 @@ import GoogleSignup from './GoogleSignup';
 import BottomNavigation from './common/BottomNavigation';
 import SearchPage from './SearchPage';
 import PaperCard from './common/PaperCard';
+import Button from './common/Button';
+import EmptyState from './common/EmptyState';
 
 
 const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) => {
@@ -384,13 +386,14 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Qmaker</h1>
               <p className="text-gray-600 dark:text-gray-300">Question Paper Builder</p>
             </div>
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setCurrentPage('search')}
-              className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-3"
               title="Search papers"
             >
-              <MagnifyingGlassIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-            </button>
+              <MagnifyingGlassIcon className="w-6 h-6" />
+            </Button>
           </div>
         </div>
       </div>
@@ -401,43 +404,51 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Create New Paper</h3>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleCreateNew}
-              className="flex-1 px-3 py-2 bg-[#09302f] dark:bg-[#4ade80] text-white dark:text-gray-900 rounded-md text-sm hover:bg-[#072625] dark:hover:bg-[#22c55e] transition-colors flex items-center justify-center gap-1.5 font-medium"
+              variant="primary"
+              size="sm"
+              className="flex-1 flex items-center justify-center gap-1.5"
             >
               <PlusIcon className="w-4 h-4" strokeWidth={3} />
               New
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => {
                 lightTap();
                 onCreateLanguagePaper('english');
               }}
-              className="flex-1 px-3 py-2 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] rounded-md text-sm hover:bg-[#09302f]/20 dark:hover:bg-[#4ade80]/30 transition-colors text-center"
+              variant="outline"
+              size="sm"
+              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
             >
               English
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => {
                 lightTap();
                 onCreateLanguagePaper('bangla');
               }}
-              className="flex-1 px-3 py-2 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] rounded-md text-sm hover:bg-[#09302f]/20 dark:hover:bg-[#4ade80]/30 transition-colors text-center"
+              variant="outline"
+              size="sm"
+              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
             >
               বাংলা
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => {
                 lightTap();
                 onCreateLanguagePaper('arabic');
               }}
-              className="flex-1 px-3 py-2 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] rounded-md text-sm hover:bg-[#09302f]/20 dark:hover:bg-[#4ade80]/30 transition-colors text-center"
+              variant="outline"
+              size="sm"
+              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
             >
               العربية
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -504,21 +515,20 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
 
         {/* Empty State */}
         {recentPapers.length === 0 && sharedPapers.length === 0 && (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No papers yet
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              Create your first question paper to get started
-            </p>
-            <button
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-[#09302f] dark:bg-[#4ade80] text-white dark:text-gray-900 rounded-lg font-medium hover:bg-[#072625] dark:hover:bg-[#22c55e] transition-colors"
-            >
-              Create New Paper
-            </button>
-          </div>
+          <EmptyState
+            icon={DocumentTextIcon}
+            title="No papers yet"
+            description="Create your first question paper to get started"
+            action={
+              <Button
+                onClick={handleCreateNew}
+                variant="primary"
+                size="lg"
+              >
+                Create New Paper
+              </Button>
+            }
+          />
         )}
       </div>
       

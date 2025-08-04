@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeftIcon,
   MagnifyingGlassIcon,
-  DocumentTextIcon,
-  ClockIcon,
-  UserIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useHapticFeedback } from '../hooks/useSwipeGestures';
 import { getRecentPapers } from '../utils/recentPapers';
-import usePaperStore from '../store/paperStore';
+
 import BottomNavigation from './common/BottomNavigation';
 import SearchBar from './common/SearchBar';
 import PaperCard from './common/PaperCard';
+import Button from './common/Button';
+import EmptyState from './common/EmptyState';
 
 const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,7 +19,6 @@ const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
   const [isSearching, setIsSearching] = useState(false);
 
   const { lightTap } = useHapticFeedback();
-  const { darkMode } = usePaperStore();
 
   // Handle mobile back button
   useEffect(() => {
@@ -67,8 +65,6 @@ const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
           );
         }
         
-
-        
         setSearchResults(results);
         setIsSearching(false);
       }, 300);
@@ -80,23 +76,23 @@ const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
     }
   }, [searchQuery]);
 
-
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 lightTap();
                 onBack();
               }}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2"
             >
-              <ArrowLeftIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
+              <ArrowLeftIcon className="w-5 h-5" />
+            </Button>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">Search Papers</h1>
               <p className="text-sm text-gray-600 dark:text-gray-300">Find your papers quickly</p>
@@ -112,17 +108,17 @@ const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
                 autoFocus
               />
               {searchQuery && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1"
                   title="Clear search"
                 >
                   <XMarkIcon className="w-5 h-5" />
-                </button>
+                </Button>
               )}
             </div>
-            
-
           </div>
         </div>
       </div>
@@ -151,18 +147,18 @@ const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <MagnifyingGlassIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No results found</h3>
-              <p className="text-gray-500 dark:text-gray-400">Try searching with different keywords</p>
-            </div>
+            <EmptyState
+              icon={MagnifyingGlassIcon}
+              title="No results found"
+              description="Try searching with different keywords"
+            />
           )
         ) : (
-          <div className="text-center py-12">
-            <MagnifyingGlassIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Search Your Papers</h3>
-            <p className="text-gray-500 dark:text-gray-400">Enter keywords to find recent and shared papers</p>
-          </div>
+          <EmptyState
+            icon={MagnifyingGlassIcon}
+            title="Search Your Papers"
+            description="Enter keywords to find recent and shared papers"
+          />
         )}
       </div>
 
