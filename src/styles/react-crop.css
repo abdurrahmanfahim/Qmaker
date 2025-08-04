@@ -1,0 +1,147 @@
+/* Custom styles for react-image-crop */
+.ReactCrop {
+  position: relative;
+  display: inline-block;
+  cursor: crosshair;
+  max-width: 100%;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ReactCrop--disabled {
+  cursor: inherit;
+}
+
+.ReactCrop__image {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.ReactCrop__crop-selection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate3d(0, 0, 0);
+  box-sizing: border-box;
+  cursor: move;
+  box-shadow: 0 0 0 9999em rgba(0, 0, 0, 0.5);
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+.ReactCrop__crop-selection:focus {
+  outline: none;
+}
+
+.ReactCrop__drag-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border: 2px solid #09302f;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .ReactCrop__drag-handle {
+  border-color: #4ade80;
+}
+
+.ReactCrop__drag-handle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #09302f;
+}
+
+.dark .ReactCrop__drag-handle:focus {
+  box-shadow: 0 0 0 2px #4ade80;
+}
+
+/* Position drag handles */
+.ReactCrop__drag-handle--n {
+  top: -6px;
+  left: 50%;
+  margin-left: -6px;
+  cursor: n-resize;
+}
+
+.ReactCrop__drag-handle--ne {
+  top: -6px;
+  right: -6px;
+  cursor: ne-resize;
+}
+
+.ReactCrop__drag-handle--e {
+  top: 50%;
+  right: -6px;
+  margin-top: -6px;
+  cursor: e-resize;
+}
+
+.ReactCrop__drag-handle--se {
+  bottom: -6px;
+  right: -6px;
+  cursor: se-resize;
+}
+
+.ReactCrop__drag-handle--s {
+  bottom: -6px;
+  left: 50%;
+  margin-left: -6px;
+  cursor: s-resize;
+}
+
+.ReactCrop__drag-handle--sw {
+  bottom: -6px;
+  left: -6px;
+  cursor: sw-resize;
+}
+
+.ReactCrop__drag-handle--w {
+  top: 50%;
+  left: -6px;
+  margin-top: -6px;
+  cursor: w-resize;
+}
+
+.ReactCrop__drag-handle--nw {
+  top: -6px;
+  left: -6px;
+  cursor: nw-resize;
+}
+
+/* Hover effects */
+.ReactCrop__drag-handle:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .ReactCrop__drag-handle {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .ReactCrop__drag-handle--n,
+  .ReactCrop__drag-handle--s {
+    margin-left: -8px;
+  }
+  
+  .ReactCrop__drag-handle--e,
+  .ReactCrop__drag-handle--w {
+    margin-top: -8px;
+  }
+  
+  .ReactCrop__drag-handle--ne,
+  .ReactCrop__drag-handle--se,
+  .ReactCrop__drag-handle--sw,
+  .ReactCrop__drag-handle--nw {
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+  }
+}

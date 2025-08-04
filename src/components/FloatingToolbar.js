@@ -5,16 +5,20 @@ import {
   ItalicIcon,
   UnderlineIcon,
   Bars3BottomLeftIcon,
+  Bars3CenterLeftIcon,
+  Bars3Icon,
   TableCellsIcon,
   NumberedListIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon
 } from '@heroicons/react/24/outline';
 import { useEditorContext } from '../contexts/EditorContext';
+import { useHapticFeedback } from '../hooks/useSwipeGestures';
 
-const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
+const FloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar = false }) => {
   const { activeEditor } = useEditorContext();
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const { lightTap } = useHapticFeedback();
 
   useEffect(() => {
     let resizeTimeout;
@@ -87,6 +91,7 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
 
   const executeCommand = (command) => {
     if (!activeEditor) return false;
+    lightTap(); // Haptic feedback for all commands
     
     switch(command) {
       case 'bold':
@@ -94,7 +99,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
       case 'italic':
         return activeEditor.chain().focus().toggleItalic().run();
       case 'underline':
-        return activeEditor.chain().focus().toggleUnderline().run();
+        // Check if underline extension is available
+        if (activeEditor.extensionManager.extensions.find(ext => ext.name === 'underline')) {
+          return activeEditor.chain().focus().toggleMark('underline').run();
+        }
+        return false;
       case 'strikeThrough':
         return activeEditor.chain().focus().toggleStrike().run();
       case 'insertOrderedList':
@@ -144,7 +153,7 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
             }
           }}
           disabled={!activeEditor || !activeEditor.can || !activeEditor.can().undo()}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none disabled:opacity-50"
+          className="touch-target p-2 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none disabled:opacity-50"
           aria-label="Undo"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -159,7 +168,7 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
             }
           }}
           disabled={!activeEditor || !activeEditor.can || !activeEditor.can().redo()}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none disabled:opacity-50"
+          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none disabled:opacity-50"
           aria-label="Redo"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -171,7 +180,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Bold */}
         <button
           onClick={() => executeCommand('bold')}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className={`p-2 rounded-lg transition-colors touch-manipulation focus:outline-none ${
+            activeEditor?.isActive('bold') 
+              ? 'border-2 border-[#09302f] dark:border-[#4ade80] text-[#09302f] dark:text-[#4ade80]' 
+              : 'text-gray-600 dark:text-gray-300'
+          }`}
           aria-label="Bold text"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -181,7 +194,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Italic */}
         <button
           onClick={() => executeCommand('italic')}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className={`p-2 rounded-lg transition-colors touch-manipulation focus:outline-none ${
+            activeEditor?.isActive('italic') 
+              ? 'border-2 border-[#09302f] dark:border-[#4ade80] text-[#09302f] dark:text-[#4ade80]' 
+              : 'text-gray-600 dark:text-gray-300'
+          }`}
           aria-label="Italic text"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -191,7 +208,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Underline */}
         <button
           onClick={() => executeCommand('underline')}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className={`p-2 rounded-lg transition-colors touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
+            activeEditor?.isActive('underline') 
+              ? 'bg-[#09302f] text-white dark:bg-[#4ade80] dark:text-gray-900' 
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+          }`}
           aria-label="Underline text"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -203,11 +224,21 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Toggle Alignment */}
         <button
           onClick={toggleAlignment}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className={`p-2 rounded-lg transition-colors touch-manipulation focus:outline-none ${
+            activeEditor?.isActive({ textAlign: 'center' }) || activeEditor?.isActive({ textAlign: 'right' })
+              ? 'border-2 border-[#09302f] dark:border-[#4ade80] text-[#09302f] dark:text-[#4ade80]' 
+              : 'text-gray-600 dark:text-gray-300'
+          }`}
           aria-label="Toggle text alignment"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
-          <Bars3BottomLeftIcon className="w-4 h-4" aria-hidden="true" />
+          {activeEditor?.isActive({ textAlign: 'center' }) ? (
+            <Bars3Icon className="w-4 h-4" aria-hidden="true" />
+          ) : activeEditor?.isActive({ textAlign: 'right' }) ? (
+            <Bars3CenterLeftIcon className="w-4 h-4 scale-x-[-1]" aria-hidden="true" />
+          ) : (
+            <Bars3CenterLeftIcon className="w-4 h-4" aria-hidden="true" />
+          )}
         </button>
         
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
@@ -215,7 +246,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Numbered List */}
         <button
           onClick={() => executeCommand('insertOrderedList')}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className={`p-2 rounded-lg transition-colors touch-manipulation focus:outline-none ${
+            activeEditor?.isActive('orderedList') 
+              ? 'border-2 border-[#09302f] dark:border-[#4ade80] text-[#09302f] dark:text-[#4ade80]' 
+              : 'text-gray-600 dark:text-gray-300'
+          }`}
           aria-label="Numbered list"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -225,7 +260,7 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Table */}
         <button
           onClick={() => setShowTableModal(true)}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none"
           aria-label="Insert table"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -235,7 +270,11 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Strikethrough */}
         <button
           onClick={() => executeCommand('strikeThrough')}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className={`p-2 rounded-lg transition-colors touch-manipulation focus:outline-none ${
+            activeEditor?.isActive('strike') 
+              ? 'border-2 border-[#09302f] dark:border-[#4ade80] text-[#09302f] dark:text-[#4ade80]' 
+              : 'text-gray-600 dark:text-gray-300'
+          }`}
           aria-label="Strikethrough text"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
@@ -245,7 +284,7 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         {/* Horizontal Rule */}
         <button
           onClick={() => executeCommand('insertHorizontalRule')}
-          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
+          className="p-2 rounded-lg transition-colors touch-manipulation text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none"
           aria-label="Insert horizontal rule"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >

@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
 
+# Sitemap
 Sitemap: https://qmaker.vercel.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin or sensitive paths
+Disallow: /admin/
+Disallow: /api/
+Disallow: /*.json$
+
+# Allow important pages
+Allow: /
+Allow: /manifest.json

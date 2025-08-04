@@ -5,15 +5,22 @@ import Header from './components/Header';
 import SectionEditor from './components/SectionEditor';
 import LazyPreviewPanel from './components/LazyPreviewPanel';
 import ErrorBoundary from './components/ErrorBoundary';
-import WelcomeScreen from './components/WelcomeScreen';
+import WelcomeDashboard from './components/WelcomeDashboard';
 import FloatingToolbar from './components/FloatingToolbar';
 import { EditorProvider } from './contexts/EditorContext';
+import { usePerformance } from './hooks/usePerformance';
+import { trackEvent, trackPerformance } from './utils/analytics';
+import { updateMetaTags, generateStructuredData } from './utils/seo';
+import cloudSync from './utils/cloudSync';
+import { saveRecentPaper } from './utils/recentPapers';
 import './styles/typography.css';
 
 function App() {
-  const { darkMode, previewMode, initialize, setLanguage } = usePaperStore();
+  const { darkMode, previewMode, initialize, setLanguage, exportData, importData, clearAll } = usePaperStore();
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  const performanceMetrics = usePerformance();
 
   useEffect(() => {
     initialize();
@@ -21,7 +28,49 @@ function App() {
     if (!hasVisited) {
       setShowWelcome(true);
     }
+    
+    // SEO and analytics initialization
+    updateMetaTags();
+    trackEvent('app_loaded', { timestamp: Date.now() });
+    
+    // Initialize cloud sync
+    cloudSync.init();
   }, [initialize]);
+  
+  // Handle mobile back button
+  useEffect(() => {
+    const handleBackButton = (e) => {
+      if (!showWelcome) {
+        e.preventDefault();
+        // Save current paper
+        const currentData = exportData();
+        if (currentData.sections.length > 0 || currentData.metadata.examName) {
+          saveRecentPaper(currentData);
+        }
+        // Go to dashboard
+        localStorage.removeItem('qmaker-visited');
+        setShowWelcome(true);
+      }
+    };
+    
+    window.addEventListener('popstate', handleBackButton);
+    // Push initial state
+    window.history.pushState(null, '', window.location.href);
+    
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [showWelcome, exportData]);
+  
+  // Track performance metrics
+  useEffect(() => {
+    if (performanceMetrics.lcp) {
+      trackPerformance('lcp', performanceMetrics.lcp);
+    }
+    if (performanceMetrics.fid) {
+      trackPerformance('fid', performanceMetrics.fid);
+    }
+  }, [performanceMetrics]);
 
 
 
@@ -30,11 +79,47 @@ function App() {
     localStorage.setItem('qmaker-visited', 'true');
     setShowWelcome(false);
   };
+  
+  const handleCreateNew = (language = 'bangla') => {
+    // Save current paper first
+    const currentData = exportData();
+    if (currentData.sections.length > 0 || currentData.metadata.examName) {
+      saveRecentPaper(currentData);
+    }
+    
+    // Clear for new paper and set language
+    clearAll();
+    setLanguage(language);
+    localStorage.setItem('qmaker-visited', 'true');
+    setShowWelcome(false);
+  };
+  
+  const handleOpenPaper = (paper) => {
+    // Save current paper first
+    const currentData = exportData();
+    if (currentData.sections.length > 0 || currentData.metadata.examName) {
+      saveRecentPaper(currentData);
+    }
+    
+    // Load selected paper
+    if (paper.data) {
+      importData(paper.data);
+    }
+    
+    localStorage.setItem('qmaker-visited', 'true');
+    setShowWelcome(false);
+  };
 
 
 
   if (showWelcome) {
-    return <WelcomeScreen onComplete={handleWelcomeComplete} />;
+    return (
+      <WelcomeDashboard 
+        onCreateNew={() => handleCreateNew()}
+        onOpenPaper={handleOpenPaper}
+        onCreateLanguagePaper={(lang) => handleCreateNew(lang)}
+      />
+    );
   }
 
 
@@ -47,7 +132,7 @@ function App() {
       <ErrorBoundary fallbackMessage="Application error occurred.">
         <EditorProvider>
           <Layout>
-          <Header />
+          <Header onMenuToggle={setShowHamburgerMenu} />
           <main id="main-content" className="flex-1 flex flex-col overflow-hidden" role="main" aria-label="Question paper editor">
             <div className="flex-1 flex overflow-hidden">
               <div className="flex-1 flex flex-col overflow-hidden">
@@ -61,7 +146,11 @@ function App() {
             </div>
           </main>
           </Layout>
-          <FloatingToolbar showTableModal={showTableModal} setShowTableModal={setShowTableModal} />
+          <FloatingToolbar 
+            showTableModal={showTableModal} 
+            setShowTableModal={setShowTableModal}
+            hideToolbar={showHamburgerMenu}
+          />
         </EditorProvider>
       </ErrorBoundary>
     </div>

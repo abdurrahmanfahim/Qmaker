@@ -1,0 +1,173 @@
+/* Mobile Editor Optimizations */
+
+/* Auto-expanding textarea */
+.auto-expand {
+  resize: none;
+  overflow: hidden;
+  min-height: 44px;
+}
+
+/* Mobile-optimized rich text editor */
+@media (max-width: 768px) {
+  .ProseMirror {
+    padding: 16px !important;
+    min-height: 120px !important;
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+  }
+  
+  /* Better touch targets for text selection */
+  .ProseMirror p {
+    min-height: 24px;
+    padding: 4px 0;
+  }
+  
+  /* Mobile table editing */
+  .ProseMirror table {
+    font-size: 14px !important;
+  }
+  
+  .ProseMirror td, .ProseMirror th {
+    min-width: 60px !important;
+    padding: 8px !important;
+  }
+}
+
+/* Quick actions with swipe gestures */
+.swipe-actions {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-actions::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -100px;
+  width: 100px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #ef4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.swipe-actions.swiped::after {
+  transform: translateX(-100px);
+}
+
+/* Visual feedback for mobile interactions */
+.mobile-feedback:active {
+  transform: scale(0.98);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .mobile-feedback:active {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Loading states for better perceived performance */
+.loading-state {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-state::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Mobile section management */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+  }
+  
+  .section-title-input {
+    order: 1;
+  }
+  
+  .section-add-button {
+    order: 2;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* Mobile preview optimizations */
+@media (max-width: 768px) {
+  .preview-content {
+    padding: 16px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+  
+  .preview-section {
+    margin-bottom: 24px !important;
+  }
+  
+  .preview-question {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* Haptic feedback simulation */
+.haptic-light:active {
+  animation: haptic-pulse 0.1s ease-out;
+}
+
+@keyframes haptic-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* Better error states for mobile */
+.mobile-error {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.dark .mobile-error {
+  background-color: #451a03;
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+/* Success states */
+.mobile-success {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.dark .mobile-success {
+  background-color: #052e16;
+  border-color: #16a34a;
+  color: #4ade80;
+}

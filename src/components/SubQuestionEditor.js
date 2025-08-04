@@ -9,20 +9,12 @@ import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import { 
   TrashIcon,
-  BoldIcon,
-  ItalicIcon,
-  UnderlineIcon,
-  Bars3BottomLeftIcon,
-  Bars3Icon,
-  Bars3BottomRightIcon,
-  TableCellsIcon,
-  NumberedListIcon,
   ChevronUpIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { useEditorContext } from '../contexts/EditorContext';
-import ConfirmModal from './ConfirmModal';
+
 
 
 
@@ -207,38 +199,25 @@ const SubQuestionEditor = ({
               </button>
             </div>
             
-            <div className="relative">
-              <input
-                type="text"
-                value={subQuestion.heading}
-                onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { heading: e.target.value })}
-                className={`w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] rounded-lg text-base font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
-                placeholder={getQuestionPlaceholder(sectionLanguage)}
-                aria-label={`Question ${subQuestion.label} heading`}
-                onKeyDown={(e) => {
-                  if ((e.ctrlKey || e.metaKey)) {
-                    if (e.key === 'z' && !e.shiftKey) {
-                      e.preventDefault();
-                      document.execCommand('undo');
-                    } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
-                      e.preventDefault();
-                      document.execCommand('redo');
-                    }
+            <input
+              type="text"
+              value={subQuestion.heading}
+              onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { heading: e.target.value })}
+              className={`w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] rounded-lg text-base font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+              placeholder={getQuestionPlaceholder(sectionLanguage)}
+              aria-label={`Question ${subQuestion.label} heading`}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey)) {
+                  if (e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.execCommand('undo');
+                  } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
+                    e.preventDefault();
+                    document.execCommand('redo');
                   }
-                }}
-              />
-              <div className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2">
-                {saveStatus === 'saving' && (
-                  <div className="w-4 h-4 sm:w-3 sm:h-3 border border-[#09302f] border-t-transparent rounded-full animate-spin" aria-hidden="true"></div>
-                )}
-                {saveStatus === 'saved' && (
-                  <div className="w-4 h-4 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse" aria-hidden="true" title="Saved"></div>
-                )}
-                {saveStatus === 'error' && (
-                  <div className="w-4 h-4 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-bounce" aria-hidden="true" title="Save failed"></div>
-                )}
-              </div>
-            </div>
+                }
+              }}
+            />
           </div>
 
           {/* Rich Text Editor */}

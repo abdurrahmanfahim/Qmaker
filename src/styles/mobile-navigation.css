@@ -1,0 +1,113 @@
+/* Mobile Navigation Improvements */
+
+/* Swipe gesture support for sections */
+.section-tabs {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better section tab spacing on mobile */
+@media (max-width: 768px) {
+  .section-tabs {
+    gap: 8px !important;
+    padding: 8px 16px !important;
+  }
+  
+  .section-tab {
+    min-width: 120px !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Improved floating toolbar for mobile */
+@media (max-width: 768px) {
+  .floating-toolbar {
+    padding: 8px 12px !important;
+    height: 60px !important;
+  }
+  
+  .floating-toolbar button {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    padding: 12px !important;
+  }
+  
+  .floating-toolbar .w-px {
+    margin: 0 4px !important;
+  }
+}
+
+/* Mobile-friendly question editor */
+@media (max-width: 768px) {
+  .question-editor {
+    padding: 12px !important;
+    margin: 8px 0 !important;
+  }
+  
+  .question-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+  
+  .question-controls {
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+}
+
+/* Better input sizing for mobile */
+@media (max-width: 768px) {
+  /* Search input specific styling */
+  input[type="text"].search-input {
+    padding: 12px 16px 12px 48px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+  }
+  
+  /* Temporarily disabled to fix search input padding */
+  /*
+  input[type="text"]:not(.search-input),
+  input[type="number"],
+  textarea {
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+  }
+  */
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.dark .loading-skeleton {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
+/* Fix workspace content overflow */
+@media (max-width: 768px) {
+  .flex-1.overflow-auto {
+    padding-bottom: 200px !important;
+  }
+  
+  /* Ensure proper spacing at bottom */
+  .space-y-2.sm\:space-y-4 {
+    padding-bottom: 120px !important;
+  }
+  
+  /* Fix dynamic spacer height */
+  .w-full[aria-hidden="true"] {
+    height: 250px !important;
+  }
+}

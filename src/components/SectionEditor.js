@@ -5,8 +5,9 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
-import SubQuestionEditor from './SubQuestionEditor';
+import LazySubQuestionEditor from './LazySubQuestionEditor';
 import ConfirmModal from './ConfirmModal';
+import { useSwipeGestures, useHapticFeedback } from '../hooks/useSwipeGestures';
 
 
 const SectionEditor = () => {
@@ -25,6 +26,26 @@ const SectionEditor = () => {
   } = usePaperStore();
   
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const { lightTap } = useHapticFeedback();
+  
+  const currentSectionIndex = sections.findIndex(s => s.id === activeSectionId);
+  
+  const swipeGestures = useSwipeGestures(
+    () => {
+      // Swipe left - next section
+      if (currentSectionIndex < sections.length - 1) {
+        setActiveSection(sections[currentSectionIndex + 1].id);
+        lightTap();
+      }
+    },
+    () => {
+      // Swipe right - previous section
+      if (currentSectionIndex > 0) {
+        setActiveSection(sections[currentSectionIndex - 1].id);
+        lightTap();
+      }
+    }
+  );
   
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -84,6 +105,8 @@ const SectionEditor = () => {
   const handleAddSubQuestion = () => {
     addSubQuestion(activeSectionId);
   };
+  
+
 
 
 
@@ -91,7 +114,7 @@ const SectionEditor = () => {
     <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900" style={{ paddingBottom: '100px' }}>
       {/* Clean Section Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="px-2 py-2 overflow-x-auto custom-scrollbar">
+        <div className="section-tabs smooth-scroll px-2 py-2 overflow-x-auto custom-scrollbar">
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="sections" direction="horizontal">
               {(provided) => (
@@ -108,7 +131,7 @@ const SectionEditor = () => {
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           onClick={() => setActiveSection(section.id)}
-                          className={`px-2 py-2 sm:px-4 sm:py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
+                          className={`touch-target px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
                             section.id === activeSectionId
                               ? 'bg-[#09302f] text-white shadow-lg dark:bg-[#4ade80] dark:text-gray-900 transform scale-105'
                               : 'text-gray-700 dark:text-gray-200 hover:text-[#09302f] hover:bg-white dark:hover:bg-gray-600 hover:shadow-md'
@@ -140,7 +163,7 @@ const SectionEditor = () => {
                         console.error('Failed to add section:', error);
                       }
                     }}
-                    className="px-2 py-2 sm:px-4 sm:py-3 text-[#09302f] dark:text-[#4ade80] hover:bg-white dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 touch-manipulation focus:ring-2 focus:ring-[#09302f] focus:outline-none hover:shadow-md"
+                    className="touch-target px-4 py-3 text-[#09302f] dark:text-[#4ade80] hover:bg-white dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 focus:ring-2 focus:ring-[#09302f] focus:outline-none hover:shadow-md"
                     aria-label="Add new section"
                   >
                     + Add Section
@@ -154,7 +177,11 @@ const SectionEditor = () => {
 
       {/* Section Content */}
       {activeSection ? (
-        <div className="flex-1 overflow-auto custom-scrollbar" style={{ paddingBottom: '80px' }}>
+        <div 
+          className="flex-1 overflow-auto custom-scrollbar" 
+          style={{ paddingBottom: '80px' }}
+          {...swipeGestures}
+        >
           {activeSection.subQuestions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-center max-w-sm">
@@ -199,7 +226,7 @@ const SectionEditor = () => {
                           console.error('Failed to add question:', error);
                         }
                       }}
-                      className="px-6 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none touch-manipulation"
+                      className="px-6 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
                       aria-label="Add new question to this section"
                     >
                       Add Question
@@ -210,7 +237,7 @@ const SectionEditor = () => {
               
               {/* Sub-Questions */}
               {activeSection.subQuestions.map((subQuestion, index) => (
-                <SubQuestionEditor
+                <LazySubQuestionEditor
                   key={subQuestion.id}
                   subQuestion={subQuestion}
                   sectionId={activeSection.id}

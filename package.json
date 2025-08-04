@@ -3,50 +3,35 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@hello-pangea/dnd": "^16.3.0",
     "@heroicons/react": "^2.0.18",
-    "@tiptap/core": "^2.1.11",
-    "@tiptap/extension-bold": "^2.1.11",
-    "@tiptap/extension-bullet-list": "^2.1.11",
-    "@tiptap/extension-document": "^2.1.11",
-    "@tiptap/extension-hard-break": "^2.1.11",
-    "@tiptap/extension-history": "^2.1.11",
-    "@tiptap/extension-image": "^2.1.11",
-    "@tiptap/extension-italic": "^2.1.11",
-    "@tiptap/extension-list-item": "^2.1.11",
-    "@tiptap/extension-ordered-list": "^2.1.11",
-    "@tiptap/extension-paragraph": "^2.1.11",
-    "@tiptap/extension-table": "^2.26.1",
-    "@tiptap/extension-table-cell": "^2.26.1",
-    "@tiptap/extension-table-header": "^2.26.1",
-    "@tiptap/extension-table-row": "^2.26.1",
-    "@tiptap/extension-text": "^2.1.11",
-    "@tiptap/extension-text-align": "^2.26.1",
-    "@tiptap/extension-underline": "^2.1.11",
-    "@tiptap/react": "^2.1.11",
-    "@tiptap/starter-kit": "^2.1.11",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@tiptap/extension-table": "^2.0.3",
+    "@tiptap/extension-table-cell": "^2.0.3",
+    "@tiptap/extension-table-header": "^2.0.3",
+    "@tiptap/extension-table-row": "^2.0.3",
+    "@tiptap/extension-text-align": "^2.0.3",
+    "@tiptap/extension-underline": "^2.26.1",
+    "@tiptap/pm": "^2.0.3",
+    "@tiptap/react": "^2.0.3",
+    "@tiptap/starter-kit": "^2.0.3",
     "html2pdf.js": "^0.10.1",
-    "katex": "^0.16.8",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
+    "react-image-crop": "^10.1.8",
     "react-scripts": "5.0.1",
-    "uuid": "^9.0.1",
+    "uuid": "^9.0.0",
     "web-vitals": "^2.1.4",
-    "zustand": "^4.4.1"
+    "zustand": "^4.3.8"
   },
   "scripts": {
     "start": "react-scripts start",
     "start:mobile": "set HOST=0.0.0.0&& react-scripts start",
     "build": "react-scripts build",
-    "build:vercel": "react-scripts build",
-    "build:netlify": "react-scripts build",
-    "postbuild": "node -e \"require('fs').writeFileSync('build/sitemap.xml', '<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><urlset xmlns=\\\"http://www.sitemaps.org/schemas/sitemap/0.9\\\"><url><loc>https://qmaker.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>')\"",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "version:patch": "npm version patch",
-    "version:minor": "npm version minor",
-    "version:major": "npm version major"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -65,13 +50,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
-  },
-  "homepage": ".",
-  "devDependencies": {
-    "tailwindcss": "^3.3.0"
   }
 }

@@ -467,6 +467,67 @@ const usePaperStore = create(
       },
 
       /**
+       * Clear all data for new paper
+       */
+      clearAll: () => {
+        const defaultSection = {
+          id: uuidv4(),
+          title: 'First Question',
+          subQuestions: [
+            {
+              id: uuidv4(),
+              label: '(ক)',
+              heading: '',
+              content: '<p></p>',
+              marks: 5,
+              showAnswer: false,
+              answer: '',
+              type: 'text'
+            },
+            {
+              id: uuidv4(),
+              label: '(খ)',
+              heading: '',
+              content: '<p></p>',
+              marks: 5,
+              showAnswer: false,
+              answer: '',
+              type: 'text'
+            },
+            {
+              id: uuidv4(),
+              label: '(গ)',
+              heading: '',
+              content: '<p></p>',
+              marks: 5,
+              showAnswer: false,
+              answer: '',
+              type: 'text'
+            }
+          ]
+        };
+        
+        set({
+          metadata: {
+            language: 'bangla',
+            schoolName: '',
+            examName: '',
+            className: '',
+            subject: '',
+            book: '',
+            fullMarks: '',
+            duration: '',
+            instructions: '',
+            numberingStyle: 'letters'
+          },
+          sections: [defaultSection],
+          activeSectionId: defaultSection.id,
+          activeSubQuestionId: defaultSection.subQuestions[0].id,
+          previewMode: false
+        });
+      },
+
+      /**
        * Initialize store on app startup
        * Sets first section as active if none selected
        */

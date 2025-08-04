@@ -8,12 +8,12 @@ import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   InformationCircleIcon,
-  DocumentTextIcon
+  HomeIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { exportToPDF } from '../utils/pdfExport';
 
-const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
+const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   
@@ -21,7 +21,6 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
     darkMode,
     toggleDarkMode,
     metadata,
-    setLanguage,
     setMetadata,
     exportData,
     importData
@@ -31,6 +30,7 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
+        onMenuToggle?.(false);
       }
     };
 
@@ -95,6 +95,38 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
 
   const menuItems = [
     {
+      section: 'Navigation',
+      items: [
+        {
+          icon: HomeIcon,
+          label: 'Home',
+          action: () => {
+            // Save current paper first
+            const currentData = exportData();
+            if (currentData.sections.length > 0 || currentData.metadata.examName) {
+              // Save to recent papers
+              const recent = JSON.parse(localStorage.getItem('qmaker-recent-papers') || '[]');
+              const paperInfo = {
+                id: Date.now().toString(),
+                title: currentData.metadata?.examName || 'Untitled Paper',
+                subject: currentData.metadata?.subject || 'Unknown Subject',
+                className: currentData.metadata?.className || 'Unknown Class',
+                language: currentData.metadata?.language || 'english',
+                lastModified: new Date().toLocaleDateString(),
+                data: currentData
+              };
+              const filtered = recent.filter(p => p.title !== paperInfo.title);
+              const updated = [paperInfo, ...filtered].slice(0, 10);
+              localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+            }
+            
+            localStorage.removeItem('qmaker-visited');
+            window.location.reload();
+          }
+        }
+      ]
+    },
+    {
       section: 'Export',
       items: [
         {
@@ -134,7 +166,10 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+          onMenuToggle?.(true);
+        }}
         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         aria-label="Open menu"
       >
@@ -153,7 +188,11 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+            onMenuToggle?.(false);
+                    onMenuToggle?.(false);
+                  }}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
                   aria-label="Close menu"
                 >
@@ -161,24 +200,7 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
                 </button>
               </div>
 
-              {/* Language Selector */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Language
-                </label>
-                <select
-                  value={metadata.language}
-                  onChange={(e) => { setLanguage(e.target.value); setIsOpen(false); }}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value="english">English</option>
-                  <option value="bangla">বাংলা</option>
-                  <option value="arabic">العربية</option>
-                  <option value="urdu">اردو</option>
-                </select>
-              </div>
 
-              {/* Menu Items */}
               <div className="flex-1 overflow-y-auto">
                 {menuItems.map((section, sectionIndex) => (
                   <div key={sectionIndex} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
@@ -230,7 +252,7 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo }) => {
 
       {/* Paper Info Modal */}
       {showPaperInfo && (
-        <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
+        <div className="fixed inset-0 z-[10000] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm sm:max-w-md max-h-[90vh] sm:max-h-[80vh] flex flex-col">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">

@@ -1,0 +1,120 @@
+/* Performance Optimizations */
+
+/* GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Optimize repaints */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* Reduce layout thrashing */
+.no-layout-shift {
+  width: 100%;
+  height: auto;
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* Optimize scrolling */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Critical CSS for above-the-fold content */
+.critical-content {
+  font-display: swap;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
+}
+
+/* Lazy loading optimization */
+.lazy-content {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 300px;
+}
+
+/* Reduce paint complexity */
+.simple-paint {
+  border-radius: 0;
+  box-shadow: none;
+  background-image: none;
+}
+
+/* Optimize for mobile performance */
+@media (max-width: 768px) {
+  /* Reduce animations on low-end devices */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Optimize touch interactions */
+  .touch-optimized {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* Bundle size optimization classes */
+.minimal-styles {
+  /* Use system fonts for better performance */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Memory optimization */
+.memory-efficient {
+  /* Avoid expensive CSS properties */
+  filter: none;
+  backdrop-filter: none;
+  mix-blend-mode: normal;
+}
+
+/* Network optimization */
+.preload-critical {
+  /* Critical resources should be preloaded */
+  font-display: swap;
+}
+
+/* Lighthouse optimization helpers */
+.lighthouse-optimized {
+  /* Ensure proper contrast ratios */
+  color: #111827;
+  background-color: #ffffff;
+}
+
+.dark .lighthouse-optimized {
+  color: #f9fafb;
+  background-color: #111827;
+}
+
+/* Accessibility performance */
+.a11y-optimized {
+  /* Ensure focus indicators are visible */
+  outline-offset: 2px;
+}
+
+.a11y-optimized:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

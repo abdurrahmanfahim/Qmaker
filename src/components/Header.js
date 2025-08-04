@@ -8,21 +8,22 @@
 
 import React, { useEffect } from 'react';
 import { 
-  ArrowUturnLeftIcon,
-  ArrowUturnRightIcon,
   EyeIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  HomeIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
 import { useEditorContext } from '../contexts/EditorContext';
 import HamburgerMenu from './HamburgerMenu';
+import { saveRecentPaper } from '../utils/recentPapers';
 
 /**
  * Main application header component with responsive design
  * Provides access to all major app functions and displays auto-save status
  * @returns {JSX.Element} Rendered header component
  */
-const Header = () => {
+const Header = ({ onMenuToggle }) => {
   const { 
     exportData,
     metadata,
@@ -31,7 +32,7 @@ const Header = () => {
     togglePreviewMode
   } = usePaperStore();
   
-  const { activeEditor } = useEditorContext();
+
   const [showPaperInfo, setShowPaperInfo] = React.useState(false);
   
   // Check if required fields are filled
@@ -90,8 +91,46 @@ const Header = () => {
         
           {/* Actions */}
           <div className="flex items-center gap-2">
-
+            {/* Back to Dashboard */}
+            <button
+              onClick={() => {
+                // Save current paper before going back
+                const currentData = exportData();
+                if (currentData.sections.length > 0 || currentData.metadata.examName) {
+                  saveRecentPaper(currentData);
+                }
+                
+                localStorage.removeItem('qmaker-visited');
+                window.location.reload();
+              }}
+              className="p-2 rounded-lg transition-colors text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+              aria-label="Back to Dashboard"
+              title="Back to Dashboard"
+            >
+              <HomeIcon className="w-4 h-4" />
+            </button>
             
+            {/* New Paper */}
+            <button
+              onClick={() => {
+                // Save current paper
+                const currentData = exportData();
+                if (currentData.sections.length > 0 || currentData.metadata.examName) {
+                  saveRecentPaper(currentData);
+                }
+                
+                // Clear for new paper
+                localStorage.removeItem('paper-storage');
+                localStorage.removeItem('qmaker-autosave');
+                window.location.reload();
+              }}
+              className="p-2 rounded-lg transition-colors text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+              aria-label="New Paper"
+              title="New Paper"
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+
             {/* Page Info */}
             <button
               onClick={() => setShowPaperInfo(true)}
@@ -105,7 +144,7 @@ const Header = () => {
             >
               <InformationCircleIcon className="w-4 h-4" />
               {showError && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               )}
             </button>
             
@@ -123,7 +162,11 @@ const Header = () => {
               <EyeIcon className="w-4 h-4" />
             </button>
             
-            <HamburgerMenu showPaperInfo={showPaperInfo} setShowPaperInfo={setShowPaperInfo} />
+            <HamburgerMenu 
+          showPaperInfo={showPaperInfo} 
+          setShowPaperInfo={setShowPaperInfo}
+          onMenuToggle={onMenuToggle}
+        />
           </div>
         </div>
       </div>
