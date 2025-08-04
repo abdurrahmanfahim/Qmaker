@@ -10,6 +10,7 @@ import {
   DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { getRecentPapers } from '../../utils/recentPapers';
+import { DEFAULT_TITLES, PAPER_COLORS, STORAGE_KEYS } from '../../constants';
 
 /**
  * Reusable Paper Card component with actions menu and color tagging
@@ -32,30 +33,18 @@ const PaperCard = ({
 }) => {
   /**
    * Get default paper title based on language
-   * @param {string} language - Paper language (arabic, bangla, urdu, english)
+   * @param {string} language - Paper language
    * @returns {string} Localized default title
    */
   const getDefaultTitle = (language) => {
-    switch(language) {
-      case 'arabic': return 'ورقة أسئلة بدون عنوان'; // Untitled Question Paper
-      case 'bangla': return 'শিরোনামহীন প্রশ্নপত্র'; // Untitled Question Paper
-      case 'urdu': return 'بے نام سوالیہ کاغذ'; // Untitled Question Paper
-      default: return 'Untitled Paper';
-    }
+    return DEFAULT_TITLES[language] || DEFAULT_TITLES.english;
   };
   // Component state for menu and color picker visibility
   const [activeMenu, setActiveMenu] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   
   // Available color options for paper tagging
-  const colors = [
-    { name: 'None', value: null, bg: 'bg-transparent', border: 'border-gray-300' },
-    { name: 'Red', value: 'red', bg: 'bg-red-100', border: 'border-red-300' },
-    { name: 'Blue', value: 'blue', bg: 'bg-blue-100', border: 'border-blue-300' },
-    { name: 'Green', value: 'green', bg: 'bg-green-100', border: 'border-green-300' },
-    { name: 'Yellow', value: 'yellow', bg: 'bg-yellow-100', border: 'border-yellow-300' },
-    { name: 'Purple', value: 'purple', bg: 'bg-purple-100', border: 'border-purple-300' }
-  ];
+  const colors = PAPER_COLORS;
 
   /**
    * Handle color tag change for paper
@@ -68,7 +57,7 @@ const PaperCard = ({
     const updated = recent.map(p => 
       p.id === paper.id ? { ...p, colorTag: color } : p
     );
-    localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.RECENT_PAPERS, JSON.stringify(updated));
     
     // Save to cloud storage if paper data exists
     if (paper.data) {
@@ -79,7 +68,7 @@ const PaperCard = ({
           colorTag: color
         }
       };
-      localStorage.setItem(`qmaker-paper-${paper.id}`, JSON.stringify(updatedPaperData));
+      localStorage.setItem(`${STORAGE_KEYS.PAPER_PREFIX}${paper.id}`, JSON.stringify(updatedPaperData));
     }
     
     // Update parent component and close menus
@@ -98,7 +87,7 @@ const PaperCard = ({
       case 'delete':
         const recent = getRecentPapers();
         const updated = recent.filter(p => p.id !== paper.id);
-        localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+        localStorage.setItem(STORAGE_KEYS.RECENT_PAPERS, JSON.stringify(updated));
         if (onUpdatePapers) onUpdatePapers(updated);
         break;
       case 'print':

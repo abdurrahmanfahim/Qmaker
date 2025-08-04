@@ -10,23 +10,19 @@ import {
   TrashIcon,
   PrinterIcon,
   DocumentArrowDownIcon,
-  HomeIcon,
-  FolderIcon,
-  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
-import { useHapticFeedback } from '../hooks/useSwipeGestures';
-import { getRecentPapers, getMockSharedPapers } from '../utils/recentPapers';
-import usePaperStore from '../store/paperStore';
+import { useHapticFeedback } from '../../hooks/useSwipeGestures';
+import { getRecentPapers, getMockSharedPapers } from '../../utils/recentPapers';
+import usePaperStore from '../../store/paperStore';
 import RecentPage from './RecentPage';
 import SharedPage from './SharedPage';
 import SettingsPage from './SettingsPage';
 import UserProfile from './UserProfile';
-import GoogleSignup from './GoogleSignup';
-import BottomNavigation from './common/BottomNavigation';
+import GoogleSignup from '../GoogleSignup';
+import BottomNavigation from '../common/BottomNavigation';
 import SearchPage from './SearchPage';
-import PaperCard from './common/PaperCard';
-import Button from './common/Button';
-import EmptyState from './common/EmptyState';
+import Button from '../common/Button';
+import EmptyState from '../common/EmptyState';
 
 
 const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) => {
@@ -119,6 +115,10 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
             url: window.location.href
           });
         }
+        break;
+      default:
+        // Optionally log or handle unknown actions
+        console.warn(`Unknown action: ${action}`);
         break;
     }
   };
@@ -379,11 +379,22 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-6">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Qmaker</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                <img 
+                src="/images/logo/QMaker-logo-lg-primary.png" 
+                alt="Qmaker" 
+                className="h-8 w-auto dark:block"
+              />
+              <img 
+                src="/images/logo/QMaker-logo-lg.png" 
+                alt="Qmaker" 
+                className="h-8 w-auto dark:hidden"
+              />
+              </h1>
               <p className="text-gray-600 dark:text-gray-300">Question Paper Builder</p>
             </div>
             <Button

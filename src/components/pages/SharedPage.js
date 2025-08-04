@@ -13,12 +13,12 @@ import {
   PlusIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
-import { useHapticFeedback } from '../hooks/useSwipeGestures';
-import BottomNavigation from './common/BottomNavigation';
-import SearchBar from './common/SearchBar';
-import PaperCard from './common/PaperCard';
-import EmptyState from './common/EmptyState';
-import PageHeader from './common/PageHeader';
+import { useHapticFeedback } from '../../hooks/useSwipeGestures';
+import BottomNavigation from '../common/BottomNavigation';
+import SearchBar from '../common/SearchBar';
+import PaperCard from '../common/PaperCard';
+import EmptyState from '../common/EmptyState';
+import PageHeader from '../common/PageHeader';
 
 const SharedPage = ({ onBack, onOpenPaper, onNavigate }) => {
   const [sharedPapers, setSharedPapers] = useState([]);

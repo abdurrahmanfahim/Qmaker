@@ -12,8 +12,8 @@ import {
   ChevronUpIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
-import usePaperStore from '../store/paperStore';
-import { useEditorContext } from '../contexts/EditorContext';
+import usePaperStore from '../../store/paperStore';
+import { useEditorContext } from '../../contexts/EditorContext';
 
 
 

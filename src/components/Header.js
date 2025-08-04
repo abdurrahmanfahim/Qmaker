@@ -144,7 +144,7 @@ const Header = ({ onMenuToggle }) => {
             >
               <InformationCircleIcon className="w-4 h-4" />
               {showError && (
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               )}
             </button>
             

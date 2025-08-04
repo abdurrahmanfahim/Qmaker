@@ -7,7 +7,7 @@
  */
 
 import React, { Suspense, lazy } from 'react';
-import { LoadingOverlay } from './LoadingSpinner';
+import { LoadingOverlay } from './ui/LoadingSpinner';
 
 // Lazy load the PreviewPanel component
 const PreviewPanel = lazy(() => import('./PreviewPanel'));

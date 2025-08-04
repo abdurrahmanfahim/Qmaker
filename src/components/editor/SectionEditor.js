@@ -4,10 +4,10 @@ import {
   TrashIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import usePaperStore from '../store/paperStore';
+import usePaperStore from '../../store/paperStore';
 import LazySubQuestionEditor from './LazySubQuestionEditor';
-import ConfirmModal from './ConfirmModal';
-import { useSwipeGestures, useHapticFeedback } from '../hooks/useSwipeGestures';
+import ConfirmModal from '../modals/ConfirmModal';
+import { useSwipeGestures, useHapticFeedback } from '../../hooks/useSwipeGestures';
 
 
 const SectionEditor = () => {

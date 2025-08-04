@@ -4,14 +4,14 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useHapticFeedback } from '../hooks/useSwipeGestures';
-import { getRecentPapers } from '../utils/recentPapers';
+import { useHapticFeedback } from '../../hooks/useSwipeGestures';
+import { getRecentPapers } from '../../utils/recentPapers';
 
-import BottomNavigation from './common/BottomNavigation';
-import SearchBar from './common/SearchBar';
-import PaperCard from './common/PaperCard';
-import Button from './common/Button';
-import EmptyState from './common/EmptyState';
+import BottomNavigation from '../common/BottomNavigation';
+import SearchBar from '../common/SearchBar';
+import PaperCard from '../common/PaperCard';
+import Button from '../common/Button';
+import EmptyState from '../common/EmptyState';
 
 const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');

@@ -6,8 +6,8 @@ import {
   CheckIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useHapticFeedback } from '../hooks/useSwipeGestures';
-import ImageCropper from './ImageCropper';
+import { useHapticFeedback } from '../../hooks/useSwipeGestures';
+import ImageCropper from '../ImageCropper';
 
 const UserProfile = ({ onBack, onShowGoogleSignup }) => {
   const [isSignedIn, setIsSignedIn] = useState(false);

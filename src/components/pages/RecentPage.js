@@ -15,14 +15,14 @@ import {
   PlusIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
-import { useHapticFeedback } from '../hooks/useSwipeGestures';
-import { getRecentPapers } from '../utils/recentPapers';
-import BottomNavigation from './common/BottomNavigation';
-import SearchBar from './common/SearchBar';
-import PaperCard from './common/PaperCard';
-import Button from './common/Button';
-import EmptyState from './common/EmptyState';
-import PageHeader from './common/PageHeader';
+import { useHapticFeedback } from '../../hooks/useSwipeGestures';
+import { getRecentPapers } from '../../utils/recentPapers';
+import BottomNavigation from '../common/BottomNavigation';
+import SearchBar from '../common/SearchBar';
+import PaperCard from '../common/PaperCard';
+import Button from '../common/Button';
+import EmptyState from '../common/EmptyState';
+import PageHeader from '../common/PageHeader';
 
 const RecentPage = ({ onBack, onOpenPaper, onNavigate }) => {
   const [recentPapers, setRecentPapers] = useState([]);
