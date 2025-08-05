@@ -94,4 +94,5 @@ class CloudSync {
   }
 }
 
-export default new CloudSync();
+const cloudSyncInstance = new CloudSync();
+export default cloudSyncInstance;

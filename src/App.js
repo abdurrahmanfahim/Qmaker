@@ -10,7 +10,7 @@ import FloatingToolbar from "./components/FloatingToolbar";
 import { EditorProvider } from "./contexts/EditorContext";
 import { usePerformance } from "./hooks/usePerformance";
 import { trackEvent, trackPerformance } from "./utils/analytics";
-import { updateMetaTags, generateStructuredData } from "./utils/seo";
+import { updateMetaTags } from "./utils/seo";
 import cloudSync from "./utils/cloudSync";
 import { saveRecentPaper } from "./utils/recentPapers";
 import "./styles/typography.css";
@@ -80,11 +80,7 @@ function App() {
     }
   }, [performanceMetrics]);
 
-  const handleWelcomeComplete = (selectedLanguage) => {
-    setLanguage(selectedLanguage);
-    localStorage.setItem("qmaker-visited", "true");
-    setShowWelcome(false);
-  };
+
 
   const handleCreateNew = (language = "bangla") => {
     // Save current paper first

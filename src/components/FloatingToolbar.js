@@ -4,7 +4,6 @@ import {
   BoldIcon,
   ItalicIcon,
   UnderlineIcon,
-  Bars3BottomLeftIcon,
   Bars3CenterLeftIcon,
   Bars3Icon,
   TableCellsIcon,
@@ -17,7 +16,7 @@ import { useHapticFeedback } from '../hooks/useSwipeGestures';
 
 const FloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar = false }) => {
   const { activeEditor } = useEditorContext();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const { lightTap } = useHapticFeedback();
 
   useEffect(() => {
@@ -26,7 +25,6 @@ const FloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar = fals
     const updateKeyboardHeight = () => {
       if (window.visualViewport) {
         const kbHeight = Math.max(0, window.innerHeight - window.visualViewport.height);
-        setKeyboardHeight(kbHeight);
         document.documentElement.style.setProperty('--keyboard-height', `${kbHeight}px`);
       }
     };
