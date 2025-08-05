@@ -14,7 +14,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 import usePaperStore from '../store/paperStore';
-import { useEditorContext } from '../contexts/EditorContext';
+
 import HamburgerMenu from './HamburgerMenu';
 import { saveRecentPaper } from '../utils/recentPapers';
 

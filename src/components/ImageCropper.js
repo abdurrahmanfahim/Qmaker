@@ -13,21 +13,7 @@ const ImageCropper = ({ imageSrc, onCrop, onCancel }) => {
   });
   const [completedCrop, setCompletedCrop] = useState(null);
   const imgRef = useRef(null);
-  const previewCanvasRef = useRef(null);
 
-
-
-  const makeClientCrop = useCallback(async (crop) => {
-    if (imgRef.current && crop.width && crop.height) {
-      const croppedImageUrl = getCroppedImg(
-        imgRef.current,
-        crop,
-        'newFile.jpeg'
-      );
-      return croppedImageUrl;
-    }
-    return null;
-  }, []);
 
   const getCroppedImg = (image, crop, fileName) => {
     if (!image || !crop.width || !crop.height) return null;

@@ -10,7 +10,6 @@ import {
 import { useHapticFeedback } from '../../hooks/useSwipeGestures';
 import usePaperStore from '../../store/paperStore';
 import Button from '../common/Button';
-import Modal from '../common/Modal';
 
 const SettingsPage = ({ onBack, onShowProfile }) => {
   const { darkMode, toggleDarkMode } = usePaperStore();
