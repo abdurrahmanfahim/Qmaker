@@ -20,56 +20,112 @@ const PreviewPanel = () => {
   const processContent = (htmlContent) => {
     if (!htmlContent) return '';
     
-    // Convert HTML to JSX-friendly format
-    let content = htmlContent;
+    // Batch all replacements for better performance
+    const replacements = [
+      [/<ol[^>]*>/g, '<div class="ordered-list">'],
+      [/<\/ol>/g, '</div>'],
+      [/<li[^>]*>/g, '<div class="list-item">'],
+      [/<\/li>/g, '</div>'],
+      [/<ul[^>]*>/g, '<div class="unordered-list">'],
+      [/<\/ul>/g, '</div>'],
+      [/<hr[^>]*>/g, '<hr style="border: 1px solid #000; margin: 10px 0;">'],
+      [/<s>/g, '<span style="text-decoration: line-through;">'],
+      [/<\/s>/g, '</span>'],
+      [/<strike>/g, '<span style="text-decoration: line-through;">'],
+      [/<\/strike>/g, '</span>']
+    ];
     
-    // Handle ordered lists
-    content = content.replace(/<ol[^>]*>/g, '<div class="ordered-list">');
-    content = content.replace(/<\/ol>/g, '</div>');
-    content = content.replace(/<li[^>]*>/g, '<div class="list-item">');
-    content = content.replace(/<\/li>/g, '</div>');
-    
-    // Handle unordered lists
-    content = content.replace(/<ul[^>]*>/g, '<div class="unordered-list">');
-    content = content.replace(/<\/ul>/g, '</div>');
-    
-    // Handle horizontal rules
-    content = content.replace(/<hr[^>]*>/g, '<hr style="border: 1px solid #000; margin: 10px 0;">');
-    
-    // Handle strikethrough
-    content = content.replace(/<s>/g, '<span style="text-decoration: line-through;">');
-    content = content.replace(/<\/s>/g, '</span>');
-    content = content.replace(/<strike>/g, '<span style="text-decoration: line-through;">');
-    content = content.replace(/<\/strike>/g, '</span>');
-    
-    return content;
+    return replacements.reduce((content, [pattern, replacement]) => 
+      content.replace(pattern, replacement), htmlContent
+    );
   };
 
-  const paperStyle = {
-    fontFamily: getFontFamily(metadata.language),
-    fontSize: '12px',
-    padding: '40px',
-    width: '210mm',
-    minHeight: '297mm',
-    boxSizing: 'border-box',
-    direction: getDirection(metadata.language),
-    backgroundColor: 'white',
-    color: 'black',
-    margin: '0 auto',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-    position: 'relative'
-  };
-
-  const containerStyle = {
-    width: '100%',
-    overflow: 'auto',
-    backgroundColor: '#f5f5f5',
-    padding: '20px'
+  const styles = {
+    container: {
+      width: '100%',
+      overflow: 'auto',
+      backgroundColor: '#f5f5f5',
+      padding: '20px'
+    },
+    paper: {
+      fontFamily: getFontFamily(metadata.language),
+      fontSize: '12px',
+      padding: '40px',
+      width: '210mm',
+      minHeight: '297mm',
+      boxSizing: 'border-box',
+      direction: getDirection(metadata.language),
+      backgroundColor: 'white',
+      color: 'black',
+      margin: '0 auto',
+      boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+      position: 'relative'
+    },
+    header: {
+      textAlign: 'center',
+      fontSize: '24px',
+      fontWeight: 'bold',
+      marginBottom: '10px'
+    },
+    examName: {
+      textAlign: 'center',
+      marginBottom: '10px'
+    },
+    metadataRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: '5px',
+      gap: '5px'
+    },
+    metadataItem: {
+      padding: '2px 5px'
+    },
+    hr: {
+      margin: '10px 0',
+      border: '1px solid #000'
+    },
+    instructions: {
+      textAlign: 'center',
+      margin: '5px 0'
+    },
+    sectionTitle: {
+      fontSize: '16px',
+      fontWeight: 'bold',
+      margin: '10px 0px',
+      textAlign: 'start'
+    },
+    subQuestion: {
+      marginBottom: '15px'
+    },
+    subQuestionHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      fontSize: '13px',
+      padding: '2px',
+      marginBottom: '2px',
+      marginLeft: '20px'
+    },
+    subQuestionLabel: {
+      display: 'flex',
+      gap: '5px'
+    },
+    subQuestionContent: {
+      textAlign: 'start',
+      margin: '5px 0px 10px 0px'
+    },
+    footer: {
+      position: 'absolute',
+      bottom: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      color: '#666',
+      fontSize: '10px'
+    }
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={paperStyle}>
+    <div style={styles.container}>
+      <div style={styles.paper}>
         <style>{`
           * {
             list-style: none !important;
@@ -175,43 +231,43 @@ const PreviewPanel = () => {
 
         `}</style>
         {/* Header */}
-        <div style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>
+        <div style={styles.header}>
           {metadata.schoolName || 'School Name'}
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <div style={styles.examName}>
           {metadata.examName || 'Exam Name'}
         </div>
 
         {/* Metadata Table */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', gap: '5px' }}>
-          <div style={{ padding: '2px 5px' }}>
+        <div style={styles.metadataRow}>
+          <div style={styles.metadataItem}>
             {metadata.language === 'bangla' ? 'কিতাব:' : metadata.language === 'arabic' ? 'الكتاب:' : 'Book:'} {metadata.bookName || ''}{metadata.bookName && metadata.language === 'bangla' ? '।' : ''}
           </div>
-          <div style={{ padding: '2px 5px' }}>
+          <div style={styles.metadataItem}>
             {metadata.language === 'bangla' ? 'বিষয়:' : metadata.language === 'arabic' ? 'المادة:' : 'Subject:'} {metadata.subject || ''}
           </div>
-          <div style={{ padding: '2px 5px' }}>
+          <div style={styles.metadataItem}>
             {metadata.language === 'bangla' ? 'জামাআত:' : metadata.language === 'arabic' ? 'الصف:' : 'Class:'} {metadata.className || ''}{metadata.className && metadata.language === 'bangla' ? '।' : ''}
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', gap: '5px' }}>
-          <div style={{ padding: '2px 5px' }}>
+        <div style={styles.metadataRow}>
+          <div style={styles.metadataItem}>
             {metadata.language === 'bangla' ? 'সময়ঃ' : metadata.language === 'arabic' ? 'الوقت:' : 'Time:'} {metadata.duration || ''}{metadata.duration && metadata.language === 'bangla' ? '।' : ''}
           </div>
-          <div style={{ padding: '2px 5px' }}>
+          <div style={styles.metadataItem}>
             {metadata.handwritingMarks || ''}
           </div>
-          <div style={{ padding: '2px 5px' }}>
+          <div style={styles.metadataItem}>
             {metadata.language === 'bangla' ? 'পূর্ণমানঃ' : metadata.language === 'arabic' ? 'الدرجة الكاملة:' : 'Full Marks:'} {metadata.fullMarks || ''}
           </div>
         </div>
 
-        <hr style={{ margin: '10px 0', border: '1px solid #000' }} />
+        <hr style={styles.hr} />
 
         {/* Instructions */}
-        <div style={{ textAlign: 'center', margin: '5px 0' }}>
+        <div style={styles.instructions}>
           ({metadata.generalInstructions || ''})
         </div>
 
@@ -220,23 +276,16 @@ const PreviewPanel = () => {
           <div key={section.id}>
             {/* Section Title */}
             {section.title && (
-              <div style={{ fontSize: '16px', fontWeight: 'bold', margin: '10px 0px', textAlign: 'start' }}>
+              <div style={styles.sectionTitle}>
                 {section.title}{metadata.language === 'bangla' ? ':' : ''}
               </div>
             )}
 
             {/* Sub-questions */}
             {section.subQuestions.map((subQuestion, index) => (
-              <div key={subQuestion.id} style={{ marginBottom: '15px' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  fontSize: '13px', 
-                  padding: '2px', 
-                  marginBottom: '2px',
-                  marginLeft: '20px'
-                }}>
-                  <div style={{ display: 'flex', gap: '5px' }}>
+              <div key={subQuestion.id} style={styles.subQuestion}>
+                <div style={styles.subQuestionHeader}>
+                  <div style={styles.subQuestionLabel}>
                     <div style={{ fontWeight: 'bold' }}>{subQuestion.label}</div>
                     <div style={{ fontWeight: 'bold' }}>{subQuestion.heading || 'Question heading'}</div>
                   </div>
@@ -246,8 +295,7 @@ const PreviewPanel = () => {
                 {subQuestion.content && (
                   <div 
                     style={{ 
-                      textAlign: 'start', 
-                      margin: '5px 0px 10px 0px', 
+                      ...styles.subQuestionContent,
                       paddingLeft: getDirection(metadata.language) === 'rtl' ? '0px' : '50px',
                       paddingRight: getDirection(metadata.language) === 'rtl' ? '25px' : '0px'
                     }}
@@ -260,14 +308,7 @@ const PreviewPanel = () => {
         ))}
         
         {/* Footer with date */}
-        <div style={{ 
-          position: 'absolute', 
-          bottom: '20px', 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          color: '#666', 
-          fontSize: '10px' 
-        }}>
+        <div style={styles.footer}>
           {metadata.date || new Date().toLocaleDateString()}
         </div>
       </div>
