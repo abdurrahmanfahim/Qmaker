@@ -46,7 +46,7 @@ const usePaperStore = create(
               label: '(ক)',
               heading: '',
               content: '<p></p>',
-              marks: 5,
+              marks: '',
               showAnswer: false,
               answer: '',
               type: 'text'
@@ -56,7 +56,7 @@ const usePaperStore = create(
               label: '(খ)',
               heading: '',
               content: '<p></p>',
-              marks: 5,
+              marks: '',
               showAnswer: false,
               answer: '',
               type: 'text'
@@ -66,7 +66,7 @@ const usePaperStore = create(
               label: '(গ)',
               heading: '',
               content: '<p></p>',
-              marks: 5,
+              marks: '',
               showAnswer: false,
               answer: '',
               type: 'text'
@@ -228,7 +228,7 @@ const usePaperStore = create(
             label: getLabel(0, currentLanguage),
             heading: '',
             content: '<p></p>',
-            marks: 5,
+            marks: '',
             showAnswer: false,
             answer: '',
             type: 'text'
@@ -238,7 +238,7 @@ const usePaperStore = create(
             label: getLabel(1, currentLanguage),
             heading: '',
             content: '<p></p>',
-            marks: 5,
+            marks: '',
             showAnswer: false,
             answer: '',
             type: 'text'
@@ -248,7 +248,7 @@ const usePaperStore = create(
             label: getLabel(2, currentLanguage),
             heading: '',
             content: '<p></p>',
-            marks: 5,
+            marks: '',
             showAnswer: false,
             answer: '',
             type: 'text'
@@ -330,7 +330,7 @@ const usePaperStore = create(
           label: getLabel(section.subQuestions.length, get().metadata.language),
           heading: template?.heading || '',
           content: template?.content || '',
-          marks: template?.marks || 5,
+          marks: template?.marks || '',
           showAnswer: false,
           answer: template?.answer || '',
           type: template?.type || 'text'
@@ -479,7 +479,7 @@ const usePaperStore = create(
               label: '(ক)',
               heading: '',
               content: '<p></p>',
-              marks: 5,
+              marks: '',
               showAnswer: false,
               answer: '',
               type: 'text'
@@ -489,7 +489,7 @@ const usePaperStore = create(
               label: '(খ)',
               heading: '',
               content: '<p></p>',
-              marks: 5,
+              marks: '',
               showAnswer: false,
               answer: '',
               type: 'text'
@@ -499,7 +499,7 @@ const usePaperStore = create(
               label: '(গ)',
               heading: '',
               content: '<p></p>',
-              marks: 5,
+              marks: '',
               showAnswer: false,
               answer: '',
               type: 'text'

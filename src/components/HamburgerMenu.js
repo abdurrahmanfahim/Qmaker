@@ -152,6 +152,16 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
       ]
     },
     {
+      section: 'Paper',
+      items: [
+        {
+          icon: InformationCircleIcon,
+          label: 'Paper Information',
+          action: () => { setShowPaperInfo(true); setIsOpen(false); }
+        }
+      ]
+    },
+    {
       section: 'Settings',
       items: [
         {
@@ -253,7 +263,7 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
       {/* Paper Info Modal */}
       {showPaperInfo && (
         <div className="fixed inset-0 z-[10000] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm sm:max-w-md max-h-[90vh] sm:max-h-[80vh] flex flex-col">
+          <form autoComplete="off" className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm sm:max-w-md max-h-[90vh] sm:max-h-[80vh] flex flex-col">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Paper Information</h3>
@@ -266,25 +276,31 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
               </div>
             </div>
             <div className="p-4 space-y-4 overflow-y-auto flex-1">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={metadata.subject || ''}
-                  onChange={(e) => setMetadata({ ...metadata, subject: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="Mathematics"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
-                <input
-                  type="text"
-                  value={metadata.className || ''}
-                  onChange={(e) => setMetadata({ ...metadata, className: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="Class 10"
-                />
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
+                  <input
+                    type="text"
+                    value={metadata.subject || ''}
+                    onChange={(e) => setMetadata({ ...metadata, subject: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="বিষয়ের নাম"
+                    autoComplete="off"
+                    name="qm_subj_field"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
+                  <input
+                    type="text"
+                    value={metadata.className || ''}
+                    onChange={(e) => setMetadata({ ...metadata, className: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="জামাআত"
+                    autoComplete="off"
+                    name="qm_cls_field"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">School Name</label>
@@ -293,7 +309,9 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
                   value={metadata.schoolName || ''}
                   onChange={(e) => setMetadata({ ...metadata, schoolName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="School/Institution Name"
+                  placeholder="শিক্ষা প্রতিষ্ঠানের নাম"
+                  autoComplete="off"
+                  name="qm_sch_field"
                 />
               </div>
               <div>
@@ -303,37 +321,77 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
                   value={metadata.examName || ''}
                   onChange={(e) => setMetadata({ ...metadata, examName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="First Term Examination 2024"
+                  placeholder="পরীক্ষার নাম"
+                  autoComplete="off"
+                  name="qm_exam_field"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
-                <input
-                  type="date"
-                  value={metadata.date || ''}
-                  onChange={(e) => setMetadata({ ...metadata, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
+              <div className="flex gap-3">
+                <div className="w-1/3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={metadata.date || ''}
+                    onChange={(e) => setMetadata({ ...metadata, date: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time</label>
+                  <input
+                    type="text"
+                    value={metadata.duration || ''}
+                    onChange={(e) => setMetadata({ ...metadata, duration: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="সময়"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="w-20">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Marks</label>
+                  <input
+                    type="number"
+                    value={metadata.fullMarks || ''}
+                    onChange={(e) => setMetadata({ ...metadata, fullMarks: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="নম্বর"
+                    min="0"
+                    autoComplete="off"
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Book Name</label>
                 <input
                   type="text"
-                  value={metadata.duration || ''}
-                  onChange={(e) => setMetadata({ ...metadata, duration: e.target.value })}
+                  value={metadata.bookName || ''}
+                  onChange={(e) => setMetadata({ ...metadata, bookName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="3 hours"
+                  placeholder="কিতাবের নাম"
+                  autoComplete="off"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Marks</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">General Instructions</label>
                 <input
-                  type="number"
-                  value={metadata.fullMarks || ''}
-                  onChange={(e) => setMetadata({ ...metadata, fullMarks: e.target.value })}
+                  type="text"
+                  value={metadata.generalInstructions || ''}
+                  onChange={(e) => setMetadata({ ...metadata, generalInstructions: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="100"
-                  min="0"
+                  placeholder="সাধারণ নির্দেশনা"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Handwriting Marks Note</label>
+                <input
+                  type="text"
+                  value={metadata.handwritingMarks || ''}
+                  onChange={(e) => setMetadata({ ...metadata, handwritingMarks: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="হাতের লেখার নোট"
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -345,7 +403,7 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
                 Done
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 

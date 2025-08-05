@@ -387,7 +387,7 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
                 <img 
                 src="/images/logo/QMaker-logo-lg-primary.png" 
                 alt="Qmaker" 
-                className="h-8 w-auto dark:block"
+                className="h-8 w-auto hidden dark:block"
               />
               <img 
                 src="/images/logo/QMaker-logo-lg.png" 

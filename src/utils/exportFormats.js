@@ -314,6 +314,9 @@ export const batchExport = async (papers, options = {}) => {
             zip.file(`${paperName}.json`, jsonContent);
             break;
           // PDF would require different handling due to async nature
+          default:
+            console.warn(`Unsupported export format: ${format}`);
+            break;
         }
       }
     }

@@ -62,20 +62,20 @@ const MetadataPanel = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
                   <input
                     type="text"
-                    value={metadata.subject}
+                    value={metadata.subject || 'ফিকহ'}
                     onChange={(e) => handleChange('subject', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Mathematics"
+                    placeholder="ফিকহ"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
                   <input
                     type="text"
-                    value={metadata.className}
+                    value={metadata.className || 'দশম'}
                     onChange={(e) => handleChange('className', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Class 10"
+                    placeholder="দশম"
                   />
                 </div>
               </div>
@@ -84,10 +84,10 @@ const MetadataPanel = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">School Name</label>
                 <input
                   type="text"
-                  value={metadata.schoolName || ''}
+                  value={metadata.schoolName || 'ফিকরুল উম্মাহ দারুল আবরার আল কাবীর মাদরাসা'}
                   onChange={(e) => handleChange('schoolName', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="School/Institution Name"
+                  placeholder="ফিকরুল উম্মাহ দারুল আবরার আল কাবীর মাদরাসা"
                 />
               </div>
               
@@ -95,10 +95,10 @@ const MetadataPanel = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Exam Name</label>
                 <input
                   type="text"
-                  value={metadata.examName}
+                  value={metadata.examName || 'দ্বিতীয় সাময়িক পরীক্ষা ১৪৪৬-৪৫ হি:'}
                   onChange={(e) => handleChange('examName', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="First Term Examination 2024"
+                  placeholder="দ্বিতীয় সাময়িক পরীক্ষা ১৪৪৬-৪৫ হি:"
                 />
               </div>
               
@@ -116,25 +116,57 @@ const MetadataPanel = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time</label>
                   <input
                     type="text"
-                    value={metadata.duration || ''}
+                    value={metadata.duration || '৩ ঘন্টা'}
                     onChange={(e) => handleChange('duration', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="3 hours"
+                    placeholder="৩ ঘন্টা"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Marks</label>
                   <input
                     type="number"
-                    value={metadata.fullMarks || ''}
+                    value={metadata.fullMarks || '১০০'}
                     onChange={(e) => handleChange('fullMarks', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="100"
+                    placeholder="১০০"
                     min="0"
                   />
                 </div>
               </div>
               
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Book Name</label>
+                <input
+                  type="text"
+                  value={metadata.bookName || 'কুদুরি'}
+                  onChange={(e) => handleChange('bookName', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="কুদুরি"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">General Instructions</label>
+                <input
+                  type="text"
+                  value={metadata.generalInstructions || 'সবগুলো প্রশ্নের উত্তর দাও।'}
+                  onChange={(e) => handleChange('generalInstructions', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="সবগুলো প্রশ্নের উত্তর দাও।"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Handwriting Marks Note</label>
+                <input
+                  type="text"
+                  value={metadata.handwritingMarks || '(সুন্দর হাতের লিখার জন্য চার নম্বর নির্ধারিত)'}
+                  onChange={(e) => handleChange('handwritingMarks', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="(সুন্দর হাতের লিখার জন্য চার নম্বর নির্ধারিত)"
+                />
+              </div>
 
               </div>
             </div>

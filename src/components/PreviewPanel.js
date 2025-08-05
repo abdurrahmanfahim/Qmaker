@@ -4,213 +4,272 @@ import usePaperStore from '../store/paperStore';
 const PreviewPanel = () => {
   const { metadata, sections } = usePaperStore();
 
-  const getFontClass = (language) => {
+  const getFontFamily = (language) => {
     switch (language) {
-      case 'arabic': return 'font-arabic';
-      case 'urdu': return 'font-urdu';
-      case 'bangla': return 'font-bangla';
-      default: return 'font-english';
+      case 'arabic': return 'Amiri, serif';
+      case 'bangla': return 'SolaimanLipi, sans-serif';
+      case 'urdu': return 'Jameel Noori Nastaleeq, serif';
+      default: return 'Roboto, sans-serif';
     }
   };
 
-  const getDirectionClass = (language) => {
+  const getDirection = (language) => {
     return ['arabic', 'urdu'].includes(language) ? 'rtl' : 'ltr';
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString();
+  const processContent = (htmlContent) => {
+    if (!htmlContent) return '';
+    
+    // Convert HTML to JSX-friendly format
+    let content = htmlContent;
+    
+    // Handle ordered lists
+    content = content.replace(/<ol[^>]*>/g, '<div class="ordered-list">');
+    content = content.replace(/<\/ol>/g, '</div>');
+    content = content.replace(/<li[^>]*>/g, '<div class="list-item">');
+    content = content.replace(/<\/li>/g, '</div>');
+    
+    // Handle unordered lists
+    content = content.replace(/<ul[^>]*>/g, '<div class="unordered-list">');
+    content = content.replace(/<\/ul>/g, '</div>');
+    
+    // Handle horizontal rules
+    content = content.replace(/<hr[^>]*>/g, '<hr style="border: 1px solid #000; margin: 10px 0;">');
+    
+    // Handle strikethrough
+    content = content.replace(/<s>/g, '<span style="text-decoration: line-through;">');
+    content = content.replace(/<\/s>/g, '</span>');
+    content = content.replace(/<strike>/g, '<span style="text-decoration: line-through;">');
+    content = content.replace(/<\/strike>/g, '</span>');
+    
+    return content;
   };
 
-  const getTotalMarks = () => {
-    return sections.reduce((total, section) => {
-      return total + section.subQuestions.reduce((sectionTotal, sq) => sectionTotal + (sq.marks || 0), 0);
-    }, 0);
+  const paperStyle = {
+    fontFamily: getFontFamily(metadata.language),
+    fontSize: '12px',
+    padding: '40px',
+    width: '210mm',
+    minHeight: '297mm',
+    boxSizing: 'border-box',
+    direction: getDirection(metadata.language),
+    backgroundColor: 'white',
+    color: 'black',
+    margin: '0 auto',
+    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+    position: 'relative'
+  };
+
+  const containerStyle = {
+    width: '100%',
+    overflow: 'auto',
+    backgroundColor: '#f5f5f5',
+    padding: '20px'
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 p-2 sm:p-4">
-      <div className={`max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden print:shadow-none print:rounded-none preview-content ${getFontClass(metadata.language)} ${getDirectionClass(metadata.language)}`} data-export="pdf-content">
+    <div style={containerStyle}>
+      <div style={paperStyle}>
+        <style>{`
+          * {
+            list-style: none !important;
+          }
+          ::marker {
+            display: none !important;
+            content: none !important;
+          }
+          ol, ul {
+            list-style: none !important;
+            list-style-type: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          li {
+            list-style: none !important;
+            list-style-type: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          ol::before, ul::before, li::before {
+            display: none !important;
+          }
+          .ordered-list .list-item {
+            counter-increment: list-counter;
+            margin-bottom: 5px;
+            position: relative;
+            padding-left: ${getDirection(metadata.language) === 'rtl' ? '0' : '16px'};
+            padding-right: ${getDirection(metadata.language) === 'rtl' ? '16px' : '0'};
+          }
+          .ordered-list .list-item:before {
+            content: counter(list-counter) ". ";
+            position: absolute;
+            ${getDirection(metadata.language) === 'rtl' ? 'right: 0;' : 'left: 0;'}
+            top: 0;
+          }
+          .ordered-list {
+            counter-reset: list-counter;
+          }
+          .unordered-list .list-item {
+            margin-bottom: 5px;
+            position: relative;
+            padding-left: ${getDirection(metadata.language) === 'rtl' ? '0' : '16px'};
+            padding-right: ${getDirection(metadata.language) === 'rtl' ? '16px' : '0'};
+          }
+          .unordered-list .list-item:before {
+            content: "• ";
+            position: absolute;
+            ${getDirection(metadata.language) === 'rtl' ? 'right: 0;' : 'left: 0;'}
+            top: 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+          }
+          table, th, td {
+            border: none;
+          }
+          th, td {
+            padding: 8px;
+            text-align: ${getDirection(metadata.language) === 'rtl' ? 'right' : 'left'};
+          }
+          th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+          }
+          hr {
+            border: 1px solid #000;
+            margin: 10px 0;
+          }
+          strong, b {
+            font-weight: bold;
+          }
+          em, i {
+            font-style: italic;
+          }
+          u {
+            text-decoration: underline;
+          }
+          .text-left {
+            text-align: left;
+          }
+          .text-center {
+            text-align: center;
+          }
+          .text-right {
+            text-align: right;
+          }
+          @media print {
+            .preview-container {
+              padding: 0;
+              background: white;
+            }
+            .preview-paper {
+              box-shadow: none;
+              margin: 0;
+              width: 210mm;
+              font-size: 12px;
+              padding: 40px;
+            }
+          }
+
+        `}</style>
         {/* Header */}
-        <div className="bg-white p-8 border-b-2 border-black print:border-black">
-          <div className={`text-center ${getDirectionClass(metadata.language)}`}>
-            {/* School Name - Centered, Large */}
-            {metadata.schoolName && (
-              <h1 className={`text-3xl font-bold text-black mb-4 leading-tight ${getFontClass(metadata.language)}`}>
-                {metadata.schoolName}
-              </h1>
-            )}
-            
-            {/* Exam Name - Centered, Medium */}
-            {metadata.examName && (
-              <h2 className={`text-xl font-semibold text-black mb-6 ${getFontClass(metadata.language)}`}>
-                {metadata.examName}
-              </h2>
-            )}
-            
-            {/* Subject and Class - Centered */}
-            {metadata.subject && metadata.className && (
-              <div className={`text-lg font-medium text-black mb-2 ${getFontClass(metadata.language)}`}>
-                {metadata.subject} - {metadata.className}
-              </div>
-            )}
-            
-            {/* Book - Centered, Smaller */}
-            {metadata.book && (
-              <div className={`text-base text-black mb-6 ${getFontClass(metadata.language)}`}>
-                {metadata.language === 'arabic' ? 'الكتاب:' : 
-                 metadata.language === 'bangla' ? 'কিতাব:' :
-                 metadata.language === 'urdu' ? 'کتاب:' : 'Book:'} {metadata.book}
-              </div>
-            )}
-            
-            {/* Exam Details - Three Column Layout */}
-            <div className="border-t border-black pt-4 mt-6">
-              <div className={`grid grid-cols-3 gap-4 text-sm text-black ${getFontClass(metadata.language)}`}>
-                {/* Left: Date */}
-                <div className={`${getDirectionClass(metadata.language) === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {metadata.examDate && (
-                    <div>
-                      <div className="font-medium mb-1">
-                        {metadata.language === 'arabic' ? 'التاريخ' : 
-                         metadata.language === 'bangla' ? 'তারিখ' :
-                         metadata.language === 'urdu' ? 'تاریخ' : 'Date'}
-                      </div>
-                      <div>{formatDate(metadata.examDate)}</div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Center: Duration */}
-                <div className="text-center">
-                  {metadata.duration && (
-                    <div>
-                      <div className="font-medium mb-1">
-                        {metadata.language === 'arabic' ? 'الوقت' : 
-                         metadata.language === 'bangla' ? 'সময়' :
-                         metadata.language === 'urdu' ? 'وقت' : 'Time'}
-                      </div>
-                      <div>{metadata.duration}</div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Right: Full Marks */}
-                <div className={`${getDirectionClass(metadata.language) === 'rtl' ? 'text-left' : 'text-right'}`}>
-                  <div>
-                    <div className="font-medium mb-1">
-                      {metadata.language === 'arabic' ? 'الدرجة الكاملة' : 
-                       metadata.language === 'bangla' ? 'পূর্ণমান' :
-                       metadata.language === 'urdu' ? 'مکمل نمبر' : 'Full Marks'}
-                    </div>
-                    <div>{metadata.fullMarks || getTotalMarks()}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>
+          {metadata.schoolName || 'School Name'}
+        </div>
+
+        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          {metadata.examName || 'Exam Name'}
+        </div>
+
+        {/* Metadata Table */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', gap: '5px' }}>
+          <div style={{ padding: '2px 5px' }}>
+            {metadata.language === 'bangla' ? 'কিতাব:' : metadata.language === 'arabic' ? 'الكتاب:' : 'Book:'} {metadata.bookName || ''}{metadata.bookName && metadata.language === 'bangla' ? '।' : ''}
+          </div>
+          <div style={{ padding: '2px 5px' }}>
+            {metadata.language === 'bangla' ? 'বিষয়:' : metadata.language === 'arabic' ? 'المادة:' : 'Subject:'} {metadata.subject || ''}
+          </div>
+          <div style={{ padding: '2px 5px' }}>
+            {metadata.language === 'bangla' ? 'জামাআত:' : metadata.language === 'arabic' ? 'الصف:' : 'Class:'} {metadata.className || ''}{metadata.className && metadata.language === 'bangla' ? '।' : ''}
           </div>
         </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', gap: '5px' }}>
+          <div style={{ padding: '2px 5px' }}>
+            {metadata.language === 'bangla' ? 'সময়ঃ' : metadata.language === 'arabic' ? 'الوقت:' : 'Time:'} {metadata.duration || ''}{metadata.duration && metadata.language === 'bangla' ? '।' : ''}
+          </div>
+          <div style={{ padding: '2px 5px' }}>
+            {metadata.handwritingMarks || ''}
+          </div>
+          <div style={{ padding: '2px 5px' }}>
+            {metadata.language === 'bangla' ? 'পূর্ণমানঃ' : metadata.language === 'arabic' ? 'الدرجة الكاملة:' : 'Full Marks:'} {metadata.fullMarks || ''}
+          </div>
+        </div>
+
+        <hr style={{ margin: '10px 0', border: '1px solid #000' }} />
 
         {/* Instructions */}
-        {metadata.instructions && (
-          <div className={`p-6 bg-white print:bg-white ${getDirectionClass(metadata.language)}`}>
-            <h3 className={`font-semibold text-black mb-3 text-base ${getFontClass(metadata.language)}`}>
-              {metadata.language === 'arabic' ? 'التعليمات:' : 
-               metadata.language === 'bangla' ? 'নির্দেশনা:' :
-               metadata.language === 'urdu' ? 'ہدایات:' : 'Instructions:'}
-            </h3>
-            <div className={`text-black whitespace-pre-wrap text-sm leading-relaxed ${getFontClass(metadata.language)}`}>
-              {metadata.instructions}
-            </div>
-          </div>
-        )}
-
-        {/* Sections */}
-        <div className="p-6 space-y-8">
-          {sections.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-lg mb-2">No questions added yet</p>
-              <p className="text-sm">Add sections and questions to see the preview</p>
-            </div>
-          ) : (
-            sections.map((section, sectionIndex) => (
-              <div key={section.id} className="print-page-break">
-                {/* Section Header */}
-                <div className={`mb-6 ${getDirectionClass(metadata.language)}`}>
-                  <h2 className={`text-lg font-bold text-black mb-3 ${getFontClass(metadata.language)}`}>
-                    {section.title}
-                  </h2>
-                  {section.instructions && (
-                    <div className={`text-black italic text-sm mb-4 ${getFontClass(metadata.language)}`}>
-                      {section.instructions}
-                    </div>
-                  )}
-                </div>
-
-                {/* Sub-Questions */}
-                <div className={`space-y-5 ${getDirectionClass(metadata.language)}`}>
-                  {section.subQuestions.map((subQuestion, index) => (
-                    <div key={subQuestion.id} className="space-y-3">
-                      <div className={`flex items-center justify-between gap-2 ${['arabic', 'urdu'].includes(metadata.language) ? 'flex-row-reverse' : ''}`}>
-                        
-                          <span className="text-black text-sm font-medium flex-shrink-0">
-                            {subQuestion.label}
-                          </span>
-                          {subQuestion.heading && (
-                            <div className={`flex-1 min-w-0 font-medium text-black ${getFontClass(metadata.language)} ${getDirectionClass(metadata.language)}`}>
-                              {subQuestion.heading}
-                            </div>
-                          )}
-                        
-                        <div className={`flex items-center gap-1 flex-shrink-0 ${['arabic', 'urdu'].includes(metadata.language) ? '' : ''}`}>
-                          <span className="text-sm text-black font-normal">
-                            [{subQuestion.marks || 0}]
-                          </span>
-                          <span className="text-xs text-black hidden sm:inline">
-                            {metadata.language === 'arabic' ? 'درجة' : 
-                             metadata.language === 'bangla' ? 'নম্বর' :
-                             metadata.language === 'urdu' ? 'نمবر' : 'marks'}
-                          </span>
-                          <span className="text-xs text-black opacity-50">•</span>
-                        </div>
-                      </div>
-                      
-                      <div 
-                        className={`prose prose-sm max-w-none text-black leading-relaxed print:text-black ${getFontClass(metadata.language)} ${getDirectionClass(metadata.language)} ml-6`}
-                        dangerouslySetInnerHTML={{ __html: subQuestion.content }}
-                      />
-                      
-                      {subQuestion.showAnswer && subQuestion.answer && (
-                        <div className={`mt-3 p-3 bg-white border border-black print:bg-white print:border-black ml-6 ${getDirectionClass(metadata.language)}`}>
-                          <h4 className={`text-sm font-medium text-black mb-2 ${getFontClass(metadata.language)}`}>
-                            {metadata.language === 'arabic' ? 'الإجابة:' : 
-                             metadata.language === 'bangla' ? 'উত্তর:' :
-                             metadata.language === 'urdu' ? 'جواب:' : 'Answer:'}
-                          </h4>
-                          <div className={`text-sm text-black whitespace-pre-wrap print:text-black ${getFontClass(metadata.language)}`}>
-                            {subQuestion.answer}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
+        <div style={{ textAlign: 'center', margin: '5px 0' }}>
+          ({metadata.generalInstructions || ''})
         </div>
 
-        {/* Footer */}
-        {sections.length > 0 && (
-          <div className={`p-6 border-t border-black bg-white print:bg-white text-center text-sm text-black ${getFontClass(metadata.language)} ${getDirectionClass(metadata.language)}`}>
-            <p>
-              {metadata.language === 'arabic' ? '--- نهاية ورقة الأسئلة ---' : 
-               metadata.language === 'bangla' ? '--- প্রশ্নপত্রের সমাপ্তি ---' :
-               metadata.language === 'urdu' ? '--- سوالی کاغذ کا اختتام ---' : '--- End of Question Paper ---'}
-            </p>
+        {/* Sections and Questions */}
+        {sections.map((section, sectionIndex) => (
+          <div key={section.id}>
+            {/* Section Title */}
+            {section.title && (
+              <div style={{ fontSize: '16px', fontWeight: 'bold', margin: '10px 0px', textAlign: 'start' }}>
+                {section.title}{metadata.language === 'bangla' ? ':' : ''}
+              </div>
+            )}
 
+            {/* Sub-questions */}
+            {section.subQuestions.map((subQuestion, index) => (
+              <div key={subQuestion.id} style={{ marginBottom: '15px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  fontSize: '13px', 
+                  padding: '2px', 
+                  marginBottom: '2px',
+                  marginLeft: '20px'
+                }}>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <div style={{ fontWeight: 'bold' }}>{subQuestion.label}</div>
+                    <div style={{ fontWeight: 'bold' }}>{subQuestion.heading || 'Question heading'}</div>
+                  </div>
+                  <div>{subQuestion.marks || '0'}</div>
+                </div>
+                
+                {subQuestion.content && (
+                  <div 
+                    style={{ 
+                      textAlign: 'start', 
+                      margin: '5px 0px 10px 0px', 
+                      paddingLeft: getDirection(metadata.language) === 'rtl' ? '0px' : '50px',
+                      paddingRight: getDirection(metadata.language) === 'rtl' ? '25px' : '0px'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: processContent(subQuestion.content) }}
+                  />
+                )}
+              </div>
+            ))}
           </div>
-        )}
+        ))}
+        
+        {/* Footer with date */}
+        <div style={{ 
+          position: 'absolute', 
+          bottom: '20px', 
+          left: '50%', 
+          transform: 'translateX(-50%)', 
+          color: '#666', 
+          fontSize: '10px' 
+        }}>
+          {metadata.date || new Date().toLocaleDateString()}
+        </div>
       </div>
     </div>
   );
