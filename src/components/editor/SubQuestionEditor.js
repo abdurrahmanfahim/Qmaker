@@ -31,7 +31,7 @@ const SubQuestionEditor = ({
   const { setActiveEditor } = useEditorContext();
 
   const [showTableModal, setShowTableModal] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('saved'); // 'saving', 'saved', 'error'
+  const [saveStatus] = useState('saved'); // 'saving', 'saved', 'error'
   const [confirmDelete, setConfirmDelete] = useState(false);
   const saveTimeoutRef = useRef(null);
 
@@ -66,8 +66,6 @@ const SubQuestionEditor = ({
     ],
     content: subQuestion.content,
     onUpdate: ({ editor }) => {
-      setSaveStatus('saving');
-      
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
@@ -75,10 +73,8 @@ const SubQuestionEditor = ({
       saveTimeoutRef.current = setTimeout(() => {
         try {
           updateSubQuestion(sectionId, subQuestion.id, { content: editor.getHTML() });
-          setSaveStatus('saved');
         } catch (error) {
           console.error('Failed to save question content:', error.message);
-          setSaveStatus('error');
         }
       }, 500);
     },

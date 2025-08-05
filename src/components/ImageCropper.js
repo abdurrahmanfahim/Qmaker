@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import ReactCrop from 'react-image-crop';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import 'react-image-crop/dist/ReactCrop.css';

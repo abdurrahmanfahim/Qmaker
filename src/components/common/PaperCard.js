@@ -105,6 +105,8 @@ const PaperCard = ({
           });
         }
         break;
+      default:
+        break;
     }
   };
 
