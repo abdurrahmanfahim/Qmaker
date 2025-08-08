@@ -204,6 +204,7 @@ const SectionEditor = () => {
             </div>
           ) : (
             <div className="p-1 sm:p-2 md:p-4 space-y-2 sm:space-y-4">
+
               {/* Section Header */}
               <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-2 sm:p-4">
                 <div className="flex items-center gap-4">

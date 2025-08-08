@@ -279,51 +279,63 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
-                  <input
-                    type="text"
+                  <textarea
+                    rows="1"
                     value={metadata.subject || ''}
                     onChange={(e) => setMetadata({ ...metadata, subject: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="বিষয়ের নাম"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                    placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'مضمون کا نام' : metadata.language === 'bangla' ? 'বিষয়ের নাম' : 'Subject name'}
                     autoComplete="off"
-                    name="qm_subj_field"
+                    onInput={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
                   />
                 </div>
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
-                  <input
-                    type="text"
+                  <textarea
+                    rows="1"
                     value={metadata.className || ''}
                     onChange={(e) => setMetadata({ ...metadata, className: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="জামাআত"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                    placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'جماعت' : metadata.language === 'bangla' ? 'জামাআত' : 'Class'}
                     autoComplete="off"
-                    name="qm_cls_field"
+                    onInput={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">School Name</label>
-                <input
-                  type="text"
+                <textarea
+                  rows="1"
                   value={metadata.schoolName || ''}
                   onChange={(e) => setMetadata({ ...metadata, schoolName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="শিক্ষা প্রতিষ্ঠানের নাম"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                  placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'اسکول کا نام' : metadata.language === 'bangla' ? 'শিক্ষা প্রতিষ্ঠানের নাম' : 'School name'}
                   autoComplete="off"
-                  name="qm_sch_field"
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Exam Name</label>
-                <input
-                  type="text"
+                <textarea
+                  rows="1"
                   value={metadata.examName || ''}
                   onChange={(e) => setMetadata({ ...metadata, examName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="পরীক্ষার নাম"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                  placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'امتحان کا نام' : metadata.language === 'bangla' ? 'পরীক্ষার নাম' : 'Exam name'}
                   autoComplete="off"
-                  name="qm_exam_field"
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
                 />
               </div>
               <div className="flex gap-3">
@@ -339,13 +351,17 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
                 </div>
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time</label>
-                  <input
-                    type="text"
+                  <textarea
+                    rows="1"
                     value={metadata.duration || ''}
                     onChange={(e) => setMetadata({ ...metadata, duration: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="সময়"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                    placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'وقت' : metadata.language === 'bangla' ? 'সময়' : 'Time'}
                     autoComplete="off"
+                    onInput={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
                   />
                 </div>
                 <div className="w-20">
@@ -355,7 +371,7 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
                     value={metadata.fullMarks || ''}
                     onChange={(e) => setMetadata({ ...metadata, fullMarks: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="নম্বর"
+                    placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'نمبر' : metadata.language === 'bangla' ? 'নম্বর' : 'Marks'}
                     min="0"
                     autoComplete="off"
                   />
@@ -363,35 +379,47 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Book Name</label>
-                <input
-                  type="text"
+                <textarea
+                  rows="1"
                   value={metadata.bookName || ''}
                   onChange={(e) => setMetadata({ ...metadata, bookName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="কিতাবের নাম"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                  placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'کتاب کا نام' : metadata.language === 'bangla' ? 'কিতাবের নাম' : 'Book name'}
                   autoComplete="off"
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">General Instructions</label>
-                <input
-                  type="text"
+                <textarea
+                  rows="1"
                   value={metadata.generalInstructions || ''}
                   onChange={(e) => setMetadata({ ...metadata, generalInstructions: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="সাধারণ নির্দেশনা"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                  placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'عام ہدایات' : metadata.language === 'bangla' ? 'সাধারণ নির্দেশনা' : 'General instructions'}
                   autoComplete="off"
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Handwriting Marks Note</label>
-                <input
-                  type="text"
+                <textarea
+                  rows="1"
                   value={metadata.handwritingMarks || ''}
                   onChange={(e) => setMetadata({ ...metadata, handwritingMarks: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="হাতের লেখার নোট"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none overflow-hidden"
+                  placeholder={metadata.language === 'arabic' || metadata.language === 'urdu' ? 'خوش خطی کے لیے نمبر' : metadata.language === 'bangla' ? 'হাতের লেখার নোট' : 'Handwriting marks note'}
                   autoComplete="off"
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
                 />
               </div>
             </div>

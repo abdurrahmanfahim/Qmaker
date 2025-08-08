@@ -8,8 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'arabic': ['Amiri', 'serif'],
-        'urdu': ['Jameel Noori Nastaleeq', 'serif'],
+        'arabic': ['Scheherazade New', 'serif'],
+        'urdu': ['Noto Nastaliq Urdu', 'serif'],
         'bangla': ['SolaimanLipi', 'serif'],
         'english': ['Roboto', 'sans-serif'],
       },

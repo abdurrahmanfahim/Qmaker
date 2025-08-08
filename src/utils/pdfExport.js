@@ -18,25 +18,28 @@ import html2pdf from 'html2pdf.js';
  * @param {string} options.filename - Output filename
  */
 export const exportToPDF = async (options = {}) => {
-  // Locate the content element to export
-  const element = document.querySelector('[data-export="pdf-content"]') || 
-                 document.querySelector('.max-w-4xl') ||
-                 document.querySelector('.preview-content');
+  let element = null;
   
-  if (!element) {
-    alert('No content to export. Please make sure you have added sections and questions.');
-    return;
-  }
+  try {
+    // Validate content exists
+    const validationError = validateExportContent();
+    if (validationError) {
+      showErrorToast(validationError.title, validationError.message);
+      return;
+    }
 
-  // Validate that there's actual question content
-  const hasContent = element.querySelector('.space-y-8')?.children.length > 0;
-  if (!hasContent) {
-    alert('No questions found. Please add sections and questions before exporting.');
-    return;
-  }
+    // Locate the content element to export
+    element = document.querySelector('[data-export="pdf-content"]') || 
+              document.querySelector('.max-w-4xl') ||
+              document.querySelector('.preview-content');
+    
+    if (!element) {
+      showErrorToast('Content Not Found', 'Unable to locate content for export. Please refresh and try again.');
+      return;
+    }
 
-  // Apply PDF-specific styling for better rendering
-  await applyPDFStyling(element, options);
+    // Apply PDF-specific styling for better rendering
+    await applyPDFStyling(element, options);
 
   const filename = options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.pdf`;
   
@@ -78,7 +81,6 @@ export const exportToPDF = async (options = {}) => {
     }
   };
 
-  try {
     // Display progress feedback to user
     const loadingToast = createLoadingToast();
     document.body.appendChild(loadingToast);
@@ -96,10 +98,12 @@ export const exportToPDF = async (options = {}) => {
     
   } catch (error) {
     console.error('PDF export failed:', error);
-    showErrorToast('Failed to export PDF. Please try again.');
+    handleExportError(error);
   } finally {
     // Always clean up applied styling
-    removePDFStyling(element);
+    if (element) {
+      removePDFStyling(element);
+    }
   }
 };
 
@@ -230,24 +234,120 @@ const showSuccessToast = (loadingToast) => {
 };
 
 /**
- * Display error notification
- * @param {string} message - Error message to display
+ * Validate export content before attempting PDF generation
+ * @returns {Object|null} Error object with title and message, or null if valid
  */
-const showErrorToast = (message) => {
+const validateExportContent = () => {
+  // Get the store data to validate content
+  const sections = window.__QMAKER_STORE__?.getState?.()?.sections || [];
+  const metadata = window.__QMAKER_STORE__?.getState?.()?.metadata || {};
+  
+  // Check if any sections exist
+  if (sections.length === 0) {
+    return {
+      title: 'No Sections Found',
+      message: 'Please add at least one section using the "Add Section" button before exporting.'
+    };
+  }
+
+  // Check if any questions exist
+  const totalQuestions = sections.reduce((count, section) => count + (section.subQuestions?.length || 0), 0);
+  if (totalQuestions === 0) {
+    return {
+      title: 'No Questions Found', 
+      message: 'Please add at least one question to your sections using "Add Question" button.'
+    };
+  }
+
+  // Check if questions have content
+  const hasQuestionContent = sections.some(section => 
+    section.subQuestions?.some(q => q.content?.trim()?.length > 0)
+  );
+  
+  if (!hasQuestionContent) {
+    return {
+      title: 'Empty Questions',
+      message: 'Your questions appear to be empty. Please add content to your questions using the text editor.'
+    };
+  }
+
+  // Check basic paper information
+  if (!metadata.examName?.trim() || metadata.examName === 'Exam Name') {
+    return {
+      title: 'Missing Exam Information',
+      message: 'Please fill in the exam name in "Paper Information" section before exporting.'
+    };
+  }
+
+  // Check if preview content exists in DOM
+  const previewContent = document.querySelector('.preview-content, [data-export="pdf-content"], .max-w-4xl');
+  if (!previewContent) {
+    return {
+      title: 'Preview Not Available',
+      message: 'Please open the preview panel first, then try exporting to PDF.'
+    };
+  }
+
+  return null; // All validations passed
+};
+
+/**
+ * Handle different types of export errors with specific messages
+ * @param {Error} error - The error that occurred during export
+ */
+const handleExportError = (error) => {
+  let title = 'Export Failed';
+  let message = 'An unexpected error occurred. Please try again.';
+
+  if (error.message?.includes('html2canvas')) {
+    title = 'Rendering Error';
+    message = 'Failed to render content. Try refreshing the page and export again.';
+  } else if (error.message?.includes('jsPDF')) {
+    title = 'PDF Generation Error';
+    message = 'Failed to generate PDF file. Please check your browser settings and try again.';
+  } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+    title = 'Network Error';
+    message = 'Network connection issue. Please check your internet connection.';
+  } else if (error.message?.includes('memory') || error.message?.includes('quota')) {
+    title = 'Memory Error';
+    message = 'Not enough memory to generate PDF. Try closing other tabs and export again.';
+  } else if (error.message?.includes('font')) {
+    title = 'Font Loading Error';
+    message = 'Failed to load fonts. The PDF may not display correctly.';
+  } else if (error.message?.includes('permission')) {
+    title = 'Permission Error';
+    message = 'Browser blocked the download. Please allow downloads and try again.';
+  }
+
+  showErrorToast(title, message);
+};
+
+/**
+ * Display error notification with title and message
+ * @param {string} title - Error title
+ * @param {string} message - Detailed error message
+ */
+const showErrorToast = (title, message) => {
   const errorToast = document.createElement('div');
-  errorToast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[280px]';
+  errorToast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[320px] max-w-[400px]';
   errorToast.innerHTML = `
-    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+    <svg class="w-6 h-6 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
       <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
     </svg>
-    <div class="flex flex-col">
-      <span class="font-medium">Export Failed</span>
-      <span class="text-xs opacity-90">${message}</span>
+    <div class="flex flex-col flex-1">
+      <span class="font-semibold text-sm">${title}</span>
+      <span class="text-xs opacity-90 mt-1 leading-relaxed">${message}</span>
     </div>
+    <button onclick="this.parentElement.remove()" class="ml-2 text-white hover:text-red-200 flex-shrink-0">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
   `;
   
   document.body.appendChild(errorToast);
   
+  // Auto-remove after 8 seconds
   setTimeout(() => {
     if (document.body.contains(errorToast)) {
       errorToast.style.opacity = '0';
@@ -258,7 +358,7 @@ const showErrorToast = (message) => {
         }
       }, 300);
     }
-  }, 5000);
+  }, 8000);
 };
 
 /**

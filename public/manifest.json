@@ -1,58 +1,25 @@
 {
   "short_name": "Qmaker",
   "name": "Qmaker - Question Paper Builder",
-  "description": "Professional multilingual question paper builder for educators",
   "icons": [
     {
-      "src": "/images/logo/QMaker-logo-sm-primary.png",
+      "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/png"
+      "type": "image/x-icon"
     },
     {
-      "src": "/images/logo/QMaker-logo-lg-primary.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
     },
     {
-      "src": "/images/logo/QMaker-logo-lg-primary.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#09302f",
-  "background_color": "#ffffff",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "en",
-  "categories": ["education", "productivity", "utilities"],
-  "shortcuts": [
-    {
-      "name": "New Question Paper",
-      "short_name": "New Paper",
-      "description": "Create a new question paper",
-      "url": "/?action=new",
-      "icons": [
-        {
-          "src": "/images/logo/QMaker-logo-sm-primary.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/images/screenshots/desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "/images/screenshots/mobile.png", 
-      "sizes": "375x667",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ]
+  "background_color": "#ffffff"
 }

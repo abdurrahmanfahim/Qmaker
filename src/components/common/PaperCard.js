@@ -156,6 +156,7 @@ const PaperCard = ({
                   setActiveMenu(!activeMenu);
                 }}
                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                aria-label="Paper options menu"
               >
                 <EllipsisVerticalIcon className="w-4 h-4 text-gray-400" />
               </button>
@@ -240,7 +241,7 @@ const PaperCard = ({
             {isShared ? <ShareIcon className="w-3 h-3" /> : <ClockIcon className="w-3 h-3" />}
             <span>{paper.lastModified}</span>
           </div>
-          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+          <span className="px-2 py-1 bg-gray-600 dark:bg-gray-300 text-white dark:text-gray-900 rounded-full">
             {paper.language}
           </span>
         </div>

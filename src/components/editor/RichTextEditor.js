@@ -28,7 +28,7 @@ const RichTextEditor = ({
   onChange, 
   language = 'english', 
   direction = 'ltr', 
-  placeholder = 'Start typing...',
+  placeholder,
   className = ''
 }) => {
   const editor = useEditor({
@@ -52,15 +52,24 @@ const RichTextEditor = ({
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      
+      // Auto-detect and apply Bangla font for Bangla characters
+      const banglaRegex = /[\u0980-\u09FF]/g;
+      const processedHtml = html.replace(banglaRegex, (match) => {
+        return `<span style="font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;">${match}</span>`;
+      });
+      
+      onChange(processedHtml);
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[100px] p-3 ${
+        class: `prose prose-sm mx-auto focus:outline-none min-h-[100px] p-3 ${
           direction === 'rtl' ? 'text-right' : 'text-left'
         }`,
         dir: direction,
         lang: language,
+        style: `font-size: 14px; ${getEditorStyles().fontFamily ? `font-family: ${getEditorStyles().fontFamily};` : ''}`,
       },
     },
   });
@@ -68,11 +77,21 @@ const RichTextEditor = ({
   const getFontClass = () => {
     const fonts = {
       arabic: 'font-arabic',
-      bangla: 'font-bangla',
+      bangla: 'font-bangla', 
       urdu: 'font-urdu',
-      english: 'font-sans'
+      english: 'font-english'
     };
     return fonts[language] || fonts.english;
+  };
+
+  const getEditorStyles = () => {
+    const styles = {
+      arabic: { fontFamily: "'SolaimanLipi', 'Scheherazade New', serif" },
+      bangla: { fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif" },
+      urdu: { fontFamily: "'SolaimanLipi', 'Noto Nastaliq Urdu', serif" },
+      english: { fontFamily: "'Roboto', 'Arial', sans-serif" }
+    };
+    return styles[language] || styles.english;
   };
 
   const ToolbarButton = ({ onClick, isActive, children, title }) => (

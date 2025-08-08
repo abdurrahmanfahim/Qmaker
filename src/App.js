@@ -6,7 +6,8 @@ import { SectionEditor } from "./components/editor";
 import LazyPreviewPanel from "./components/LazyPreviewPanel";
 import ErrorBoundary from "./components/ErrorBoundary";
 import WelcomeDashboard from "./components/pages/WelcomeDashboard";
-import FloatingToolbar from "./components/FloatingToolbar";
+import BottomFloatingToolbar from "./components/BottomFloatingToolbar";
+import TopFloatingToolbar from "./components/TopFloatingToolbar";
 import { EditorProvider } from "./contexts/EditorContext";
 import { usePerformance } from "./hooks/usePerformance";
 import { trackEvent, trackPerformance } from "./utils/analytics";
@@ -80,8 +81,6 @@ function App() {
     }
   }, [performanceMetrics]);
 
-
-
   const handleCreateNew = (language = "bangla") => {
     // Save current paper first
     const currentData = exportData();
@@ -152,7 +151,11 @@ function App() {
               </div>
             </main>
           </Layout>
-          <FloatingToolbar
+          <TopFloatingToolbar
+            showTableModal={showTableModal}
+            setShowTableModal={setShowTableModal}
+          />
+          <BottomFloatingToolbar
             showTableModal={showTableModal}
             setShowTableModal={setShowTableModal}
             hideToolbar={showHamburgerMenu}

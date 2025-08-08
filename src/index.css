@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=SolaimanLipi&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+@import url('https://fonts.maateen.me/solaiman-lipi/font.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
 @import './mobile-fix.css';
 @import './styles/mobile-first.css';
@@ -13,6 +15,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global autofill disable */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: inherit !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #374151 inset !important;
+  -webkit-text-fill-color: #e5e7eb !important;
+}
+
+/* Disable all form autocomplete globally */
+input, textarea, select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  autocomplete: off !important;
+  autocorrect: off !important;
+  autocapitalize: off !important;
+  spellcheck: false !important;
+}
+
+/* Disable browser password manager */
+input[type="password"] {
+  autocomplete: new-password !important;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"] {
+  autocomplete: off !important;
+}
 
 /* Mobile keyboard viewport fix */
 @media (max-width: 768px) {
@@ -31,21 +73,67 @@
   }
 }
 
-/* Font Classes */
+/* Font Classes - Consistent 14px size for all languages */
 .font-arabic {
-  font-family: 'Amiri', serif;
+  font-family: 'Scheherazade New', serif;
+  font-size: 14px;
 }
 
 .font-urdu {
-  font-family: 'Jameel Noori Nastaleeq', serif;
+  font-family: 'Noto Nastaliq Urdu', serif;
+  font-size: 14px;
 }
 
 .font-bangla {
-  font-family: 'SolaimanLipi', serif;
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+  font-size: 14px;
 }
 
 .font-english {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-size: 14px;
+}
+
+/* Ensure proper font fallbacks for all languages */
+* {
+  font-family: 'Roboto', 'SolaimanLipi', 'Noto Sans Bengali', 'Scheherazade New', 'Noto Nastaliq Urdu', 'Arial', sans-serif;
+}
+
+/* Override any cached Amiri font with Scheherazade New */
+.font-arabic,
+.font-arabic *,
+[class*="arabic"] {
+  font-family: 'Scheherazade New', serif !important;
+}
+
+/* Ensure Amiri is completely overridden */
+* {
+  font-family: 'Scheherazade New', 'Noto Nastaliq Urdu', 'SolaimanLipi', 'Roboto', serif, sans-serif !important;
+}
+
+.font-arabic * {
+  font-family: 'Scheherazade New', serif !important;
+}
+
+/* Auto-detect and apply Bangla font for Bangla characters */
+.font-arabic *:lang(bn),
+.font-urdu *:lang(bn),
+.font-arabic [lang="bn"],
+.font-urdu [lang="bn"] {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+}
+
+/* Unicode range for Bangla characters */
+.font-arabic *,
+.font-urdu * {
+  font-family: 'Scheherazade New', 'Noto Nastaliq Urdu', serif;
+}
+
+/* Bangla Unicode range: U+0980-U+09FF */
+.ProseMirror *:has-text(\u0980-\u09FF),
+.font-arabic .ProseMirror *,
+.font-urdu .ProseMirror * {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
 }
 
 /* RTL Support */
@@ -122,6 +210,54 @@
   outline: none;
   padding: 8px;
   min-height: 100px;
+  font-size: 14px;
+}
+
+/* Language-specific fonts for TipTap editor */
+.font-arabic .ProseMirror,
+.font-arabic .ProseMirror *,
+.font-arabic .ProseMirror p,
+.font-arabic .ProseMirror div,
+.font-arabic .ProseMirror span {
+  font-family: 'SolaimanLipi', 'Scheherazade New', serif !important;
+  font-size: 14px !important;
+}
+
+/* Auto-apply Bangla font for Bangla text in any editor */
+.ProseMirror *[data-bangla],
+.font-arabic .ProseMirror *[data-bangla],
+.font-urdu .ProseMirror *[data-bangla] {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+}
+
+/* CSS-based automatic font detection using unicode-range */
+@font-face {
+  font-family: 'AutoBangla';
+  src: local('SolaimanLipi'), local('Noto Sans Bengali');
+  unicode-range: U+0980-U+09FF;
+}
+
+.font-arabic .ProseMirror,
+.font-urdu .ProseMirror {
+  font-family: 'AutoBangla', 'Scheherazade New', 'Noto Nastaliq Urdu', serif !important;
+}
+
+.font-bangla .ProseMirror,
+.font-bangla .ProseMirror * {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+  font-size: 14px !important;
+}
+
+.font-urdu .ProseMirror,
+.font-urdu .ProseMirror * {
+  font-family: 'SolaimanLipi', 'Noto Nastaliq Urdu', serif !important;
+  font-size: 14px !important;
+}
+
+.font-english .ProseMirror,
+.font-english .ProseMirror * {
+  font-family: 'Roboto', 'Arial', sans-serif !important;
+  font-size: 14px !important;
 }
 
 @media (max-width: 768px) {
@@ -129,6 +265,17 @@
     padding: 12px;
     min-height: 120px;
     font-size: 16px;
+  }
+  
+  .font-arabic .ProseMirror,
+  .font-arabic .ProseMirror *,
+  .font-bangla .ProseMirror,
+  .font-bangla .ProseMirror *,
+  .font-urdu .ProseMirror,
+  .font-urdu .ProseMirror *,
+  .font-english .ProseMirror,
+  .font-english .ProseMirror * {
+    font-size: 16px !important;
   }
 }
 
@@ -213,20 +360,48 @@
 
 /* Print and PDF export styles */
 @media print {
-  .preview-content {
-    box-shadow: none !important;
-    border-radius: 0 !important;
+  /* Hide everything except printable content */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  #printable-content, #printable-content * {
+    visibility: visible !important;
+  }
+  
+  /* Hide all UI elements */
+  .no-print, button, nav, header, footer, .fixed, .absolute {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  #printable-content {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    background: white !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    max-width: none !important;
+    min-height: auto !important;
   }
   
-  .print-page-break {
-    page-break-inside: avoid;
-    break-inside: avoid;
+  /* Hide all buttons when printing */
+  button {
+    display: none !important;
   }
   
-  .print-page-break:not(:first-child) {
-    page-break-before: auto;
+  /* Optimize page layout - A4 size with no margins */
+  @page {
+    margin: 0;
+    size: A4 portrait;
   }
   
   /* Force black colors for print */
@@ -234,6 +409,8 @@
     color: #000 !important;
     background-color: #fff !important;
     border-color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   
   /* RTL print layout */
@@ -245,6 +422,124 @@
   .ltr {
     direction: ltr !important;
     text-align: left !important;
+  }
+  
+  /* Prevent page breaks inside sections */
+  .print-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Trim empty space and prevent extra pages */
+  html, body {
+    height: auto !important;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure single page layout */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Remove all default margins */
+  * {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #printable-content * {
+    padding: revert !important;
+  }
+  
+  /* Add gap between sub-questions and sections in PDF */
+  #printable-content .sub-question {
+    margin-bottom: 12px !important;
+  }
+  
+  #printable-content .section {
+    margin-bottom: 16px !important;
+  }
+  
+  /* Add margin to sub-question heading in PDF */
+  #printable-content .sub-question > div:first-child {
+    margin-bottom: 6px !important;
+  }
+  
+  /* LTR languages padding */
+  #printable-content[data-lang="bangla"] .sub-question > div:first-child,
+  #printable-content[data-lang="english"] .sub-question > div:first-child {
+    padding-left: 25px !important;
+  }
+  
+  #printable-content[data-lang="bangla"] .sub-question p,
+  #printable-content[data-lang="english"] .sub-question p {
+    padding-left: 50px !important;
+  }
+  
+  /* RTL languages padding */
+  #printable-content[data-lang="arabic"] .sub-question > div:first-child,
+  #printable-content[data-lang="urdu"] .sub-question > div:first-child {
+    padding-right: 25px !important;
+  }
+  
+  #printable-content[data-lang="arabic"] .sub-question p,
+  #printable-content[data-lang="urdu"] .sub-question p {
+    padding-right: 50px !important;
+  }
+  
+  /* Add margin to section header in PDF */
+  #printable-content .section > div:first-child {
+    margin-bottom: 8px !important;
+  }
+  
+  /* Uniform 14px font size for all languages */
+  #printable-content,
+  #printable-content * {
+    font-size: 14px !important;
+  }
+  
+  /* Language-specific fonts with consistent 14px size */
+  #printable-content[data-lang="arabic"],
+  #printable-content[data-lang="arabic"] * {
+    font-family: 'SolaimanLipi', 'Scheherazade New', serif !important;
+    font-size: 14px !important;
+  }
+  
+  /* Auto-detect Bangla characters in Arabic papers */
+  #printable-content[data-lang="arabic"] *:lang(bn) {
+    font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+  }
+  
+  #printable-content[data-lang="bangla"],
+  #printable-content[data-lang="bangla"] * {
+    font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+    font-size: 14px !important;
+  }
+  
+  #printable-content[data-lang="urdu"],
+  #printable-content[data-lang="urdu"] * {
+    font-family: 'SolaimanLipi', 'Noto Nastaliq Urdu', serif !important;
+    font-size: 14px !important;
+  }
+  
+  /* Auto-detect Bangla characters in Urdu papers */
+  #printable-content[data-lang="urdu"] *:lang(bn) {
+    font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+  }
+  
+  #printable-content[data-lang="english"],
+  #printable-content[data-lang="english"] * {
+    font-family: 'Roboto', 'Arial', sans-serif !important;
+    font-size: 14px !important;
+  }
+  
+  /* Make hr visible in PDF */
+  #printable-content hr {
+    border: none !important;
+    border-top: 1px solid #000 !important;
+    height: 1px !important;
+    margin: 4px 0 !important;
   }
 }
 
@@ -265,39 +560,39 @@
   text-rendering: optimizeLegibility;
 }
 
-/* Enhanced font rendering for different languages */
+/* Enhanced font rendering for different languages - Consistent 14px size */
 [data-export="pdf-content"] .font-arabic {
-  font-family: 'Amiri', serif;
+  font-family: 'Scheherazade New', serif;
   direction: rtl;
   text-align: right;
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.7;
   font-feature-settings: "liga" 1, "calt" 1;
 }
 
 [data-export="pdf-content"] .font-bangla {
-  font-family: 'SolaimanLipi', serif;
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
   direction: ltr;
   text-align: left;
-  font-size: 15px;
-  line-height: 1.75;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 [data-export="pdf-content"] .font-urdu {
-  font-family: 'Jameel Noori Nastaleeq', serif;
+  font-family: 'Noto Nastaliq Urdu', serif;
   direction: rtl;
   text-align: right;
-  font-size: 16px;
-  line-height: 1.9;
+  font-size: 14px;
+  line-height: 1.7;
   font-feature-settings: "liga" 1, "calt" 1;
 }
 
 [data-export="pdf-content"] .font-english {
-  font-family: 'Roboto', Arial, sans-serif;
+  font-family: 'Roboto', 'Arial', sans-serif;
   direction: ltr;
   text-align: left;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 /* Enhanced section-based formatting */
@@ -517,6 +812,58 @@
   color: #f9fafb;
 }
 
+/* Preview content font consistency */
+.preview-content,
+.preview-content * {
+  font-size: 14px !important;
+}
+
+.preview-content .font-arabic {
+  font-family: 'Scheherazade New', serif !important;
+  font-size: 14px !important;
+}
+
+.preview-content .font-bangla {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+  font-size: 14px !important;
+}
+
+.preview-content .font-urdu,
+.preview-content .font-urdu * {
+  font-family: 'Noto Nastaliq Urdu', serif !important;
+  font-size: 14px !important;
+}
+
+/* Preview content language-specific styles */
+.preview-content[data-lang="urdu"],
+.preview-content[data-lang="urdu"] * {
+  font-family: 'SolaimanLipi', 'Noto Nastaliq Urdu', serif !important;
+  font-size: 14px !important;
+}
+
+.preview-content[data-lang="arabic"],
+.preview-content[data-lang="arabic"] * {
+  font-family: 'SolaimanLipi', 'Scheherazade New', serif !important;
+  font-size: 14px !important;
+}
+
+.preview-content[data-lang="bangla"],
+.preview-content[data-lang="bangla"] * {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+  font-size: 14px !important;
+}
+
+.preview-content[data-lang="english"],
+.preview-content[data-lang="english"] * {
+  font-family: 'Roboto', 'Arial', sans-serif !important;
+  font-size: 14px !important;
+}
+
+.preview-content .font-english {
+  font-family: 'Roboto', 'Arial', sans-serif !important;
+  font-size: 14px !important;
+}
+
 /* Math equation in preview and PDF */
 .preview-content .math-equation,
 [data-export="pdf-content"] .math-equation {
@@ -606,6 +953,17 @@
 /* Arabic/Urdu numbering */
 .font-arabic .ProseMirror ol,
 .font-urdu .ProseMirror ol {
+  list-style-type: arabic-indic;
+}
+
+/* Arabic and Urdu numbering in preview and PDF */
+#printable-content[data-lang="arabic"] ol,
+#printable-content[data-lang="urdu"] ol {
+  list-style-type: arabic-indic;
+}
+
+[data-export="pdf-content"][data-lang="arabic"] ol,
+[data-export="pdf-content"][data-lang="urdu"] ol {
   list-style-type: arabic-indic;
 }
 

@@ -24,12 +24,20 @@ const Input = ({
           {label}
         </label>
       )}
-      {/* Input field with theme support and error states */}
-      <input
-        type={type}
-        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] dark:focus:ring-[#4ade80] focus:border-[#09302f] dark:focus:border-[#4ade80] bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all ${
+      {/* Textarea styled as input to prevent autofill */}
+      <textarea
+        rows="1"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
+        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#09302f] dark:focus:ring-[#4ade80] focus:border-[#09302f] dark:focus:border-[#4ade80] bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all resize-none overflow-hidden ${
           error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
         } ${className}`}
+        onInput={(e) => {
+          e.target.style.height = 'auto';
+          e.target.style.height = e.target.scrollHeight + 'px';
+        }}
         {...props}
       />
       {/* Error message display */}

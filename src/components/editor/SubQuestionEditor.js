@@ -89,7 +89,12 @@ const SubQuestionEditor = ({
 
 
   const getFontClass = (language) => {
-    const fonts = { arabic: 'font-arabic', urdu: 'font-urdu', bangla: 'font-bangla' };
+    const fonts = { 
+      arabic: 'font-arabic', 
+      urdu: 'font-urdu', 
+      bangla: 'font-bangla',
+      english: 'font-english'
+    };
     return fonts[language] || 'font-english';
   };
 
@@ -101,9 +106,20 @@ const SubQuestionEditor = ({
     const placeholders = {
       arabic: 'عنوان السؤال...',
       bangla: 'প্রশ্নের শিরোনাম...',
-      urdu: 'سوال کا عنوان...'
+      urdu: 'سوال کا عنوان...',
+      english: 'Question heading...'
     };
-    return placeholders[language] || 'Question...';
+    return placeholders[language] || 'Question heading...';
+  };
+
+  const getContentPlaceholder = (language) => {
+    const placeholders = {
+      arabic: 'اكتب محتوى السؤال هنا...',
+      bangla: 'এখানে প্রশ্নের বিষয়বস্তু লিখুন...',
+      urdu: 'یہاں سوال کا مواد لکھیں...',
+      english: 'Write your question content here...'
+    };
+    return placeholders[language] || 'Write your question content here...';
   };
 
 
@@ -139,12 +155,18 @@ const SubQuestionEditor = ({
                 <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Marks</span>
                 <input
                   type="number"
-                  onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { marks: e.target.value === '' ? '' : parseInt(e.target.value) || 0 })}
-                  className={`w-8 px-1 py-1 border-0 rounded text-sm font-bold text-center appearance-none bg-transparent text-gray-900 dark:text-white focus:outline-none ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
-                  style={{ MozAppearance: 'textfield' }}
-                  placeholder="5"
                   min="0"
                   max="99"
+                  value={subQuestion.marks || ''}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 99)) {
+                      updateSubQuestion(sectionId, subQuestion.id, { marks: value === '' ? '' : parseInt(value) || 0 });
+                    }
+                  }}
+                  autoComplete="off"
+                  className={`w-8 px-1 py-1 border-0 rounded text-sm font-bold text-center appearance-none bg-transparent text-gray-900 dark:text-white focus:outline-none ${['arabic', 'urdu'].includes(sectionLanguage) ? 'text-right' : ''}`}
+                  placeholder="5"
                 />
               </div>
               
@@ -195,13 +217,21 @@ const SubQuestionEditor = ({
               </button>
             </div>
             
-            <input
-              type="text"
+            <textarea
+              rows="1"
               value={subQuestion.heading}
               onChange={(e) => updateSubQuestion(sectionId, subQuestion.id, { heading: e.target.value })}
-              className={`w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] rounded-lg text-base font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
+              className={`w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-[#09302f] focus:border-[#09302f] rounded-lg text-base font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all resize-none overflow-hidden ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
               placeholder={getQuestionPlaceholder(sectionLanguage)}
               aria-label={`Question ${subQuestion.label} heading`}
+              onInput={(e) => {
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               onKeyDown={(e) => {
                 if ((e.ctrlKey || e.metaKey)) {
                   if (e.key === 'z' && !e.shiftKey) {
@@ -223,6 +253,7 @@ const SubQuestionEditor = ({
                 editor={editor} 
                 className={`prose prose-sm max-w-none p-2 min-h-[100px] sm:min-h-[120px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-base leading-relaxed ${getFontClass(sectionLanguage)} ${getDirectionClass(sectionLanguage)}`}
                 style={{ textAlign: 'inherit' }}
+                placeholder={getContentPlaceholder(sectionLanguage)}
               />
             
 

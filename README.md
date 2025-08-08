@@ -5,7 +5,7 @@ A comprehensive multilingual question paper builder designed for teachers in mad
 ## Features
 
 ### 🌐 Multilingual Support
-- **Arabic**: RTL direction with Amiri font and Arabic numerals
+- **Arabic**: RTL direction with Naskh (OTF) font and Arabic numerals
 - **Bangla**: LTR direction with SolaimanLipi font and Bangla numerals  
 - **Urdu**: RTL direction with Jameel Noori Nastaleeq font
 - **English**: LTR direction with Roboto font
@@ -117,7 +117,7 @@ A comprehensive multilingual question paper builder designed for teachers in mad
 ## Font Support
 
 The application includes web fonts for multilingual support:
-- **Arabic**: Amiri font family
+- **Arabic**: Naskh (OTF) font family
 - **Bangla**: SolaimanLipi font family
 - **English**: Roboto font family
 - **Urdu**: Jameel Noori Nastaleeq (requires local installation)

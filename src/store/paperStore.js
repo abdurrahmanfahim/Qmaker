@@ -536,6 +536,10 @@ const usePaperStore = create(
         if (state.sections.length > 0 && !state.activeSectionId) {
           set({ activeSectionId: state.sections[0].id });
         }
+        // Expose store to window for PDF validation
+        if (typeof window !== 'undefined') {
+          window.__QMAKER_STORE__ = { getState: get };
+        }
       }
     }),
     {

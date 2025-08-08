@@ -69,21 +69,29 @@ const Header = ({ onMenuToggle }) => {
                 src="/images/logo/QMaker-logo-sm-primary.png" 
                 alt="Qmaker" 
                 className="h-8 w-auto sm:hidden dark:hidden"
+                width="32"
+                height="32"
               />
               <img 
                 src="/images/logo/QMaker-logo-sm.png" 
                 alt="Qmaker" 
                 className="h-8 w-auto sm:hidden hidden dark:block"
+                width="32"
+                height="32"
               />
               <img 
                 src="/images/logo/QMaker-logo-lg-primary.png" 
                 alt="Qmaker" 
                 className="h-8 w-auto hidden sm:block dark:hidden"
+                width="120"
+                height="32"
               />
               <img 
                 src="/images/logo/QMaker-logo-lg.png" 
                 alt="Qmaker" 
                 className="h-8 w-auto hidden sm:dark:block"
+                width="120"
+                height="32"
               />
             </div>
 

@@ -1,43 +1,71 @@
 import React from 'react';
 import usePaperStore from '../store/paperStore';
+import { PrinterIcon } from '@heroicons/react/24/outline';
 
 const PreviewPanel = () => {
   const { metadata, sections } = usePaperStore();
 
   const getFontFamily = (language) => {
-    switch (language) {
-      case 'arabic': return 'Amiri, serif';
-      case 'bangla': return 'SolaimanLipi, sans-serif';
-      case 'urdu': return 'Jameel Noori Nastaleeq, serif';
-      default: return 'Roboto, sans-serif';
-    }
+    return 'SolaimanLipi, Scheherazade New, Arial, sans-serif';
   };
 
   const getDirection = (language) => {
     return ['arabic', 'urdu'].includes(language) ? 'rtl' : 'ltr';
   };
 
+  const convertNumbers = (text, language) => {
+    if (!text) return text;
+    
+    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const banglaNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    
+    if (language === 'arabic' || language === 'urdu') {
+      return text.replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
+    } else if (language === 'bangla') {
+      return text.replace(/[0-9]/g, (digit) => banglaNumerals[parseInt(digit)]);
+    }
+    return text;
+  };
+
+  const getHandwritingText = (language) => {
+    if (language === 'bangla') return '(সুন্দর হস্তাক্ষরের জন্য চার নম্বর নির্ধারিত)';
+    if (language === 'arabic') return '(أربع درجات للخط الجميل)';
+    if (language === 'urdu') return '(خوش خطی کے لیے چار نمبر)';
+    return '(4 marks for handwriting)';
+  };
+
   const processContent = (htmlContent) => {
     if (!htmlContent) return '';
     
-    // Batch all replacements for better performance
-    const replacements = [
-      [/<ol[^>]*>/g, '<div class="ordered-list">'],
-      [/<\/ol>/g, '</div>'],
-      [/<li[^>]*>/g, '<div class="list-item">'],
-      [/<\/li>/g, '</div>'],
-      [/<ul[^>]*>/g, '<div class="unordered-list">'],
-      [/<\/ul>/g, '</div>'],
-      [/<hr[^>]*>/g, '<hr style="border: 1px solid #000; margin: 10px 0;">'],
-      [/<s>/g, '<span style="text-decoration: line-through;">'],
-      [/<\/s>/g, '</span>'],
-      [/<strike>/g, '<span style="text-decoration: line-through;">'],
-      [/<\/strike>/g, '</span>']
-    ];
+    const replacementMap = {
+      'ol': 'div class="ordered-list"',
+      '/ol': '/div',
+      'li': 'div class="list-item"',
+      '/li': '/div',
+      'ul': 'div class="unordered-list"',
+      '/ul': '/div',
+      's': 'span style="text-decoration: line-through;"',
+      '/s': '/span',
+      'strike': 'span style="text-decoration: line-through;"',
+      '/strike': '/span'
+    };
     
-    return replacements.reduce((content, [pattern, replacement]) => 
-      content.replace(pattern, replacement), htmlContent
-    );
+    let processed = htmlContent
+      .replace(/<(\/?(?:ol|li|ul|s|strike))(?:[^>]*)>/g, (match, tag) => 
+        replacementMap[tag] ? `<${replacementMap[tag]}>` : match
+      )
+      .replace(/<hr[^>]*>/g, '<hr style="border: no-border; margin: 10px 0;">');
+    
+    // Keep consistent 14px font size for all scripts
+    processed = processed.replace(/([\u0980-\u09FF]+)/g, (match) => {
+      return `<span style="font-size: 14px">${match}</span>`;
+    });
+    
+    processed = processed.replace(/([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]+)/g, (match) => {
+      return `<span style="font-size: 14px">${match}</span>`;
+    });
+    
+    return processed;
   };
 
   const styles = {
@@ -48,8 +76,8 @@ const PreviewPanel = () => {
       padding: '20px'
     },
     paper: {
-      fontFamily: getFontFamily(metadata.language),
-      fontSize: '12px',
+      fontFamily: metadata.language === 'arabic' ? 'Scheherazade New, serif' : metadata.language === 'urdu' ? 'Noto Nastaliq Urdu, serif' : metadata.language === 'bangla' ? 'SolaimanLipi, Noto Sans Bengali, sans-serif' : 'Roboto, Arial, sans-serif',
+      fontSize: '14px',
       padding: '40px',
       width: '210mm',
       minHeight: '297mm',
@@ -81,8 +109,10 @@ const PreviewPanel = () => {
       padding: '2px 5px'
     },
     hr: {
-      margin: '10px 0',
-      border: '1px solid #000'
+      margin: '4px 0',
+      border: 'none',
+      borderTop: '1px solid #333',
+      height: '1px'
     },
     instructions: {
       textAlign: 'center',
@@ -123,113 +153,66 @@ const PreviewPanel = () => {
     }
   };
 
+  const [zoom, setZoom] = React.useState(window.innerWidth <= 768 ? 0.45 : 1);
+
+  const handleExportPDF = () => {
+    // Reset zoom to 100% for PDF export on all devices
+    const element = document.getElementById('printable-content');
+    const originalTransform = element.style.transform;
+    const originalTransformOrigin = element.style.transformOrigin;
+    
+    element.style.transform = 'scale(1)';
+    element.style.transformOrigin = 'top center';
+    
+    // Trigger print
+    window.print();
+    
+    // Restore original zoom after print dialog
+    setTimeout(() => {
+      element.style.transform = originalTransform;
+      element.style.transformOrigin = originalTransformOrigin;
+    }, 100);
+  };
+
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.1, 2));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.1, 0.5));
+  };
+
+
   return (
     <div style={styles.container}>
-      <div style={styles.paper}>
-        <style>{`
-          * {
-            list-style: none !important;
-          }
-          ::marker {
-            display: none !important;
-            content: none !important;
-          }
-          ol, ul {
-            list-style: none !important;
-            list-style-type: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          li {
-            list-style: none !important;
-            list-style-type: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          ol::before, ul::before, li::before {
-            display: none !important;
-          }
-          .ordered-list .list-item {
-            counter-increment: list-counter;
-            margin-bottom: 5px;
-            position: relative;
-            padding-left: ${getDirection(metadata.language) === 'rtl' ? '0' : '16px'};
-            padding-right: ${getDirection(metadata.language) === 'rtl' ? '16px' : '0'};
-          }
-          .ordered-list .list-item:before {
-            content: counter(list-counter) ". ";
-            position: absolute;
-            ${getDirection(metadata.language) === 'rtl' ? 'right: 0;' : 'left: 0;'}
-            top: 0;
-          }
-          .ordered-list {
-            counter-reset: list-counter;
-          }
-          .unordered-list .list-item {
-            margin-bottom: 5px;
-            position: relative;
-            padding-left: ${getDirection(metadata.language) === 'rtl' ? '0' : '16px'};
-            padding-right: ${getDirection(metadata.language) === 'rtl' ? '16px' : '0'};
-          }
-          .unordered-list .list-item:before {
-            content: "• ";
-            position: absolute;
-            ${getDirection(metadata.language) === 'rtl' ? 'right: 0;' : 'left: 0;'}
-            top: 0;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-          }
-          table, th, td {
-            border: none;
-          }
-          th, td {
-            padding: 8px;
-            text-align: ${getDirection(metadata.language) === 'rtl' ? 'right' : 'left'};
-          }
-          th {
-            background-color: #f5f5f5;
-            font-weight: bold;
-          }
-          hr {
-            border: 1px solid #000;
-            margin: 10px 0;
-          }
-          strong, b {
-            font-weight: bold;
-          }
-          em, i {
-            font-style: italic;
-          }
-          u {
-            text-decoration: underline;
-          }
-          .text-left {
-            text-align: left;
-          }
-          .text-center {
-            text-align: center;
-          }
-          .text-right {
-            text-align: right;
-          }
-          @media print {
-            .preview-container {
-              padding: 0;
-              background: white;
-            }
-            .preview-paper {
-              box-shadow: none;
-              margin: 0;
-              width: 210mm;
-              font-size: 12px;
-              padding: 40px;
-            }
-          }
-
-        `}</style>
+      {/* Zoom and Export Controls */}
+      <div style={{ position: 'fixed', bottom: '80px', right: '20px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button
+          onClick={handleZoomIn}
+          className="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-lg"
+          title="Zoom In"
+        >
+          +
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-lg"
+          title="Zoom Out"
+        >
+          -
+        </button>
+        <button
+          onClick={handleExportPDF}
+          className="flex items-center gap-2 px-4 py-2 bg-[#09302f] hover:bg-[#072625] text-white rounded-lg font-semibold text-xs transition-colors shadow-lg"
+          style={{ minHeight: '44px', minWidth: '44px' }}
+          title="Export to PDF using browser's print dialog"
+        >
+          <PrinterIcon style={{ width: '16px', height: '16px' }} />
+          Export PDF
+        </button>
+      </div>
+      
+      <div style={{...styles.paper, transform: `scale(${zoom})`, transformOrigin: window.innerWidth <= 768 ? 'top left' : 'top center'}} id="printable-content" className="preview-content" data-lang={metadata.language}>
         {/* Header */}
         <div style={styles.header}>
           {metadata.schoolName || 'School Name'}
@@ -242,25 +225,25 @@ const PreviewPanel = () => {
         {/* Metadata Table */}
         <div style={styles.metadataRow}>
           <div style={styles.metadataItem}>
-            {metadata.language === 'bangla' ? 'কিতাব:' : metadata.language === 'arabic' ? 'الكتاب:' : 'Book:'} {metadata.bookName || ''}{metadata.bookName && metadata.language === 'bangla' ? '।' : ''}
+            {metadata.language === 'bangla' ? 'জামাত:' : metadata.language === 'arabic' ? 'الصف:' : metadata.language === 'urdu' ? 'جماعت:' : 'Class:'} {metadata.className ? metadata.className : '------------'}
           </div>
           <div style={styles.metadataItem}>
-            {metadata.language === 'bangla' ? 'বিষয়:' : metadata.language === 'arabic' ? 'المادة:' : 'Subject:'} {metadata.subject || ''}
+            {metadata.language === 'bangla' ? 'বিষয়:' : metadata.language === 'arabic' ? 'المادة:' : metadata.language === 'urdu' ? 'مضمون:' : 'Subject:'} {metadata.subject ? metadata.subject : '------------'}
           </div>
           <div style={styles.metadataItem}>
-            {metadata.language === 'bangla' ? 'জামাআত:' : metadata.language === 'arabic' ? 'الصف:' : 'Class:'} {metadata.className || ''}{metadata.className && metadata.language === 'bangla' ? '।' : ''}
+            {metadata.language === 'bangla' ? 'কিতাব:' : metadata.language === 'arabic' ? 'الكتاب:' : metadata.language === 'urdu' ? 'کتاب:' : 'Book:'} {metadata.bookName ? metadata.bookName : '--------------'}
           </div>
         </div>
 
         <div style={styles.metadataRow}>
           <div style={styles.metadataItem}>
-            {metadata.language === 'bangla' ? 'সময়ঃ' : metadata.language === 'arabic' ? 'الوقت:' : 'Time:'} {metadata.duration || ''}{metadata.duration && metadata.language === 'bangla' ? '।' : ''}
+            {metadata.language === 'bangla' ? 'পূর্ণমানঃ' : metadata.language === 'arabic' ? 'الدرجة الكاملة:' : metadata.language === 'urdu' ? 'مکمل نمبر:' : 'Full Marks:'} {convertNumbers(metadata.fullMarks || '100', metadata.language)}
           </div>
           <div style={styles.metadataItem}>
-            {metadata.handwritingMarks || ''}
+            {metadata.handwritingMarks || getHandwritingText(metadata.language)}
           </div>
           <div style={styles.metadataItem}>
-            {metadata.language === 'bangla' ? 'পূর্ণমানঃ' : metadata.language === 'arabic' ? 'الدرجة الكاملة:' : 'Full Marks:'} {metadata.fullMarks || ''}
+            {metadata.language === 'bangla' ? 'সময়ঃ' : metadata.language === 'arabic' ? 'الوقت:' : metadata.language === 'urdu' ? 'وقت:' : 'Time:'} {metadata.duration ? metadata.duration : (metadata.language === 'bangla' ? '৩ ঘণ্টা।' : '3 hours')}
           </div>
         </div>
 
@@ -273,7 +256,7 @@ const PreviewPanel = () => {
 
         {/* Sections and Questions */}
         {sections.map((section, sectionIndex) => (
-          <div key={section.id}>
+          <div key={section.id} className="print-avoid-break section">
             {/* Section Title */}
             {section.title && (
               <div style={styles.sectionTitle}>
@@ -283,13 +266,13 @@ const PreviewPanel = () => {
 
             {/* Sub-questions */}
             {section.subQuestions.map((subQuestion, index) => (
-              <div key={subQuestion.id} style={styles.subQuestion}>
+              <div key={subQuestion.id} style={styles.subQuestion} className="sub-question">
                 <div style={styles.subQuestionHeader}>
                   <div style={styles.subQuestionLabel}>
                     <div style={{ fontWeight: 'bold' }}>{subQuestion.label}</div>
                     <div style={{ fontWeight: 'bold' }}>{subQuestion.heading || 'Question heading'}</div>
                   </div>
-                  <div>{subQuestion.marks || '0'}</div>
+                  <div>{(subQuestion.marks === 0 || subQuestion.marks === '') ? '' : convertNumbers(subQuestion.marks.toString(), metadata.language)}</div>
                 </div>
                 
                 {subQuestion.content && (

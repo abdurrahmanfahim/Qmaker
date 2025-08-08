@@ -77,7 +77,7 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
 
   const handleCreateNew = () => {
     lightTap();
-    onCreateNew();
+    onCreateLanguagePaper('english');
   };
 
   const handleOpenPaper = (paper) => {
@@ -193,6 +193,7 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
               setActiveMenu(activeMenu === paper.id ? null : paper.id);
             }}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            aria-label="Paper options menu"
           >
             <EllipsisVerticalIcon className="w-4 h-4 text-gray-400" />
           </button>
@@ -272,7 +273,7 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
           {isShared ? <ShareIcon className="w-3 h-3" /> : <ClockIcon className="w-3 h-3" />}
           <span>{paper.lastModified}</span>
         </div>
-        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+        <span className="px-2 py-1 bg-gray-600 dark:bg-gray-300 text-white dark:text-gray-900 rounded-full">
           {paper.language}
         </span>
       </div>
@@ -413,7 +414,7 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
       <div className="max-w-4xl mx-auto px-4 py-6 pb-20 space-y-8">
         {/* Create New Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Create New Paper</h3>
+          <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Create New Paper</h2>
           <div className="flex gap-2">
             <Button
               onClick={handleCreateNew}
@@ -421,20 +422,8 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
               size="sm"
               className="flex-1 flex items-center justify-center gap-1.5"
             >
-              <PlusIcon className="w-4 h-4" strokeWidth={3} />
+              <PlusIcon className="w-4 h-4" strokeWidth={2} />
               New
-            </Button>
-            
-            <Button
-              onClick={() => {
-                lightTap();
-                onCreateLanguagePaper('english');
-              }}
-              variant="outline"
-              size="sm"
-              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
-            >
-              English
             </Button>
             
             <Button
@@ -459,6 +448,19 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
               className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
             >
               العربية
+            </Button>
+            
+            <Button
+              onClick={() => {
+                lightTap();
+                onCreateLanguagePaper('urdu');
+              }}
+              variant="outline"
+              size="sm"
+              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
+              style={{ fontFamily: 'Noto Nastaliq Urdu, serif' }}
+            >
+              اردو
             </Button>
           </div>
         </div>
