@@ -1,0 +1,439 @@
+@startuml Qmaker_OOP_Architecture
+
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    ArrowColor #666666
+}
+
+title Qmaker OOP Architecture - UML Class Diagram
+
+package "Core Entities" {
+    abstract class Entity {
+        # id: string
+        # createdAt: Date
+        # updatedAt: Date
+        # owner: User
+        + getId(): string
+        + getOwner(): User
+        + touch(): void
+        {abstract} + validate(): boolean
+        {abstract} + serialize(): object
+        {abstract} + clone(): Entity
+    }
+
+    class User {
+        - name: string
+        - email: string
+        - avatar: string
+        - preferences: UserPreferences
+        + getName(): string
+        + getEmail(): string
+        + getAvatar(): string
+    }
+
+    enum Permission {
+        READ
+        WRITE
+        ADMIN
+        OWNER
+    }
+
+    enum Language {
+        ENGLISH
+        ARABIC
+        BANGLA
+        URDU
+    }
+}
+
+package "Interfaces" {
+    interface Shareable {
+        + share(user: User, permission: Permission): void
+        + unshare(user: User): void
+        + getPermissions(): Map<User, Permission>
+        + canAccess(user: User, action: Action): boolean
+    }
+
+    interface Versionable {
+        + createVersion(): Version
+        + getVersions(): Version[]
+        + restoreVersion(versionId: string): void
+        + compareVersions(v1: string, v2: string): Diff[]
+    }
+
+    interface Searchable {
+        + getSearchableContent(): string
+        + getSearchMetadata(): SearchMetadata
+        + matchesQuery(query: SearchQuery): boolean
+    }
+}
+
+package "File System" {
+    abstract class FileSystemItem {
+        # name: string
+        # parent: Folder
+        # path: string
+        # permissions: Map<User, Permission>
+        # tags: Tag[]
+        # starred: boolean
+        + move(newParent: Folder): void
+        + rename(newName: string): void
+        + getName(): string
+        + getPath(): string
+        + getParent(): Folder
+        {abstract} + getSize(): number
+        {abstract} + getType(): FileType
+    }
+
+    class Folder {
+        - children: Map<string, FileSystemItem>
+        - viewSettings: FolderViewSettings
+        + addChild(item: FileSystemItem): void
+        + removeChild(itemId: string): void
+        + getChildren(): FileSystemItem[]
+        + findChild(name: string): FileSystemItem
+        + search(query: SearchQuery): FileSystemItem[]
+    }
+
+    class QuestionPaper {
+        - content: PaperContent
+        - versions: Version[]
+        - collaborators: Map<User, CollaborationSession>
+        - template: Template
+        + getContent(): PaperContent
+        + updateContent(content: PaperContent): void
+        + addCollaborator(user: User): CollaborationSession
+        + getActiveCollaborators(): User[]
+        + applyTemplate(template: Template): void
+        + saveAsTemplate(name: string): Template
+    }
+
+    class Template {
+        - name: string
+        - content: PaperContent
+        - category: string
+        - isPublic: boolean
+        + generateContent(): PaperContent
+        + getCategory(): string
+    }
+
+    class Version {
+        - content: PaperContent
+        - author: User
+        - message: string
+        - timestamp: Date
+        + getContent(): PaperContent
+        + getAuthor(): User
+        + getMessage(): string
+    }
+}
+
+package "Content Management" {
+    class PaperContent {
+        - metadata: PaperMetadata
+        - sections: Section[]
+        - language: Language
+        - theme: Theme
+        + addSection(section: Section): void
+        + removeSection(sectionId: string): void
+        + moveSection(fromIndex: number, toIndex: number): void
+        + setLanguage(language: Language): void
+        + getSearchableText(): string
+        + getQuestionCount(): number
+        + getTotalMarks(): number
+    }
+
+    class PaperMetadata {
+        - schoolName: string
+        - examName: string
+        - className: string
+        - subject: string
+        - duration: string
+        - instructions: string
+        + validate(): boolean
+        + serialize(): object
+    }
+
+    class Section {
+        - id: string
+        - title: string
+        - number: number
+        - questions: Question[]
+        - instructions: string
+        - language: Language
+        + addQuestion(question: Question): void
+        + removeQuestion(questionId: string): void
+        + updateQuestionLabels(): void
+        + getQuestionCount(): number
+        + getTotalMarks(): number
+    }
+
+    class Question {
+        - id: string
+        - label: string
+        - content: RichTextContent
+        - answer: RichTextContent
+        - marks: number
+        - type: QuestionType
+        - showAnswer: boolean
+        + setContent(content: RichTextContent): void
+        + setAnswer(answer: RichTextContent): void
+        + getSearchableText(): string
+    }
+
+    class RichTextContent {
+        - html: string
+        - plainText: string
+        - formatting: TextFormatting[]
+        + getHtml(): string
+        + getPlainText(): string
+        + applyFormatting(format: TextFormatting): void
+        + validate(): boolean
+    }
+
+    enum QuestionType {
+        TEXT
+        MULTIPLE_CHOICE
+        FILL_BLANK
+        ESSAY
+        TRANSLATION
+        MATCHING
+    }
+}
+
+package "File System Management" {
+    class FileSystemManager {
+        - rootFolder: Folder
+        - currentUser: User
+        - searchIndex: SearchIndex
+        - recentItems: RecentItemsManager
+        - trashBin: TrashBin
+        + createFolder(name: string, parent: Folder): Folder
+        + createQuestionPaper(name: string, parent: Folder): QuestionPaper
+        + moveItem(item: FileSystemItem, newParent: Folder): void
+        + copyItem(item: FileSystemItem, newParent: Folder): FileSystemItem
+        + deleteItem(item: FileSystemItem): void
+        + search(query: string): SearchResult[]
+        + navigateToPath(path: string): Folder
+        + getBreadcrumb(item: FileSystemItem): BreadcrumbItem[]
+    }
+
+    class SearchIndex {
+        - items: Map<string, FileSystemItem>
+        - textIndex: Map<string, Set<string>>
+        - metadataIndex: Map<string, Map<string, Set<string>>>
+        + addItem(item: FileSystemItem): void
+        + removeItem(item: FileSystemItem): void
+        + search(query: SearchQuery): SearchResult[]
+        + updateItem(item: FileSystemItem): void
+    }
+
+    class SearchQuery {
+        - terms: string[]
+        - filters: SearchFilter[]
+        + parseQuery(queryString: string): void
+        + getTerms(): string[]
+        + getFilters(): SearchFilter[]
+        + matches(text: string): boolean
+    }
+
+    class RecentItemsManager {
+        - items: FileSystemItem[]
+        - maxItems: number
+        + addItem(item: FileSystemItem): void
+        + getItems(): FileSystemItem[]
+        + removeItem(itemId: string): void
+    }
+
+    class TrashBin {
+        - deletedItems: Map<string, FileSystemItem>
+        + addItem(item: FileSystemItem): void
+        + removeItem(itemId: string): void
+        + getItem(itemId: string): FileSystemItem
+        + emptyTrash(): void
+    }
+}
+
+package "Collaboration System" {
+    class CollaborationManager {
+        - paper: QuestionPaper
+        - sessions: Map<string, CollaborationSession>
+        - operationalTransform: OperationalTransform
+        - websocket: WebSocket
+        + addCollaborator(user: User): CollaborationSession
+        + removeCollaborator(userId: string): void
+        + applyOperation(operation: CollaborationOperation): void
+        + broadcastOperation(operation: CollaborationOperation): void
+    }
+
+    class CollaborationSession {
+        - user: User
+        - paper: QuestionPaper
+        - cursor: CursorPosition
+        - selection: SelectionRange
+        - lastActivity: Date
+        + updateCursor(position: CursorPosition): void
+        + updateSelection(selection: SelectionRange): void
+        + isActive(): boolean
+        + notify(event: string, data: any): void
+    }
+
+    class OperationalTransform {
+        + transform(operation: CollaborationOperation): CollaborationOperation
+        + compose(op1: CollaborationOperation, op2: CollaborationOperation): CollaborationOperation
+        + invert(operation: CollaborationOperation): CollaborationOperation
+    }
+
+    class CollaborationOperation {
+        - type: OperationType
+        - position: number
+        - content: string
+        - author: User
+        - timestamp: Date
+        + apply(content: PaperContent): void
+        + serialize(): object
+    }
+}
+
+package "UI Components" {
+    abstract class UIComponent {
+        # element: HTMLElement
+        # props: ComponentProps
+        # state: ComponentState
+        # children: UIComponent[]
+        + setState(newState: ComponentState): void
+        + addChild(child: UIComponent): void
+        + removeChild(child: UIComponent): void
+        + getElement(): HTMLElement
+        + destroy(): void
+        {abstract} + createElement(): HTMLElement
+        {abstract} + render(): void
+    }
+
+    class FileExplorer {
+        - fileManager: FileSystemManager
+        - currentFolder: Folder
+        - viewMode: ViewMode
+        + navigateToPath(path: string): void
+        + setViewMode(mode: ViewMode): void
+        + handleItemClick(item: FileSystemItem): void
+        + createFolder(): void
+        + createPaper(): void
+    }
+
+    class PaperEditor {
+        - paper: QuestionPaper
+        - collaborationManager: CollaborationManager
+        - toolbar: EditorToolbar
+        - contentArea: ContentArea
+        + updateContent(content: PaperContent): void
+        + autoSave(): void
+        + addSection(): void
+        + exportPaper(): void
+    }
+
+    class FileGrid {
+        - items: FileSystemItem[]
+        - selectedItems: Set<string>
+        + renderItems(): void
+        + selectItem(itemId: string): void
+        + handleDragDrop(item: FileSystemItem, target: Folder): void
+    }
+
+    class SearchInterface {
+        - searchManager: SearchManager
+        - query: string
+        - results: SearchResult[]
+        - filters: SearchFilter[]
+        + performSearch(query: string): void
+        + applyFilter(filter: SearchFilter): void
+        + clearFilters(): void
+    }
+}
+
+package "Analytics & Performance" {
+    class AnalyticsManager {
+        - events: AnalyticsEvent[]
+        - userMetrics: UserMetrics
+        - performanceMetrics: PerformanceMetrics
+        + trackEvent(eventName: string, properties: object): void
+        + trackUserAction(action: UserAction): void
+        + trackPerformance(metric: string, value: number): void
+        + generateReport(): AnalyticsReport
+    }
+
+    class UserMetrics {
+        - sessionDuration: number
+        - actionsPerformed: Map<string, number>
+        - featuresUsed: Set<string>
+        + recordAction(action: UserAction): void
+        + getUsageStats(): UsageStats
+    }
+
+    class PerformanceMetrics {
+        - loadTimes: Map<string, number>
+        - memoryUsage: number[]
+        - errorCounts: Map<string, number>
+        + recordMetric(metric: string, value: number): void
+        + getPerformanceReport(): PerformanceReport
+    }
+}
+
+' Inheritance relationships
+Entity <|-- FileSystemItem
+Entity <|-- User
+Entity <|-- Template
+Entity <|-- Version
+
+FileSystemItem <|-- Folder
+FileSystemItem <|-- QuestionPaper
+
+UIComponent <|-- FileExplorer
+UIComponent <|-- PaperEditor
+UIComponent <|-- FileGrid
+UIComponent <|-- SearchInterface
+
+' Interface implementations
+FileSystemItem ..|> Shareable
+FileSystemItem ..|> Searchable
+QuestionPaper ..|> Versionable
+
+' Composition relationships
+FileSystemManager *-- Folder : manages
+FileSystemManager *-- SearchIndex : uses
+FileSystemManager *-- RecentItemsManager : uses
+FileSystemManager *-- TrashBin : uses
+
+Folder *-- FileSystemItem : contains
+QuestionPaper *-- PaperContent : contains
+QuestionPaper *-- Version : has
+QuestionPaper *-- CollaborationSession : has
+
+PaperContent *-- PaperMetadata : has
+PaperContent *-- Section : contains
+Section *-- Question : contains
+Question *-- RichTextContent : has
+
+CollaborationManager *-- CollaborationSession : manages
+CollaborationManager *-- OperationalTransform : uses
+
+FileExplorer --> FileSystemManager : uses
+PaperEditor --> QuestionPaper : edits
+PaperEditor --> CollaborationManager : uses
+
+SearchIndex --> FileSystemItem : indexes
+SearchQuery --> SearchFilter : uses
+
+AnalyticsManager *-- UserMetrics : tracks
+AnalyticsManager *-- PerformanceMetrics : monitors
+
+' Association relationships
+User --> Permission : has
+FileSystemItem --> User : owned by
+CollaborationSession --> User : belongs to
+Version --> User : created by
+
+@enduml
