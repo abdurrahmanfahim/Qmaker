@@ -1,8 +1,18 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 // In-memory storage (replace with database)
 const papers = [];
+
+// CSRF protection middleware
+const csrfProtection = (req, res, next) => {
+  const token = req.header('X-CSRF-Token');
+  if (!token && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    return res.status(403).json({ error: 'CSRF token required' });
+  }
+  next();
+};
 
 // Middleware to verify token
 const auth = (req, res, next) => {
@@ -12,7 +22,6 @@ const auth = (req, res, next) => {
   }
   
   try {
-    const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
     next();
@@ -37,7 +46,7 @@ router.get('/:id', auth, (req, res) => {
 });
 
 // Create paper
-router.post('/', auth, (req, res) => {
+router.post('/', auth, csrfProtection, (req, res) => {
   const paper = {
     id: Date.now().toString(),
     userId: req.userId,
@@ -51,7 +60,7 @@ router.post('/', auth, (req, res) => {
 });
 
 // Update paper
-router.put('/:id', auth, (req, res) => {
+router.put('/:id', auth, csrfProtection, (req, res) => {
   const paperIndex = papers.findIndex(p => p.id === req.params.id && p.userId === req.userId);
   if (paperIndex === -1) {
     return res.status(404).json({ error: 'Paper not found' });
@@ -67,7 +76,7 @@ router.put('/:id', auth, (req, res) => {
 });
 
 // Delete paper
-router.delete('/:id', auth, (req, res) => {
+router.delete('/:id', auth, csrfProtection, (req, res) => {
   const paperIndex = papers.findIndex(p => p.id === req.params.id && p.userId === req.userId);
   if (paperIndex === -1) {
     return res.status(404).json({ error: 'Paper not found' });

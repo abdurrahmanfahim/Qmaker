@@ -1,0 +1,7 @@
+.rotateY-180 {
+  transform: rotateY(180deg);
+}
+
+[style*="backface-visibility: hidden"] {
+  backface-visibility: hidden;
+}

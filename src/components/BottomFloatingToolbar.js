@@ -12,8 +12,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { useEditorContext } from '../contexts/EditorContext';
 import { useHapticFeedback } from '../hooks/useSwipeGestures';
+import { t } from '../utils/i18n';
 
-const BottomFloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar = false }) => {
+const BottomFloatingToolbar = ({ showTableModal, setShowTableModal }) => {
   const { activeEditor } = useEditorContext();
   const { lightTap } = useHapticFeedback();
 
@@ -245,7 +246,7 @@ const BottomFloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar 
                   id="global-table-header"
                   className="mr-2"
                 />
-                <label htmlFor="global-table-header" className="text-sm text-gray-700 dark:text-gray-300">Include header row</label>
+                <label htmlFor="global-table-header" className="text-sm text-gray-700 dark:text-gray-300">{t('Include header row')}</label>
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6">
@@ -253,7 +254,7 @@ const BottomFloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar 
                 onClick={() => setShowTableModal(false)}
                 className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-lg transition-colors"
               >
-                Cancel
+                {t('Cancel')}
               </button>
               <button
                 onClick={() => {
@@ -268,7 +269,7 @@ const BottomFloatingToolbar = ({ showTableModal, setShowTableModal, hideToolbar 
                 }}
                 className="px-6 py-2 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] font-semibold transition-colors"
               >
-                Insert
+                {t('Insert')}
               </button>
             </div>
           </div>

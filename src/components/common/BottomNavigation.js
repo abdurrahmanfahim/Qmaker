@@ -6,17 +6,24 @@ import {
   ShareIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
+import {
+  HomeIcon as HomeIconSolid,
+  FolderIcon as FolderIconSolid,
+  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
+  ShareIcon as ShareIconSolid,
+  Cog6ToothIcon as Cog6ToothIconSolid
+} from '@heroicons/react/24/solid';
 import { useHapticFeedback } from '../../hooks/useSwipeGestures';
 
 const BottomNavigation = ({ currentPage, onNavigate, onHome }) => {
   const { lightTap } = useHapticFeedback();
 
   const navItems = [
-    { id: 'home', icon: HomeIcon, label: 'Home' },
-    { id: 'recent', icon: FolderIcon, label: 'Recent' },
-    { id: 'search', icon: MagnifyingGlassIcon, label: 'Search' },
-    { id: 'shared', icon: ShareIcon, label: 'Shared' },
-    { id: 'settings', icon: Cog6ToothIcon, label: 'Settings' }
+    { id: 'home', icon: HomeIcon, iconSolid: HomeIconSolid, label: 'Home' },
+    { id: 'recent', icon: FolderIcon, iconSolid: FolderIconSolid, label: 'Recent' },
+    { id: 'search', icon: MagnifyingGlassIcon, iconSolid: MagnifyingGlassIconSolid, label: 'Search' },
+    { id: 'shared', icon: ShareIcon, iconSolid: ShareIconSolid, label: 'Shared' },
+    { id: 'settings', icon: Cog6ToothIcon, iconSolid: Cog6ToothIconSolid, label: 'Settings' }
   ];
 
   const handleNavClick = (itemId) => {
@@ -33,15 +40,14 @@ const BottomNavigation = ({ currentPage, onNavigate, onHome }) => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-around">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const isActive = currentPage === item.id;
+            const Icon = isActive ? item.iconSolid : item.icon;
 
-            
             return (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`flex flex-col items-center gap-1 p-2 ${
+                className={`flex flex-col items-center gap-1 p-2 transition-all ${
                   isActive 
                     ? 'text-[#09302f] dark:text-[#4ade80]' 
                     : 'text-gray-500 dark:text-gray-400'

@@ -1,9 +1,11 @@
 import React from 'react';
 import usePaperStore from '../store/paperStore';
-import { PrinterIcon } from '@heroicons/react/24/outline';
+import { PrinterIcon, XMarkIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, PencilIcon } from '@heroicons/react/24/outline';
+import PaperMetadataModal from './modals/PaperMetadataModal';
 
 const PreviewPanel = () => {
   const { metadata, sections } = usePaperStore();
+  const [showMetadataModal, setShowMetadataModal] = React.useState(false);
 
   const getFontFamily = (language) => {
     return 'SolaimanLipi, Scheherazade New, Arial, sans-serif';
@@ -37,33 +39,12 @@ const PreviewPanel = () => {
   const processContent = (htmlContent) => {
     if (!htmlContent) return '';
     
-    const replacementMap = {
-      'ol': 'div class="ordered-list"',
-      '/ol': '/div',
-      'li': 'div class="list-item"',
-      '/li': '/div',
-      'ul': 'div class="unordered-list"',
-      '/ul': '/div',
-      's': 'span style="text-decoration: line-through;"',
-      '/s': '/span',
-      'strike': 'span style="text-decoration: line-through;"',
-      '/strike': '/span'
-    };
-    
     let processed = htmlContent
-      .replace(/<(\/?(?:ol|li|ul|s|strike))(?:[^>]*)>/g, (match, tag) => 
-        replacementMap[tag] ? `<${replacementMap[tag]}>` : match
-      )
+      .replace(/<s>/g, '<span style="text-decoration: line-through;">')
+      .replace(/<\/s>/g, '</span>')
+      .replace(/<strike>/g, '<span style="text-decoration: line-through;">')
+      .replace(/<\/strike>/g, '</span>')
       .replace(/<hr[^>]*>/g, '<hr style="border: no-border; margin: 10px 0;">');
-    
-    // Keep consistent 14px font size for all scripts
-    processed = processed.replace(/([\u0980-\u09FF]+)/g, (match) => {
-      return `<span style="font-size: 14px">${match}</span>`;
-    });
-    
-    processed = processed.replace(/([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]+)/g, (match) => {
-      return `<span style="font-size: 14px">${match}</span>`;
-    });
     
     return processed;
   };
@@ -73,25 +54,29 @@ const PreviewPanel = () => {
       width: '100%',
       overflow: 'auto',
       backgroundColor: '#f5f5f5',
-      padding: '20px'
+      padding: '20px 20px 20px 5px',
+      position: 'relative',
+      zIndex: 9998
     },
     paper: {
       fontFamily: metadata.language === 'arabic' ? 'Scheherazade New, serif' : metadata.language === 'urdu' ? 'Noto Nastaliq Urdu, serif' : metadata.language === 'bangla' ? 'SolaimanLipi, Noto Sans Bengali, sans-serif' : 'Roboto, Arial, sans-serif',
       fontSize: '14px',
-      padding: '40px',
+      padding: `${(metadata.margins?.top || 0.5) * 96}px ${(metadata.margins?.right || 0.5) * 96}px ${(metadata.margins?.bottom || 0.5) * 96}px ${(metadata.margins?.left || 0.5) * 96}px`,
       width: '210mm',
-      minHeight: '297mm',
+      minHeight: 'auto',
       boxSizing: 'border-box',
       direction: getDirection(metadata.language),
       backgroundColor: 'white',
       color: 'black',
-      margin: '0 auto',
+      margin: '20px auto',
       boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-      position: 'relative'
+      position: 'relative',
+      pageBreakAfter: 'auto',
+      pageBreakInside: 'auto'
     },
     header: {
       textAlign: 'center',
-      fontSize: '24px',
+      fontSize: '40px !important',
       fontWeight: 'bold',
       marginBottom: '10px'
     },
@@ -144,33 +129,66 @@ const PreviewPanel = () => {
       margin: '5px 0px 10px 0px'
     },
     footer: {
-      position: 'absolute',
-      bottom: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
+      textAlign: 'center',
+      marginTop: '40px',
       color: '#666',
       fontSize: '10px'
     }
   };
 
   const [zoom, setZoom] = React.useState(window.innerWidth <= 768 ? 0.45 : 1);
+  const [touchZoom, setTouchZoom] = React.useState(1);
+  const [lastTouchDistance, setLastTouchDistance] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        const distance = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        setLastTouchDistance(distance);
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const distance = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        
+        if (lastTouchDistance > 0) {
+          const scale = distance / lastTouchDistance;
+          setTouchZoom(prev => Math.max(0.5, Math.min(3, prev * scale)));
+        }
+        setLastTouchDistance(distance);
+      }
+    };
+
+    const previewContainer = document.getElementById('preview-container');
+    if (previewContainer) {
+      previewContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+      previewContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }
+
+    return () => {
+      if (previewContainer) {
+        previewContainer.removeEventListener('touchstart', handleTouchStart);
+        previewContainer.removeEventListener('touchmove', handleTouchMove);
+      }
+    };
+  }, [lastTouchDistance]);
 
   const handleExportPDF = () => {
-    // Reset zoom to 100% for PDF export on all devices
-    const element = document.getElementById('printable-content');
-    const originalTransform = element.style.transform;
-    const originalTransformOrigin = element.style.transformOrigin;
+    const originalTitle = document.title;
+    document.title = `${metadata.examName || 'Question Paper'}`;
     
-    element.style.transform = 'scale(1)';
-    element.style.transformOrigin = 'top center';
-    
-    // Trigger print
     window.print();
     
-    // Restore original zoom after print dialog
     setTimeout(() => {
-      element.style.transform = originalTransform;
-      element.style.transformOrigin = originalTransformOrigin;
+      document.title = originalTitle;
     }, 100);
   };
 
@@ -184,43 +202,82 @@ const PreviewPanel = () => {
 
 
   return (
-    <div style={styles.container}>
-      {/* Zoom and Export Controls */}
-      <div style={{ position: 'fixed', bottom: '80px', right: '20px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button
-          onClick={handleZoomIn}
-          className="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-lg"
-          title="Zoom In"
-        >
-          +
-        </button>
-        <button
-          onClick={handleZoomOut}
-          className="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-lg"
-          title="Zoom Out"
-        >
-          -
-        </button>
-        <button
-          onClick={handleExportPDF}
-          className="flex items-center gap-2 px-4 py-2 bg-[#09302f] hover:bg-[#072625] text-white rounded-lg font-semibold text-xs transition-colors shadow-lg"
-          style={{ minHeight: '44px', minWidth: '44px' }}
-          title="Export to PDF using browser's print dialog"
-        >
-          <PrinterIcon style={{ width: '16px', height: '16px' }} />
-          Export PDF
-        </button>
+    <>
+      {/* Preview Header - Completely Fixed */}
+      <div className="fixed top-0 left-0 right-0 z-[10001] bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="px-2 sm:px-4 py-2 flex items-center justify-between">
+          <div className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Preview</div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={() => setShowMetadataModal(true)}
+              className="p-2 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none flex items-center justify-center"
+              style={{ minWidth: '36px', minHeight: '36px' }}
+              title="Edit Metadata"
+            >
+              <img src="/icon/title.png" alt="Edit" className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="p-2 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none flex items-center justify-center"
+              style={{ minWidth: '36px', minHeight: '36px' }}
+              title="Zoom Out"
+            >
+              <MagnifyingGlassMinusIcon className="w-4 h-4" />
+            </button>
+            <div className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[45px] text-center">
+              {Math.round(zoom * 100)}%
+            </div>
+            <button
+              onClick={handleZoomIn}
+              className="p-2 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none flex items-center justify-center"
+              style={{ minWidth: '36px', minHeight: '36px' }}
+              title="Zoom In"
+            >
+              <MagnifyingGlassPlusIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setZoom(window.innerWidth <= 768 ? 0.45 : 1);
+                setTouchZoom(1);
+              }}
+              className="p-2 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none flex items-center justify-center"
+              style={{ minWidth: '36px', minHeight: '36px' }}
+              title="Reset Zoom"
+            >
+              <span className="text-xs font-medium">1:1</span>
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-1 px-3 py-2 bg-[#09302f] hover:bg-[#072625] dark:bg-[#4ade80] dark:hover:bg-[#22c55e] text-white dark:text-gray-900 rounded-lg font-medium text-xs sm:text-sm transition-colors shadow-sm ml-2"
+              style={{ minHeight: '36px' }}
+              title="Export to PDF"
+            >
+              <PrinterIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+          </div>
+        </div>
       </div>
       
-      <div style={{...styles.paper, transform: `scale(${zoom})`, transformOrigin: window.innerWidth <= 768 ? 'top left' : 'top center'}} id="printable-content" className="preview-content" data-lang={metadata.language}>
+      {/* Preview Container */}
+      <div id="preview-container" style={{...styles.container, padding: '80px 20px 20px 5px', touchAction: 'pan-x pan-y pinch-zoom', position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100vw', height: '100vh', zIndex: 9999, overflow: 'auto'}}>
+        <div style={{...styles.paper, transform: `scale(${zoom * touchZoom})`, transformOrigin: window.innerWidth <= 768 ? 'top left' : 'top center'}} id="printable-content" className="preview-content" data-lang={metadata.language}>
         {/* Header */}
-        <div style={styles.header}>
+        <div style={{...styles.header, fontSize: '40px'}} className="paper-header">
           {metadata.schoolName || 'School Name'}
         </div>
+        
+        {metadata.schoolAddress && (
+          <div style={{...styles.examName, fontSize: '12px', marginBottom: '5px'}}>
+            {metadata.schoolAddress}
+          </div>
+        )}
 
-        <div style={styles.examName}>
-          {metadata.examName || 'Exam Name'}
-        </div>
+        {metadata.examName && (
+          <div style={styles.examName}>
+            {metadata.examName}
+          </div>
+        )}
 
         {/* Metadata Table */}
         <div style={styles.metadataRow}>
@@ -231,7 +288,7 @@ const PreviewPanel = () => {
             {metadata.language === 'bangla' ? 'বিষয়:' : metadata.language === 'arabic' ? 'المادة:' : metadata.language === 'urdu' ? 'مضمون:' : 'Subject:'} {metadata.subject ? metadata.subject : '------------'}
           </div>
           <div style={styles.metadataItem}>
-            {metadata.language === 'bangla' ? 'কিতাব:' : metadata.language === 'arabic' ? 'الكتاب:' : metadata.language === 'urdu' ? 'کتاب:' : 'Book:'} {metadata.bookName ? metadata.bookName : '--------------'}
+            {metadata.language === 'bangla' ? 'কিতাব:' : metadata.language === 'arabic' ? 'الكتاب:' : metadata.language === 'urdu' ? 'کتاب:' : 'Book:'} {metadata.book || metadata.bookName || '--------------'}
           </div>
         </div>
 
@@ -240,7 +297,7 @@ const PreviewPanel = () => {
             {metadata.language === 'bangla' ? 'পূর্ণমানঃ' : metadata.language === 'arabic' ? 'الدرجة الكاملة:' : metadata.language === 'urdu' ? 'مکمل نمبر:' : 'Full Marks:'} {convertNumbers(metadata.fullMarks || '100', metadata.language)}
           </div>
           <div style={styles.metadataItem}>
-            {metadata.handwritingMarks || getHandwritingText(metadata.language)}
+            {metadata.handwriting ? `(${metadata.handwriting})` : getHandwritingText(metadata.language)}
           </div>
           <div style={styles.metadataItem}>
             {metadata.language === 'bangla' ? 'সময়ঃ' : metadata.language === 'arabic' ? 'الوقت:' : metadata.language === 'urdu' ? 'وقت:' : 'Time:'} {metadata.duration ? metadata.duration : (metadata.language === 'bangla' ? '৩ ঘণ্টা।' : '3 hours')}
@@ -251,7 +308,7 @@ const PreviewPanel = () => {
 
         {/* Instructions */}
         <div style={styles.instructions}>
-          ({metadata.generalInstructions || ''})
+          ({metadata.instructions || metadata.generalInstructions || ''})
         </div>
 
         {/* Sections and Questions */}
@@ -260,30 +317,65 @@ const PreviewPanel = () => {
             {/* Section Title */}
             {section.title && (
               <div style={styles.sectionTitle}>
-                {section.title}{metadata.language === 'bangla' ? ':' : ''}
+                {section.title}
               </div>
             )}
 
             {/* Sub-questions */}
             {section.subQuestions.map((subQuestion, index) => (
               <div key={subQuestion.id} style={styles.subQuestion} className="sub-question">
-                <div style={styles.subQuestionHeader}>
-                  <div style={styles.subQuestionLabel}>
-                    <div style={{ fontWeight: 'bold' }}>{subQuestion.label}</div>
-                    <div style={{ fontWeight: 'bold' }}>{subQuestion.heading || 'Question heading'}</div>
-                  </div>
-                  <div>{(subQuestion.marks === 0 || subQuestion.marks === '') ? '' : convertNumbers(subQuestion.marks.toString(), metadata.language)}</div>
-                </div>
-                
-                {subQuestion.content && (
-                  <div 
-                    style={{ 
-                      ...styles.subQuestionContent,
-                      paddingLeft: getDirection(metadata.language) === 'rtl' ? '0px' : '50px',
-                      paddingRight: getDirection(metadata.language) === 'rtl' ? '25px' : '0px'
-                    }}
-                    dangerouslySetInnerHTML={{ __html: processContent(subQuestion.content) }}
-                  />
+                {subQuestion.headerFirst === false ? (
+                  <>
+                    {/* Body First */}
+                    {subQuestion.content && (
+                      <div 
+                        style={{ 
+                          ...styles.subQuestionContent,
+                          paddingLeft: getDirection(metadata.language) === 'rtl' ? '0px' : '50px',
+                          paddingRight: getDirection(metadata.language) === 'rtl' ? '25px' : '0px'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: processContent(subQuestion.content) }}
+                      />
+                    )}
+                    {/* Header After */}
+                    {subQuestion.heading && (
+                      <div style={styles.subQuestionHeader}>
+                        <div style={styles.subQuestionLabel}>
+                          {subQuestion.label && (
+                            <div style={{ fontWeight: 'bold' }}>{subQuestion.label}</div>
+                          )}
+                          <div style={{ fontWeight: 'bold' }}>{subQuestion.heading}</div>
+                        </div>
+                        <div>{(subQuestion.marks === 0 || subQuestion.marks === '') ? '' : convertNumbers(subQuestion.marks.toString(), metadata.language)}</div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {/* Header First */}
+                    {subQuestion.heading && (
+                      <div style={styles.subQuestionHeader}>
+                        <div style={styles.subQuestionLabel}>
+                          {subQuestion.label && (
+                            <div style={{ fontWeight: 'bold' }}>{subQuestion.label}</div>
+                          )}
+                          <div style={{ fontWeight: 'bold' }}>{subQuestion.heading}</div>
+                        </div>
+                        <div>{(subQuestion.marks === 0 || subQuestion.marks === '') ? '' : convertNumbers(subQuestion.marks.toString(), metadata.language)}</div>
+                      </div>
+                    )}
+                    {/* Body After */}
+                    {subQuestion.content && (
+                      <div 
+                        style={{ 
+                          ...styles.subQuestionContent,
+                          paddingLeft: getDirection(metadata.language) === 'rtl' ? '0px' : '50px',
+                          paddingRight: getDirection(metadata.language) === 'rtl' ? '25px' : '0px'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: processContent(subQuestion.content) }}
+                      />
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -294,8 +386,22 @@ const PreviewPanel = () => {
         <div style={styles.footer}>
           {metadata.date || new Date().toLocaleDateString()}
         </div>
+        </div>
       </div>
-    </div>
+      
+      {showMetadataModal && (
+        <PaperMetadataModal
+          isOpen={showMetadataModal}
+          onClose={() => setShowMetadataModal(false)}
+          onCreatePaper={(newMetadata) => {
+            const { setMetadata } = usePaperStore.getState();
+            setMetadata(newMetadata);
+            setShowMetadataModal(false);
+          }}
+          initialData={metadata}
+        />
+      )}
+    </>
   );
 };
 

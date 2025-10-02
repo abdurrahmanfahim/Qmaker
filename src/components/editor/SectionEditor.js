@@ -111,7 +111,7 @@ const SectionEditor = () => {
 
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900" style={{ paddingBottom: '100px' }}>
+    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900" style={{ paddingTop: '60px', paddingBottom: '100px' }}>
       {/* Clean Section Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="section-tabs smooth-scroll px-2 py-2 overflow-x-auto custom-scrollbar">
@@ -131,7 +131,7 @@ const SectionEditor = () => {
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           onClick={() => setActiveSection(section.id)}
-                          className={`touch-target px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 focus:ring-2 focus:ring-[#09302f] focus:outline-none ${
+                          className={`touch-target px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 focus:ring-2 focus:ring-[#09302f] focus:outline-none w-32 ${
                             section.id === activeSectionId
                               ? 'bg-[#09302f] text-white shadow-lg dark:bg-[#4ade80] dark:text-gray-900 transform scale-105'
                               : 'text-gray-700 dark:text-gray-200 hover:text-[#09302f] hover:bg-white dark:hover:bg-gray-600 hover:shadow-md'
@@ -140,7 +140,7 @@ const SectionEditor = () => {
                           aria-selected={section.id === activeSectionId}
                           aria-label={`Section: ${section.title || 'Untitled Section'}`}
                         >
-                          <span>{section.title || 'Untitled Section'}</span>
+                          <span className="overflow-hidden text-ellipsis whitespace-nowrap flex-1">{section.title || 'Untitled Section'}</span>
                           {sections.length > 1 && section.id === activeSectionId && (
                             <TrashIcon 
                               className="w-3 h-3 text-red-500 hover:text-white dark:text-red-500 dark:hover:text-red-300 transition-colors" 
@@ -203,36 +203,20 @@ const SectionEditor = () => {
               </div>
             </div>
           ) : (
-            <div className="p-1 sm:p-2 md:p-4 space-y-2 sm:space-y-4">
+            <div className="p-1 sm:p-2 space-y-2">
 
               {/* Section Header */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-2 sm:p-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Section Title</label>
-                    <input
-                      type="text"
-                      value={activeSection.title}
-                      onChange={(e) => updateSection(activeSection.id, { title: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09302f] focus:border-[#09302f] text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      placeholder={getPlaceholders(metadata.language).sectionTitle}
-                    />
-                  </div>
-                  <div className="pt-6">
-                    <button
-                      onClick={() => {
-                        try {
-                          handleAddSubQuestion();
-                        } catch (error) {
-                          console.error('Failed to add question:', error);
-                        }
-                      }}
-                      className="px-6 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none"
-                      aria-label="Add new question to this section"
-                    >
-                      Add Question
-                    </button>
-                  </div>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 rounded-lg border-2 border-blue-200 dark:border-gray-500 p-4 mb-6 shadow-sm">
+                <div className="flex-1">
+                  <label className="block text-sm font-bold text-blue-700 dark:text-blue-300 mb-2">Section Title</label>
+                  <input
+                    type="text"
+                    value={activeSection.title}
+                    onChange={(e) => updateSection(activeSection.id, { title: e.target.value })}
+                    className={`w-full px-4 py-3 border-2 border-blue-300 dark:border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium ${['arabic', 'urdu'].includes(metadata.language) ? 'text-right' : 'text-left'}`}
+                    placeholder={getPlaceholders(metadata.language).sectionTitle}
+                    dir={['arabic', 'urdu'].includes(metadata.language) ? 'rtl' : 'ltr'}
+                  />
                 </div>
               </div>
               
@@ -249,6 +233,16 @@ const SectionEditor = () => {
                   totalQuestions={activeSection.subQuestions.length}
                 />
               ))}
+              
+              {/* Add Question Button After All Sub-Questions */}
+              <div className="flex justify-center py-4">
+                <button
+                  onClick={handleAddSubQuestion}
+                  className="px-8 py-3 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] dark:bg-[#4ade80] dark:text-gray-900 dark:hover:bg-[#22c55e] text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:ring-2 focus:ring-[#09302f] focus:outline-none touch-manipulation"
+                >
+                  {getEmptyStateText(metadata.language).addSubQuestion}
+                </button>
+              </div>
               {/* Dynamic transparent spacer - grows with sub-questions */}
               <div 
                 className="w-full" 

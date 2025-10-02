@@ -1,0 +1,26 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 0.5in;
+  }
+  
+  #preview-container {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  #printable-content {
+    transform: none !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  .fixed, .absolute, button {
+    display: none !important;
+  }
+}

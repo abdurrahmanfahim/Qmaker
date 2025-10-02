@@ -120,13 +120,10 @@ const SharedPage = ({ onBack, onOpenPaper, onNavigate }) => {
     lightTap();
     setActiveMenu(null);
     
-    switch(action) {
-      case 'open':
-        onOpenPaper(paper);
-        break;
-      case 'export':
-        console.log('Export paper:', paper.title);
-        break;
+    if (action === 'open') {
+      onOpenPaper(paper);
+    } else if (action === 'export') {
+      console.log('Export paper:', paper.title);
     }
   };
 

@@ -1,0 +1,79 @@
+/* Poppins Font Override for UI Elements */
+body, html {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Override all UI text elements */
+button, input, select, textarea, label, span, div, p, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Consistent font sizes for UI elements */
+body, html {
+  font-size: 14px;
+}
+
+button, input, select, textarea, label {
+  font-size: 14px;
+}
+
+p, span, div {
+  font-size: 14px;
+}
+
+/* Navigation and UI components */
+nav, header, footer, aside, section, article {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Form elements */
+.form-input, .form-select, .form-textarea {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Buttons and interactive elements */
+.btn, .button, [role="button"] {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Modal and dialog elements */
+.modal, .dialog, .popup, .tooltip {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Menu and dropdown elements */
+.menu, .dropdown, .select-menu {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Card and panel elements */
+.card, .panel, .widget {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Preserve language-specific fonts for content */
+.font-arabic, .font-arabic * {
+  font-family: 'Scheherazade New', serif !important;
+}
+
+.font-bangla, .font-bangla * {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+}
+
+.font-urdu, .font-urdu * {
+  font-family: 'Noto Nastaliq Urdu', serif !important;
+}
+
+/* Editor content keeps language fonts, UI uses Poppins */
+.ProseMirror {
+  /* Content fonts handled by language classes */
+}
+
+/* Toolbar and UI elements use Poppins */
+.floating-toolbar, .toolbar, .menu-bar {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.floating-toolbar *, .toolbar *, .menu-bar * {
+  font-family: 'Poppins', sans-serif !important;
+}

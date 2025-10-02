@@ -6,9 +6,9 @@
  * @since 2024
  */
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { v4 as uuidv4 } from 'uuid';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Main paper store using Zustand with persistence
@@ -23,56 +23,73 @@ const usePaperStore = create(
       maxHistorySize: 50, // Maximum number of history states to keep
       // Paper metadata - exam information and settings
       metadata: {
-        language: 'bangla', // Primary language for the paper (bangla, english, arabic, urdu)
-        schoolName: '', // Institution name
-        examName: '', // Exam title and year
-        className: '', // Student class/grade
-        subject: '', // Subject name
-        book: '', // Textbook reference
-        fullMarks: '', // Total marks for the exam
-        duration: '', // Time allowed for exam
-        instructions: '', // General exam instructions
-        numberingStyle: 'letters' // Sub-question numbering style (letters, numbers, roman)
+        language: "bangla", // Primary language for the paper (bangla, english, arabic, urdu)
+        schoolName: "", // Institution name
+        examName: "", // Exam title and year
+        className: "", // Student class/grade
+        subject: "", // Subject name
+        book: "", // Textbook reference
+        fullMarks: "", // Total marks for the exam
+        duration: "", // Time allowed for exam
+        instructions: "", // General exam instructions
+        numberingStyle: "letters", // Sub-question numbering style (letters, numbers, roman)
+        fonts: {
+          bangla: 'SolaimanLipi',
+          english: 'Roboto',
+          arabic: 'Scheherazade New',
+          urdu: 'Noto Nastaliq Urdu'
+        },
+        orientation: 'portrait',
+        paperSize: 'A4',
+        fontSize: 14,
+        lineSpacing: 1.5,
+        margins: {
+          top: 0.26,
+          bottom: 0.5,
+          left: 0.5,
+          right: 0.5
+        },
+        autoSave: true
       },
 
       // Main content structure - array of question sections
       sections: [
         {
           id: uuidv4(), // Unique identifier for each section
-          title: 'First Question', // Section heading
+          title: "প্রথম প্রশ্ন:", // Section heading
           subQuestions: [
             {
               id: uuidv4(),
-              label: '(ক)',
-              heading: '',
-              content: '<p></p>',
-              marks: '',
+              label: "(ক)",
+              heading: "",
+              content: "<p></p>",
+              marks: "",
               showAnswer: false,
-              answer: '',
-              type: 'text'
+              answer: "",
+              type: "text",
             },
             {
               id: uuidv4(),
-              label: '(খ)',
-              heading: '',
-              content: '<p></p>',
-              marks: '',
+              label: "(খ)",
+              heading: "",
+              content: "<p></p>",
+              marks: "",
               showAnswer: false,
-              answer: '',
-              type: 'text'
+              answer: "",
+              type: "text",
             },
             {
               id: uuidv4(),
-              label: '(গ)',
-              heading: '',
-              content: '<p></p>',
-              marks: '',
+              label: "(গ)",
+              heading: "",
+              content: "<p></p>",
+              marks: "",
               showAnswer: false,
-              answer: '',
-              type: 'text'
-            }
-          ] // Array of sub-questions within this section
-        }
+              answer: "",
+              type: "text",
+            },
+          ], // Array of sub-questions within this section
+        },
       ],
 
       // UI state management
@@ -80,7 +97,8 @@ const usePaperStore = create(
       activeSubQuestionId: null, // Currently selected sub-question ID
       previewMode: false, // Toggle between edit and preview modes
       darkMode: false, // Dark/light theme toggle
-      
+      uiLanguage: 'english', // UI language for interface elements
+
       /**
        * Save current state to history for undo/redo functionality
        * Creates a deep copy snapshot of metadata and sections
@@ -90,22 +108,22 @@ const usePaperStore = create(
         const snapshot = {
           metadata: { ...state.metadata },
           sections: JSON.parse(JSON.stringify(state.sections)),
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
-        
+
         const newHistory = state.history.slice(0, state.historyIndex + 1);
         newHistory.push(snapshot);
-        
+
         if (newHistory.length > state.maxHistorySize) {
           newHistory.shift();
         }
-        
-        set({ 
-          history: newHistory, 
-          historyIndex: newHistory.length - 1 
+
+        set({
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
         });
       },
-      
+
       /**
        * Undo last action by restoring previous state from history
        */
@@ -116,11 +134,11 @@ const usePaperStore = create(
           set({
             metadata: prevState.metadata,
             sections: prevState.sections,
-            historyIndex: state.historyIndex - 1
+            historyIndex: state.historyIndex - 1,
           });
         }
       },
-      
+
       /**
        * Redo previously undone action by moving forward in history
        */
@@ -131,11 +149,11 @@ const usePaperStore = create(
           set({
             metadata: nextState.metadata,
             sections: nextState.sections,
-            historyIndex: state.historyIndex + 1
+            historyIndex: state.historyIndex + 1,
           });
         }
       },
-      
+
       /** Check if undo is available */
       canUndo: () => get().historyIndex > 0,
       /** Check if redo is available */
@@ -153,39 +171,135 @@ const usePaperStore = create(
        * @param {string} language - Target language (english, bangla, arabic, urdu)
        */
       setLanguage: (language) => {
-        set(state => {
+        set((state) => {
           const getSectionTitle = (index, lang) => {
             const ordinals = {
-              english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
-              arabic: ['السؤال الأول', 'السؤال الثاني', 'السؤال الثالث', 'السؤال الرابع', 'السؤال الخامس'],
-              bangla: ['প্রথম প্রশ্ন', 'দ্বিতীয় প্রশ্ন', 'তৃতীয় প্রশ্ন', 'চতুর্থ প্রশ্ন', 'পঞ্চম প্রশ্ন'],
-              urdu: ['پہلا سوال', 'دوسرا سوال', 'تیسرا سوال', 'چوتھا سوال', 'پانچواں سوال']
+              english: [
+                "First Question",
+                "Second Question",
+                "Third Question",
+                "Fourth Question",
+                "Fifth Question",
+                "Sixth Question",
+                "Seventh Question",
+                "Eighth Question",
+                "Ninth Question",
+                "Tenth Question",
+                "Eleventh Question",
+                "Twelfth Question",
+                "Thirteenth Question",
+                "Fourteenth Question",
+                "Fifteenth Question",
+              ],
+              arabic: [
+                "السؤال الأول",
+                "السؤال الثاني",
+                "السؤال الثالث",
+                "السؤال الرابع",
+                "السؤال الخامس",
+                "السؤال السادس",
+                "السؤال السابع",
+                "السؤال الثامن",
+                "السؤال التاسع",
+                "السؤال العاشر",
+                "السؤال الحادي عشر",
+                "السؤال الثاني عشر",
+                "السؤال الثالث عشر",
+                "السؤال الرابع عشر",
+                "السؤال الخامس عشر",
+              ],
+              bangla: [
+                "প্রথম প্রশ্ন:",
+                "দ্বিতীয় প্রশ্ন:",
+                "তৃতীয় প্রশ্ন:",
+                "চতুর্থ প্রশ্ন:",
+                "পঞ্চম প্রশ্ন:",
+                "ষষ্ঠ প্রশ্ন:",
+                "সপ্তম প্রশ্ন:",
+                "অষ্টম প্রশ্ন:",
+                "নবম প্রশ্ন:",
+                "দশম প্রশ্ন:",
+                "একাদশ প্রশ্ন:",
+                "দ্বাদশ প্রশ্ন:",
+                "ত্রয়োদশ প্রশ্ন:",
+                "চতুর্দশ প্রশ্ন:",
+                "পঞ্চদশ প্রশ্ন:",
+              ],
+              urdu: [
+                "پہلا سوال",
+                "دوسرا سوال",
+                "تیسرا سوال",
+                "چوتھا سوال",
+                "پانچواں سوال",
+                "چھٹا سوال",
+                "ساتواں سوال",
+                "آٹھواں سوال",
+                "نواں سوال",
+                "دسواں سوال",
+                "گیارہواں سوال",
+                "بارہواں سوال",
+                "تیرہواں سوال",
+                "چودہواں سوال",
+                "پندرہواں سوال",
+              ],
             };
             return ordinals[lang]?.[index] || `Section ${index + 1}`;
           };
 
           const getLabel = (idx, lang) => {
-            if (lang === 'arabic') {
-              const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
-              return `(${arabicLetters[idx] || 'أ'})`;
+            if (lang === "arabic") {
+              const arabicLetters = [
+                "أ",
+                "ب",
+                "ج",
+                "د",
+                "ه",
+                "و",
+                "ز",
+                "ح",
+                "ط",
+                "ي",
+                "ك",
+                "ل",
+                "م",
+                "ن",
+                "س",
+                "ع",
+                "ف",
+                "ص",
+                "ق",
+                "ر",
+                "ش",
+                "ت",
+                "ث",
+                "خ",
+                "ذ",
+                "ض",
+                "ظ",
+                "غ",
+              ];
+              return `(${arabicLetters[idx] || "أ"})`;
             }
-            if (lang === 'bangla') return `(${String.fromCharCode(2453 + idx)})`;
-            if (lang === 'urdu') return `(${String.fromCharCode(1575 + idx)})`;
+            if (lang === "bangla")
+              return `(${String.fromCharCode(2453 + idx)})`;
+            if (lang === "urdu") return `(${String.fromCharCode(1575 + idx)})`;
             return `(${String.fromCharCode(97 + idx)})`;
           };
 
-          const updatedSections = state.sections.map((section, sectionIndex) => ({
-            ...section,
-            title: getSectionTitle(sectionIndex, language),
-            subQuestions: section.subQuestions.map((sq, sqIndex) => ({
-              ...sq,
-              label: getLabel(sqIndex, language)
-            }))
-          }));
+          const updatedSections = state.sections.map(
+            (section, sectionIndex) => ({
+              ...section,
+              title: getSectionTitle(sectionIndex, language),
+              subQuestions: section.subQuestions.map((sq, sqIndex) => ({
+                ...sq,
+                label: getLabel(sqIndex, language),
+              })),
+            })
+          );
 
           return {
             metadata: { ...state.metadata, language },
-            sections: updatedSections
+            sections: updatedSections,
           };
         });
       },
@@ -197,10 +311,74 @@ const usePaperStore = create(
       addSection: () => {
         const getSectionTitle = (index, language) => {
           const ordinals = {
-            english: ['First Question', 'Second Question', 'Third Question', 'Fourth Question', 'Fifth Question'],
-            arabic: ['السؤال الأول', 'السؤال الثاني', 'السؤال الثالث', 'السؤال الرابع', 'السؤال الخامس'],
-            bangla: ['প্রথম প্রশ্ন', 'দ্বিতীয় প্রশ্ন', 'তৃতীয় প্রশ্ন', 'চতুর্থ প্রশ্ন', 'পঞ্চম প্রশ্ন'],
-            urdu: ['پہلا سوال', 'دوسرا سوال', 'تیسرا سوال', 'چوتھا سوال', 'پانچواں سوال']
+            english: [
+              "First Question",
+              "Second Question",
+              "Third Question",
+              "Fourth Question",
+              "Fifth Question",
+              "Sixth Question",
+              "Seventh Question",
+              "Eighth Question",
+              "Ninth Question",
+              "Tenth Question",
+              "Eleventh Question",
+              "Twelfth Question",
+              "Thirteenth Question",
+              "Fourteenth Question",
+              "Fifteenth Question",
+            ],
+            arabic: [
+              "السؤال الأول",
+              "السؤال الثاني",
+              "السؤال الثالث",
+              "السؤال الرابع",
+              "السؤال الخامس",
+              "السؤال السادس",
+              "السؤال السابع",
+              "السؤال الثامن",
+              "السؤال التاسع",
+              "السؤال العاشر",
+              "السؤال الحادي عشر",
+              "السؤال الثاني عشر",
+              "السؤال الثالث عشر",
+              "السؤال الرابع عشر",
+              "السؤال الخامس عشر",
+            ],
+            bangla: [
+              "প্রথম প্রশ্ন:",
+              "দ্বিতীয় প্রশ্ন:",
+              "তৃতীয় প্রশ্ন:",
+              "চতুর্থ প্রশ্ন:",
+              "পঞ্চম প্রশ্ন:",
+              "ষষ্ঠ প্রশ্ন:",
+              "সপ্তম প্রশ্ন:",
+              "অষ্টম প্রশ্ন:",
+              "নবম প্রশ্ন:",
+              "দশম প্রশ্ন:",
+              "একাদশ প্রশ্ন:",
+              "দ্বাদশ প্রশ্ন:",
+              "ত্রয়োদশ প্রশ্ন:",
+              "চতুর্দশ প্রশ্ন:",
+              "পঞ্চদশ প্রশ্ন:",
+            ],
+            urdu: [
+              "پہلا سوال",
+              "دوسرا سوال",
+              "تیسرا سوال",
+              "چوتھا سوال",
+              "پانچواں سوال",
+              "چھٹا سوال",
+              "ساتواں سوال",
+              "آٹھواں سوال",
+              "نواں سوال",
+              "دسواں سوال",
+              "گیارہواں سوال",
+              "بارہواں سوال",
+              "تیرہواں سوال",
+              "چودہواں سوال",
+              "پندرہواں سوال",
+            ],
           };
           return ordinals[language]?.[index] || `Section ${index + 1}`;
         };
@@ -209,58 +387,89 @@ const usePaperStore = create(
         const newSection = {
           id: uuidv4(),
           title: getSectionTitle(get().sections.length, currentLanguage),
-          subQuestions: []
+          subQuestions: [],
         };
-        
+
         const getLabel = (index, language) => {
-          if (language === 'arabic') {
-            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
-            return `(${arabicLetters[index] || 'أ'})`;
+          if (language === "arabic") {
+            const arabicLetters = [
+              "أ",
+              "ب",
+              "ج",
+              "د",
+              "ه",
+              "و",
+              "ز",
+              "ح",
+              "ط",
+              "ي",
+              "ك",
+              "ل",
+              "م",
+              "ن",
+              "س",
+              "ع",
+              "ف",
+              "ص",
+              "ق",
+              "ر",
+              "ش",
+              "ت",
+              "ث",
+              "خ",
+              "ذ",
+              "ض",
+              "ظ",
+              "غ",
+            ];
+            return `(${arabicLetters[index] || "أ"})`;
           }
-          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`;
-          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`;
+          if (language === "bangla")
+            return `(${String.fromCharCode(2453 + index)})`;
+          if (language === "urdu")
+            return `(${String.fromCharCode(1575 + index)})`;
           return `(${String.fromCharCode(97 + index)})`;
         };
-        
+
         const defaultSubQuestions = [
           {
             id: uuidv4(),
             label: getLabel(0, currentLanguage),
-            heading: '',
-            content: '<p></p>',
-            marks: '',
+            heading: "",
+            content: "<p></p>",
+            marks: "",
             showAnswer: false,
-            answer: '',
-            type: 'text'
+            answer: "",
+            type: "text",
           },
           {
             id: uuidv4(),
             label: getLabel(1, currentLanguage),
-            heading: '',
-            content: '<p></p>',
-            marks: '',
+            heading: "",
+            content: "<p></p>",
+            marks: "",
             showAnswer: false,
-            answer: '',
-            type: 'text'
+            answer: "",
+            type: "text",
           },
           {
             id: uuidv4(),
             label: getLabel(2, currentLanguage),
-            heading: '',
-            content: '<p></p>',
-            marks: '',
+            heading: "",
+            content: "<p></p>",
+            marks: "",
             showAnswer: false,
-            answer: '',
-            type: 'text'
-          }
+            answer: "",
+            type: "text",
+          },
         ];
-        
+
         newSection.subQuestions = defaultSubQuestions;
-        
-        set(state => ({
+
+        set((state) => ({
           sections: [...state.sections, newSection],
           activeSectionId: newSection.id,
-          activeSubQuestionId: defaultSubQuestions[0].id
+          activeSubQuestionId: defaultSubQuestions[0].id,
         }));
       },
 
@@ -269,11 +478,11 @@ const usePaperStore = create(
        * @param {string} sectionId - ID of section to delete
        */
       deleteSection: (sectionId) => {
-        set(state => {
-          const newSections = state.sections.filter(s => s.id !== sectionId);
+        set((state) => {
+          const newSections = state.sections.filter((s) => s.id !== sectionId);
           return {
             sections: newSections,
-            activeSectionId: newSections.length > 0 ? newSections[0].id : null
+            activeSectionId: newSections.length > 0 ? newSections[0].id : null,
           };
         });
       },
@@ -288,15 +497,15 @@ const usePaperStore = create(
         if (updates.title) {
           get().saveToHistory();
         }
-        set(state => ({
-          sections: state.sections.map(s => 
+        set((state) => ({
+          sections: state.sections.map((s) =>
             s.id === sectionId ? { ...s, ...updates } : s
-          )
+          ),
         }));
       },
 
       reorderSections: (startIndex, endIndex) => {
-        set(state => {
+        set((state) => {
           const result = Array.from(state.sections);
           const [removed] = result.splice(startIndex, 1);
           result.splice(endIndex, 0, removed);
@@ -312,37 +521,68 @@ const usePaperStore = create(
        * @param {Object|null} template - Optional template with predefined content
        */
       addSubQuestion: (sectionId, template = null) => {
-        const section = get().sections.find(s => s.id === sectionId);
+        const section = get().sections.find((s) => s.id === sectionId);
         if (!section) return;
 
         const getLabel = (index, language) => {
-          if (language === 'arabic') {
-            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
-            return `(${arabicLetters[index] || 'أ'})`;
+          if (language === "arabic") {
+            const arabicLetters = [
+              "أ",
+              "ب",
+              "ج",
+              "د",
+              "ه",
+              "و",
+              "ز",
+              "ح",
+              "ط",
+              "ي",
+              "ك",
+              "ل",
+              "م",
+              "ن",
+              "س",
+              "ع",
+              "ف",
+              "ص",
+              "ق",
+              "ر",
+              "ش",
+              "ت",
+              "ث",
+              "خ",
+              "ذ",
+              "ض",
+              "ظ",
+              "غ",
+            ];
+            return `(${arabicLetters[index] || "أ"})`;
           }
-          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`; // (ক)
-          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`; // (ا)
+          if (language === "bangla")
+            return `(${String.fromCharCode(2453 + index)})`; // (ক)
+          if (language === "urdu")
+            return `(${String.fromCharCode(1575 + index)})`; // (ا)
           return `(${String.fromCharCode(97 + index)})`; // (a)
         };
 
         const newSubQuestion = {
           id: uuidv4(),
           label: getLabel(section.subQuestions.length, get().metadata.language),
-          heading: template?.heading || '',
-          content: template?.content || '',
-          marks: template?.marks || '',
+          heading: template?.heading || "",
+          content: template?.content || "",
+          marks: template?.marks || "",
           showAnswer: false,
-          answer: template?.answer || '',
-          type: template?.type || 'text'
+          answer: template?.answer || "",
+          type: template?.type || "text",
         };
 
-        set(state => ({
-          sections: state.sections.map(s => 
-            s.id === sectionId 
+        set((state) => ({
+          sections: state.sections.map((s) =>
+            s.id === sectionId
               ? { ...s, subQuestions: [...s.subQuestions, newSubQuestion] }
               : s
           ),
-          activeSubQuestionId: newSubQuestion.id
+          activeSubQuestionId: newSubQuestion.id,
         }));
       },
 
@@ -357,17 +597,17 @@ const usePaperStore = create(
         if (updates.content || updates.heading) {
           get().saveToHistory();
         }
-        set(state => ({
-          sections: state.sections.map(s => 
-            s.id === sectionId 
+        set((state) => ({
+          sections: state.sections.map((s) =>
+            s.id === sectionId
               ? {
                   ...s,
-                  subQuestions: s.subQuestions.map(sq => 
+                  subQuestions: s.subQuestions.map((sq) =>
                     sq.id === subQuestionId ? { ...sq, ...updates } : sq
-                  )
+                  ),
                 }
               : s
-          )
+          ),
         }));
       },
 
@@ -378,68 +618,134 @@ const usePaperStore = create(
        */
       deleteSubQuestion: (sectionId, subQuestionId) => {
         const getLabel = (index, language) => {
-          if (language === 'arabic') {
-            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
-            return `(${arabicLetters[index] || 'أ'})`;
+          if (language === "arabic") {
+            const arabicLetters = [
+              "أ",
+              "ب",
+              "ج",
+              "د",
+              "ه",
+              "و",
+              "ز",
+              "ح",
+              "ط",
+              "ي",
+              "ك",
+              "ل",
+              "م",
+              "ن",
+              "س",
+              "ع",
+              "ف",
+              "ص",
+              "ق",
+              "ر",
+              "ش",
+              "ت",
+              "ث",
+              "خ",
+              "ذ",
+              "ض",
+              "ظ",
+              "غ",
+            ];
+            return `(${arabicLetters[index] || "أ"})`;
           }
-          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`;
-          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`;
+          if (language === "bangla")
+            return `(${String.fromCharCode(2453 + index)})`;
+          if (language === "urdu")
+            return `(${String.fromCharCode(1575 + index)})`;
           return `(${String.fromCharCode(97 + index)})`;
         };
 
-        set(state => ({
-          sections: state.sections.map(s => 
-            s.id === sectionId 
+        set((state) => ({
+          sections: state.sections.map((s) =>
+            s.id === sectionId
               ? {
                   ...s,
                   subQuestions: s.subQuestions
-                    .filter(sq => sq.id !== subQuestionId)
+                    .filter((sq) => sq.id !== subQuestionId)
                     .map((sq, index) => ({
                       ...sq,
-                      label: getLabel(index, state.metadata.language)
-                    }))
+                      label: getLabel(index, state.metadata.language),
+                    })),
                 }
               : s
-          )
+          ),
         }));
       },
 
       reorderSubQuestions: (sectionId, startIndex, endIndex) => {
         const getLabel = (index, language) => {
-          if (language === 'arabic') {
-            const arabicLetters = ['أ', 'ب', 'ج', 'د', 'ه'];
-            return `(${arabicLetters[index] || 'أ'})`;
+          if (language === "arabic") {
+            const arabicLetters = [
+              "أ",
+              "ب",
+              "ج",
+              "د",
+              "ه",
+              "و",
+              "ز",
+              "ح",
+              "ط",
+              "ي",
+              "ك",
+              "ل",
+              "م",
+              "ن",
+              "س",
+              "ع",
+              "ف",
+              "ص",
+              "ق",
+              "ر",
+              "ش",
+              "ت",
+              "ث",
+              "خ",
+              "ذ",
+              "ض",
+              "ظ",
+              "غ",
+            ];
+            return `(${arabicLetters[index] || "أ"})`;
           }
-          if (language === 'bangla') return `(${String.fromCharCode(2453 + index)})`;
-          if (language === 'urdu') return `(${String.fromCharCode(1575 + index)})`;
+          if (language === "bangla")
+            return `(${String.fromCharCode(2453 + index)})`;
+          if (language === "urdu")
+            return `(${String.fromCharCode(1575 + index)})`;
           return `(${String.fromCharCode(97 + index)})`;
         };
 
-        set(state => ({
-          sections: state.sections.map(s => {
+        set((state) => ({
+          sections: state.sections.map((s) => {
             if (s.id === sectionId) {
               const result = Array.from(s.subQuestions);
               const [removed] = result.splice(startIndex, 1);
               result.splice(endIndex, 0, removed);
-              return { 
-                ...s, 
+              return {
+                ...s,
                 subQuestions: result.map((sq, index) => ({
                   ...sq,
-                  label: getLabel(index, state.metadata.language)
-                }))
+                  label: getLabel(index, state.metadata.language),
+                })),
               };
             }
             return s;
-          })
+          }),
         }));
       },
 
-      setActiveSubQuestion: (subQuestionId) => set({ activeSubQuestionId: subQuestionId }),
+      setActiveSubQuestion: (subQuestionId) =>
+        set({ activeSubQuestionId: subQuestionId }),
 
       /** Toggle between edit and preview modes */
-      togglePreviewMode: () => set(state => ({ previewMode: !state.previewMode })),
+      togglePreviewMode: () =>
+        set((state) => ({ previewMode: !state.previewMode })),
       /** Toggle dark/light theme */
-      toggleDarkMode: () => set(state => ({ darkMode: !state.darkMode })),
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      /** Set UI language */
+      setUILanguage: (language) => set({ uiLanguage: language }),
 
       /**
        * Export current paper data for backup/sharing
@@ -450,7 +756,7 @@ const usePaperStore = create(
         return {
           metadata: state.metadata,
           sections: state.sections,
-          exportDate: new Date().toISOString()
+          exportDate: new Date().toISOString(),
         };
       },
 
@@ -462,7 +768,7 @@ const usePaperStore = create(
         set({
           metadata: data.metadata,
           sections: data.sections,
-          activeSectionId: data.sections?.[0]?.id || null
+          activeSectionId: data.sections?.[0]?.id || null,
         });
       },
 
@@ -472,58 +778,58 @@ const usePaperStore = create(
       clearAll: () => {
         const defaultSection = {
           id: uuidv4(),
-          title: 'First Question',
+          title: "প্রথম প্রশ্ন:",
           subQuestions: [
             {
               id: uuidv4(),
-              label: '(ক)',
-              heading: '',
-              content: '<p></p>',
-              marks: '',
+              label: "(ক)",
+              heading: "",
+              content: "<p></p>",
+              marks: "",
               showAnswer: false,
-              answer: '',
-              type: 'text'
+              answer: "",
+              type: "text",
             },
             {
               id: uuidv4(),
-              label: '(খ)',
-              heading: '',
-              content: '<p></p>',
-              marks: '',
+              label: "(খ)",
+              heading: "",
+              content: "<p></p>",
+              marks: "",
               showAnswer: false,
-              answer: '',
-              type: 'text'
+              answer: "",
+              type: "text",
             },
             {
               id: uuidv4(),
-              label: '(গ)',
-              heading: '',
-              content: '<p></p>',
-              marks: '',
+              label: "(গ)",
+              heading: "",
+              content: "<p></p>",
+              marks: "",
               showAnswer: false,
-              answer: '',
-              type: 'text'
-            }
-          ]
+              answer: "",
+              type: "text",
+            },
+          ],
         };
-        
+
         set({
           metadata: {
-            language: 'bangla',
-            schoolName: '',
-            examName: '',
-            className: '',
-            subject: '',
-            book: '',
-            fullMarks: '',
-            duration: '',
-            instructions: '',
-            numberingStyle: 'letters'
+            language: "bangla",
+            schoolName: "",
+            examName: "",
+            className: "",
+            subject: "",
+            book: "",
+            fullMarks: "",
+            duration: "",
+            instructions: "",
+            numberingStyle: "letters",
           },
           sections: [defaultSection],
           activeSectionId: defaultSection.id,
           activeSubQuestionId: defaultSection.subQuestions[0].id,
-          previewMode: false
+          previewMode: false,
         });
       },
 
@@ -537,18 +843,19 @@ const usePaperStore = create(
           set({ activeSectionId: state.sections[0].id });
         }
         // Expose store to window for PDF validation
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.__QMAKER_STORE__ = { getState: get };
         }
-      }
+      },
     }),
     {
-      name: 'paper-storage',
+      name: "paper-storage",
       partialize: (state) => ({
         metadata: state.metadata,
         sections: state.sections,
-        darkMode: state.darkMode
-      })
+        darkMode: state.darkMode,
+        uiLanguage: state.uiLanguage,
+      }),
     }
   )
 );

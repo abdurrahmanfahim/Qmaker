@@ -283,8 +283,11 @@ export const exportToHTML = (paperData, options = {}) => {
 </html>`;
   
   const blob = new Blob([html], { type: 'text/html' });
-  const filename = options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.html`;
-  saveAs(blob, filename);
+  // Sanitize filename to prevent path traversal
+  const safeFilename = (options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.html`)
+    .replace(/[^a-zA-Z0-9.-]/g, '_')
+    .replace(/\.\./g, '_');
+  saveAs(blob, safeFilename);
 };
 
 /**

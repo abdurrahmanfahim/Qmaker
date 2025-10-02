@@ -47,16 +47,42 @@ class CloudSync {
     }
   }
 
-  // Get local data for sync
+  // Get local data for sync with sanitization
   getLocalData() {
-    const paperData = localStorage.getItem('paper-storage');
-    const autosave = localStorage.getItem('qmaker-autosave');
-    
-    return {
-      paperData: paperData ? JSON.parse(paperData) : null,
-      autosave: autosave ? JSON.parse(autosave) : null,
-      timestamp: Date.now()
-    };
+    try {
+      const paperData = localStorage.getItem('paper-storage');
+      const autosave = localStorage.getItem('qmaker-autosave');
+      
+      return {
+        paperData: paperData ? this.sanitizeData(JSON.parse(paperData)) : null,
+        autosave: autosave ? this.sanitizeData(JSON.parse(autosave)) : null,
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      console.error('Failed to parse local data:', error);
+      return { paperData: null, autosave: null, timestamp: Date.now() };
+    }
+  }
+
+  // Sanitize data to prevent XSS
+  sanitizeData(data) {
+    if (typeof data === 'string') {
+      return data.replace(/[<>"'&]/g, (match) => {
+        const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+        return entities[match];
+      });
+    }
+    if (Array.isArray(data)) {
+      return data.map(item => this.sanitizeData(item));
+    }
+    if (data && typeof data === 'object') {
+      const sanitized = {};
+      for (const [key, value] of Object.entries(data)) {
+        sanitized[key] = this.sanitizeData(value);
+      }
+      return sanitized;
+    }
+    return data;
   }
 
   // Mock cloud API (replace with real implementation)

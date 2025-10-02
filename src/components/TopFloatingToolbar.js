@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { 
   BoldIcon,
   ItalicIcon,
@@ -8,54 +8,18 @@ import {
   TableCellsIcon,
   NumberedListIcon,
   ArrowUturnLeftIcon,
-  ArrowUturnRightIcon
+  ArrowUturnRightIcon,
+  EyeIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { useEditorContext } from '../contexts/EditorContext';
-import { useHapticFeedback } from '../hooks/useSwipeGestures';
+import { t } from '../utils/i18n';
 
 const TopFloatingToolbar = ({ showTableModal, setShowTableModal }) => {
-  const [isVisible, setIsVisible] = useState(false);
   const { activeEditor } = useEditorContext();
-  const { lightTap } = useHapticFeedback();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sectionHeader = document.querySelector('.border-b.border-gray-200');
-      if (sectionHeader) {
-        const rect = sectionHeader.getBoundingClientRect();
-        setIsVisible(rect.bottom < 0);
-      }
-    };
-
-    const addScrollListeners = () => {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      document.addEventListener('scroll', handleScroll, { passive: true });
-      
-      const scrollContainers = document.querySelectorAll('.overflow-auto, .custom-scrollbar');
-      scrollContainers.forEach(container => {
-        container.addEventListener('scroll', handleScroll, { passive: true });
-      });
-    };
-
-    const removeScrollListeners = () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('scroll', handleScroll);
-      
-      const scrollContainers = document.querySelectorAll('.overflow-auto, .custom-scrollbar');
-      scrollContainers.forEach(container => {
-        container.removeEventListener('scroll', handleScroll);
-      });
-    };
-
-    addScrollListeners();
-    handleScroll();
-    
-    return removeScrollListeners;
-  }, []);
 
   const executeCommand = (command) => {
     if (!activeEditor) return false;
-    lightTap();
     
     switch(command) {
       case 'bold':
@@ -93,16 +57,8 @@ const TopFloatingToolbar = ({ showTableModal, setShowTableModal }) => {
     }
   };
 
-  const insertTable = (rows, cols, hasHeader) => {
-    if (activeEditor) {
-      activeEditor.chain().focus().insertTable({ rows, cols, withHeaderRow: hasHeader }).run();
-    }
-  };
-
   return (
-    <div className={`floating-toolbar fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-600 z-50 transition-transform duration-300 ${
-      isVisible ? 'translate-y-0' : '-translate-y-full'
-    }`}>
+    <div className="floating-toolbar bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-600 z-[9998]" style={{ position: 'fixed', top: '0', left: '0', right: '0', height: '60px' }}>
       <div 
         className="flex items-center gap-[3px] px-1 overflow-x-auto" 
         onMouseDown={(e) => {
@@ -217,12 +173,32 @@ const TopFloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         
         {/* Table */}
         <button
-          onClick={() => setShowTableModal(true)}
+          onClick={() => {
+            if (setShowTableModal) {
+              setShowTableModal(true);
+            }
+          }}
           className="p-2 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none flex items-center justify-center"
           style={{ minWidth: '44px', minHeight: '44px' }}
         >
           <TableCellsIcon className="w-4 h-4" />
         </button>
+        
+        {/* Delete Table */}
+        {activeEditor?.isActive('table') && (
+          <button
+            onClick={() => {
+              if (activeEditor) {
+                activeEditor.chain().focus().deleteTable().run();
+              }
+            }}
+            className="p-2 rounded-lg transition-colors text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 focus:outline-none flex items-center justify-center"
+            style={{ minWidth: '44px', minHeight: '44px' }}
+            title="Delete Table"
+          >
+            <img src="/icon/table-delete-svgrepo-com.svg" alt="Delete Table" className="w-4 h-4" style={{ filter: 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' }} />
+          </button>
+        )}
         
         {/* Strikethrough */}
         <button
@@ -245,7 +221,83 @@ const TopFloatingToolbar = ({ showTableModal, setShowTableModal }) => {
         >
           <span className="text-sm">───</span>
         </button>
+        
+
       </div>
+      
+      {/* Table Modal */}
+      {showTableModal && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-[10003] p-4" onClick={() => setShowTableModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Insert Table</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rows</label>
+                <input
+                  type="number"
+                  defaultValue={2}
+                  min={1}
+                  max={10}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  id="top-table-rows"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Columns</label>
+                <input
+                  type="number"
+                  defaultValue={3}
+                  min={1}
+                  max={10}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  id="top-table-cols"
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="top-table-header"
+                  className="mr-2"
+                />
+                <label htmlFor="top-table-header" className="text-sm text-gray-700 dark:text-gray-300">{t('Include header row')}</label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setShowTableModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-lg transition-colors"
+              >
+                {t('Cancel')}
+              </button>
+              <button
+                onClick={() => {
+                  const rows = parseInt(document.getElementById('top-table-rows').value) || 2;
+                  const cols = parseInt(document.getElementById('top-table-cols').value) || 3;
+                  const hasHeader = document.getElementById('top-table-header').checked;
+                  
+                  if (rows >= 1 && cols >= 1 && rows <= 10 && cols <= 10 && activeEditor) {
+                    activeEditor.chain().focus().insertTable({ rows, cols, withHeaderRow: hasHeader }).run();
+                    // Add paragraph after table with proper positioning
+                    setTimeout(() => {
+                      if (activeEditor) {
+                        const { state } = activeEditor;
+                        const { tr } = state;
+                        const pos = state.doc.content.size;
+                        tr.insert(pos, state.schema.nodes.paragraph.create());
+                        activeEditor.view.dispatch(tr);
+                      }
+                    }, 100);
+                    setShowTableModal(false);
+                  }
+                }}
+                className="px-6 py-2 bg-[#09302f] text-white rounded-lg hover:bg-[#072625] font-semibold transition-colors"
+              >
+                {t('Insert')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

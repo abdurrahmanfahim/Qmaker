@@ -120,6 +120,39 @@ const RichTextEditor = ({
     }
   };
 
+  // Memoized event handlers to prevent re-renders
+  const handleBoldClick = React.useCallback(() => {
+    editor.chain().focus().toggleBold().run();
+  }, [editor]);
+
+  const handleItalicClick = React.useCallback(() => {
+    editor.chain().focus().toggleItalic().run();
+  }, [editor]);
+
+  const handleUnderlineClick = React.useCallback(() => {
+    editor.chain().focus().toggleUnderline().run();
+  }, [editor]);
+
+  const handleAlignLeft = React.useCallback(() => {
+    editor.chain().focus().setTextAlign('left').run();
+  }, [editor]);
+
+  const handleAlignCenter = React.useCallback(() => {
+    editor.chain().focus().setTextAlign('center').run();
+  }, [editor]);
+
+  const handleAlignRight = React.useCallback(() => {
+    editor.chain().focus().setTextAlign('right').run();
+  }, [editor]);
+
+  const handleBulletList = React.useCallback(() => {
+    editor.chain().focus().toggleBulletList().run();
+  }, [editor]);
+
+  const handleOrderedList = React.useCallback(() => {
+    editor.chain().focus().toggleOrderedList().run();
+  }, [editor]);
+
   const startVoiceInput = () => {
     if ('webkitSpeechRecognition' in window) {
       const recognition = new window.webkitSpeechRecognition();
@@ -153,7 +186,7 @@ const RichTextEditor = ({
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto whitespace-nowrap">
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
+          onClick={handleBoldClick}
           isActive={editor.isActive('bold')}
           title="Bold"
         >
@@ -161,7 +194,7 @@ const RichTextEditor = ({
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          onClick={handleItalicClick}
           isActive={editor.isActive('italic')}
           title="Italic"
         >
@@ -169,7 +202,7 @@ const RichTextEditor = ({
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          onClick={handleUnderlineClick}
           isActive={editor.isActive('underline')}
           title="Underline"
         >
@@ -179,7 +212,7 @@ const RichTextEditor = ({
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          onClick={handleAlignLeft}
           isActive={editor.isActive({ textAlign: 'left' })}
           title="Align Left"
         >
@@ -187,7 +220,7 @@ const RichTextEditor = ({
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          onClick={handleAlignCenter}
           isActive={editor.isActive({ textAlign: 'center' })}
           title="Align Center"
         >
@@ -195,7 +228,7 @@ const RichTextEditor = ({
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          onClick={handleAlignRight}
           isActive={editor.isActive({ textAlign: 'right' })}
           title="Align Right"
         >
@@ -205,7 +238,7 @@ const RichTextEditor = ({
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          onClick={handleBulletList}
           isActive={editor.isActive('bulletList')}
           title="Bullet List"
         >
@@ -213,7 +246,7 @@ const RichTextEditor = ({
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          onClick={handleOrderedList}
           isActive={editor.isActive('orderedList')}
           title="Numbered List"
         >

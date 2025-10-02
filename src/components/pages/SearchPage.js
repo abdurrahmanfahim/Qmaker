@@ -54,14 +54,15 @@ const SearchPage = ({ onBack, onOpenPaper, onNavigate }) => {
         
         let results = allPapers;
         
-        // Filter by search query
+        // Filter by search query with sanitization
         if (searchQuery.trim()) {
+          const sanitizedQuery = searchQuery.toLowerCase().replace(/[<>"'&]/g, '');
           results = results.filter(paper => 
-            paper.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            paper.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            paper.className?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            paper.examName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            paper.sharedBy?.toLowerCase().includes(searchQuery.toLowerCase())
+            paper.title?.toLowerCase().includes(sanitizedQuery) ||
+            paper.subject?.toLowerCase().includes(sanitizedQuery) ||
+            paper.className?.toLowerCase().includes(sanitizedQuery) ||
+            paper.examName?.toLowerCase().includes(sanitizedQuery) ||
+            paper.sharedBy?.toLowerCase().includes(sanitizedQuery)
           );
         }
         

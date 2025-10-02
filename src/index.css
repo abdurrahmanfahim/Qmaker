@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
 @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
@@ -11,6 +11,9 @@
 @import './styles/performance.css';
 @import './styles/cropper.css';
 @import './styles/react-crop.css';
+@import './styles/poppins-override.css';
+@import './print.css';
+@import './flip-card.css';
 
 @tailwind base;
 @tailwind components;
@@ -90,13 +93,13 @@ input[type="number"] {
 }
 
 .font-english {
-  font-family: 'Roboto', 'Arial', sans-serif;
+  font-family: 'Poppins', 'Arial', sans-serif;
   font-size: 14px;
 }
 
 /* Ensure proper font fallbacks for all languages */
 * {
-  font-family: 'Roboto', 'SolaimanLipi', 'Noto Sans Bengali', 'Scheherazade New', 'Noto Nastaliq Urdu', 'Arial', sans-serif;
+  font-family: 'Poppins', 'SolaimanLipi', 'Noto Sans Bengali', 'Scheherazade New', 'Noto Nastaliq Urdu', 'Arial', sans-serif;
 }
 
 /* Override any cached Amiri font with Scheherazade New */
@@ -108,7 +111,7 @@ input[type="number"] {
 
 /* Ensure Amiri is completely overridden */
 * {
-  font-family: 'Scheherazade New', 'Noto Nastaliq Urdu', 'SolaimanLipi', 'Roboto', serif, sans-serif !important;
+  font-family: 'Scheherazade New', 'Noto Nastaliq Urdu', 'SolaimanLipi', 'Poppins', serif, sans-serif !important;
 }
 
 .font-arabic * {
@@ -208,7 +211,7 @@ input[type="number"] {
 /* Tiptap editor styles */
 .ProseMirror {
   outline: none;
-  padding: 8px;
+  padding: 0 !important;
   min-height: 100px;
   font-size: 14px;
 }
@@ -256,13 +259,13 @@ input[type="number"] {
 
 .font-english .ProseMirror,
 .font-english .ProseMirror * {
-  font-family: 'Roboto', 'Arial', sans-serif !important;
+  font-family: 'Poppins', 'Arial', sans-serif !important;
   font-size: 14px !important;
 }
 
 @media (max-width: 768px) {
   .ProseMirror {
-    padding: 12px;
+    padding: 0 !important;
     min-height: 120px;
     font-size: 16px;
   }
@@ -360,13 +363,33 @@ input[type="number"] {
 
 /* Print and PDF export styles */
 @media print {
-  /* Hide everything except printable content */
-  body * {
+  /* Reset all styles for print */
+  * {
+    box-sizing: border-box !important;
+  }
+  
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  
+  /* Hide all elements */
+  * {
     visibility: hidden !important;
   }
   
-  #printable-content, #printable-content * {
+  /* Show only printable content */
+  #printable-content,
+  #printable-content * {
     visibility: visible !important;
+  }
+  
+  /* Hide UI elements completely */
+  .fixed, .absolute, button, nav, header {
+    display: none !important;
   }
   
   /* Hide all UI elements */
@@ -382,7 +405,7 @@ input[type="number"] {
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;
-    padding: 20px !important;
+    padding: 0 !important;
     box-shadow: none !important;
     background: white !important;
     box-sizing: border-box !important;
@@ -391,6 +414,8 @@ input[type="number"] {
     transform-origin: initial !important;
     max-width: none !important;
     min-height: auto !important;
+    display: block !important;
+    visibility: visible !important;
   }
   
   /* Hide all buttons when printing */
@@ -398,10 +423,15 @@ input[type="number"] {
     display: none !important;
   }
   
-  /* Optimize page layout - A4 size with no margins */
+  /* Optimize page layout - A4 size with narrow margins */
   @page {
-    margin: 0;
+    margin: 12.7mm;
     size: A4 portrait;
+  }
+  
+  /* Prevent infinite page generation */
+  body {
+    overflow: hidden !important;
   }
   
   /* Force black colors for print */
@@ -428,6 +458,22 @@ input[type="number"] {
   .print-avoid-break {
     page-break-inside: avoid;
     break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  .section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  .sub-question {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    orphans: 2;
+    widows: 2;
   }
   
   /* Trim empty space and prevent extra pages */
@@ -545,7 +591,7 @@ input[type="number"] {
 
 /* Enhanced PDF export specific styles */
 [data-export="pdf-content"] {
-  font-family: 'Roboto', Arial, sans-serif;
+  font-family: 'Poppins', Arial, sans-serif;
   line-height: 1.7;
   color: #000 !important;
   background: #fff !important;
@@ -565,7 +611,7 @@ input[type="number"] {
   font-family: 'Scheherazade New', serif;
   direction: rtl;
   text-align: right;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
   font-feature-settings: "liga" 1, "calt" 1;
 }
@@ -574,7 +620,7 @@ input[type="number"] {
   font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
   direction: ltr;
   text-align: left;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -582,16 +628,16 @@ input[type="number"] {
   font-family: 'Noto Nastaliq Urdu', serif;
   direction: rtl;
   text-align: right;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
   font-feature-settings: "liga" 1, "calt" 1;
 }
 
 [data-export="pdf-content"] .font-english {
-  font-family: 'Roboto', 'Arial', sans-serif;
+  font-family: 'Poppins', 'Arial', sans-serif;
   direction: ltr;
   text-align: left;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -820,48 +866,105 @@ input[type="number"] {
 
 .preview-content .font-arabic {
   font-family: 'Scheherazade New', serif !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .preview-content .font-bangla {
   font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .preview-content .font-urdu,
 .preview-content .font-urdu * {
   font-family: 'Noto Nastaliq Urdu', serif !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 /* Preview content language-specific styles */
 .preview-content[data-lang="urdu"],
 .preview-content[data-lang="urdu"] * {
   font-family: 'SolaimanLipi', 'Noto Nastaliq Urdu', serif !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .preview-content[data-lang="arabic"],
 .preview-content[data-lang="arabic"] * {
   font-family: 'SolaimanLipi', 'Scheherazade New', serif !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .preview-content[data-lang="bangla"],
 .preview-content[data-lang="bangla"] * {
   font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .preview-content[data-lang="english"],
 .preview-content[data-lang="english"] * {
-  font-family: 'Roboto', 'Arial', sans-serif !important;
-  font-size: 14px !important;
+  font-family: 'Poppins', 'Arial', sans-serif !important;
+  font-size: 16px !important;
+}
+
+/* Paper header specific styles to override global font size */
+.preview-content .paper-header {
+  font-size: 28px !important;
+}
+
+.preview-content[data-lang="bangla"] .paper-header {
+  font-size: 28px !important;
+}
+
+.preview-content[data-lang="arabic"] .paper-header {
+  font-size: 28px !important;
+}
+
+.preview-content[data-lang="urdu"] .paper-header {
+  font-size: 28px !important;
+}
+
+.preview-content[data-lang="english"] .paper-header {
+  font-size: 28px !important;
+}
+
+/* Preview list numbering */
+.preview-content[data-lang="bangla"] ol {
+  counter-reset: bangla-counter !important;
+  list-style: none !important;
+}
+
+.preview-content[data-lang="bangla"] ol li {
+  counter-increment: bangla-counter !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.preview-content[data-lang="bangla"] ol li::before {
+  content: counter(bangla-counter, bengali) ". " !important;
+  font-weight: normal !important;
+  margin-right: 0.5rem !important;
+}
+
+.preview-content[data-lang="arabic"] ol {
+  counter-reset: arabic-counter !important;
+  list-style: none !important;
+}
+
+.preview-content[data-lang="arabic"] ol li {
+  counter-increment: arabic-counter !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row-reverse !important;
+}
+
+.preview-content[data-lang="arabic"] ol li::before {
+  content: counter(arabic-counter, arabic-indic) ". " !important;
+  font-weight: normal !important;
+  margin-left: 0.5rem !important;
 }
 
 .preview-content .font-english {
-  font-family: 'Roboto', 'Arial', sans-serif !important;
-  font-size: 14px !important;
+  font-family: 'Poppins', 'Arial', sans-serif !important;
+  font-size: 16px !important;
 }
 
 /* Math equation in preview and PDF */
@@ -936,24 +1039,79 @@ input[type="number"] {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* TipTap list styles */
+/* TipTap list styles - Force display for all languages */
 .ProseMirror ul, .ProseMirror ol {
-  padding-left: 1.5rem;
-  margin: 0.5rem 0;
+  padding-left: 0.75rem !important;
+  margin: 0.5rem 0 !important;
+  list-style-position: outside !important;
 }
 
 .ProseMirror ul {
-  list-style-type: disc;
+  list-style-type: disc !important;
 }
 
 .ProseMirror ol {
-  list-style-type: decimal;
+  list-style-type: decimal !important;
+}
+
+/* Language-specific numbering with custom counters */
+.font-bangla .ProseMirror ol {
+  counter-reset: bangla-counter !important;
+  list-style: none !important;
+}
+
+.font-bangla .ProseMirror ol li {
+  counter-increment: bangla-counter !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.font-bangla .ProseMirror ol li::before {
+  content: counter(bangla-counter, bengali) ". " !important;
+  font-weight: normal !important;
+  margin-right: 0.5rem !important;
+}
+
+.font-arabic .ProseMirror ol {
+  counter-reset: arabic-counter !important;
+  list-style: none !important;
+}
+
+.font-arabic .ProseMirror ol li {
+  counter-increment: arabic-counter !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row-reverse !important;
+}
+
+.font-arabic .ProseMirror ol li::before {
+  content: counter(arabic-counter, arabic-indic) ". " !important;
+  font-weight: normal !important;
+  margin-left: 0.5rem !important;
+}
+
+.font-english .ProseMirror ol,
+.font-urdu .ProseMirror ol {
+  list-style-type: decimal !important;
 }
 
 /* Arabic/Urdu numbering */
-.font-arabic .ProseMirror ol,
-.font-urdu .ProseMirror ol {
+.font-arabic .ProseMirror ol {
   list-style-type: arabic-indic;
+  direction: rtl;
+  text-align: right;
+}
+
+.font-urdu .ProseMirror ol {
+  list-style-type: decimal;
+  direction: rtl;
+  text-align: right;
+}
+
+.font-arabic .ProseMirror ol li,
+.font-urdu .ProseMirror ol li {
+  direction: rtl;
+  text-align: right;
 }
 
 /* Arabic and Urdu numbering in preview and PDF */
@@ -977,14 +1135,22 @@ input[type="number"] {
 }
 
 /* RTL list styles */
-.ProseMirror.rtl ul, .ProseMirror.rtl ol {
-  padding-right: 1.5rem;
+.font-arabic .ProseMirror ul, 
+.font-arabic .ProseMirror ol,
+.font-urdu .ProseMirror ul,
+.font-urdu .ProseMirror ol {
+  padding-right: 0.75rem;
   padding-left: 0;
+  margin-right: 0;
+  margin-left: 0;
 }
 
-.ProseMirror.rtl li {
+.font-arabic .ProseMirror li,
+.font-urdu .ProseMirror li {
   padding-right: 0.25rem;
   padding-left: 0;
+  margin-right: 0;
+  margin-left: 0;
 }
 
 /* Dark mode list styles */
@@ -1123,6 +1289,7 @@ input[type="number"] {
 .preview-content table:not(.ProseMirror table),
 [data-export="pdf-content"] table:not(.ProseMirror table) {
   border: none !important;
+  width: 100% !important;
 }
 
 .preview-content table:not(.ProseMirror table) td,
@@ -1130,6 +1297,7 @@ input[type="number"] {
 [data-export="pdf-content"] table:not(.ProseMirror table) td,
 [data-export="pdf-content"] table:not(.ProseMirror table) th {
   border: none !important;
+  text-align: justify !important;
 }
 
 .preview-content table:not(.ProseMirror table) th,

@@ -238,9 +238,14 @@ const showSuccessToast = (loadingToast) => {
  * @returns {Object|null} Error object with title and message, or null if valid
  */
 const validateExportContent = () => {
-  // Get the store data to validate content
-  const sections = window.__QMAKER_STORE__?.getState?.()?.sections || [];
-  const metadata = window.__QMAKER_STORE__?.getState?.()?.metadata || {};
+  // Get the store data to validate content safely
+  const store = window.__QMAKER_STORE__;
+  if (!store || typeof store.getState !== 'function') {
+    return { title: 'Store Error', message: 'Application state is not available.' };
+  }
+  const state = store.getState();
+  const sections = state?.sections || [];
+  const metadata = state?.metadata || {};
   
   // Check if any sections exist
   if (sections.length === 0) {

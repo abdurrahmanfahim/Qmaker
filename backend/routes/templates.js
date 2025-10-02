@@ -1,52 +1,48 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 
-// Predefined question templates
+// In-memory storage (replace with database)
 const templates = [
   {
     id: '1',
-    name: 'Translation',
-    type: 'translation',
-    content: 'Translate the following text:',
-    language: 'english'
+    name: 'Basic Math Template',
+    subject: 'Mathematics',
+    sections: [
+      { title: 'Section A - Multiple Choice', instructions: 'Choose the correct answer' },
+      { title: 'Section B - Short Questions', instructions: 'Answer in 2-3 sentences' }
+    ]
   },
   {
     id: '2',
-    name: 'Fill in the Blanks',
-    type: 'fill_blanks',
-    content: 'Fill in the blanks: The _____ is very _____.',
-    language: 'english'
-  },
-  {
-    id: '3',
-    name: 'Arabic Translation',
-    type: 'translation',
-    content: 'ترجم النص التالي:',
-    language: 'arabic'
-  },
-  {
-    id: '4',
-    name: 'Bangla Essay',
-    type: 'essay',
-    content: 'নিম্নলিখিত বিষয়ে একটি রচনা লিখুন:',
-    language: 'bangla'
+    name: 'Science Quiz Template',
+    subject: 'Science',
+    sections: [
+      { title: 'Section A - True/False', instructions: 'Mark T for True, F for False' },
+      { title: 'Section B - Fill in the blanks', instructions: 'Complete the sentences' }
+    ]
   }
 ];
 
+// Middleware to verify token
+const auth = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
 // Get all templates
 router.get('/', (req, res) => {
-  const { language, type } = req.query;
-  let filteredTemplates = templates;
-  
-  if (language) {
-    filteredTemplates = filteredTemplates.filter(t => t.language === language);
-  }
-  
-  if (type) {
-    filteredTemplates = filteredTemplates.filter(t => t.type === type);
-  }
-  
-  res.json(filteredTemplates);
+  res.json(templates);
 });
 
 // Get single template

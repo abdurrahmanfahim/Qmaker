@@ -89,3 +89,17 @@
   color: #666;
   font-size: 10px;
 }
+
+.subQuestionContent strong,
+.subQuestionContent b {
+  font-weight: bold;
+}
+
+.subQuestionContent em,
+.subQuestionContent i {
+  font-style: italic;
+}
+
+.subQuestionContent u {
+  text-decoration: underline;
+}

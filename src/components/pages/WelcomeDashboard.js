@@ -10,6 +10,7 @@ import {
   TrashIcon,
   PrinterIcon,
   DocumentArrowDownIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import { useHapticFeedback } from '../../hooks/useSwipeGestures';
 import { getRecentPapers, getMockSharedPapers } from '../../utils/recentPapers';
@@ -17,6 +18,7 @@ import usePaperStore from '../../store/paperStore';
 import RecentPage from './RecentPage';
 import SharedPage from './SharedPage';
 import SettingsPage from './SettingsPage';
+import FontPreferences from '../settings/FontPreferences';
 import UserProfile from './UserProfile';
 import GoogleSignup from '../GoogleSignup';
 import BottomNavigation from '../common/BottomNavigation';
@@ -347,7 +349,36 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
         <SettingsPage 
           onBack={() => setCurrentPage('home')}
           onShowProfile={() => setCurrentPage('profile')}
+          onShowPreferences={() => setCurrentPage('preferences')}
         />
+      </div>
+    );
+  }
+
+  if (currentPage === 'preferences') {
+    return (
+      <div className={darkMode ? 'dark' : ''}>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setCurrentPage('settings')}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">Preferences</h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Font and paper settings</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <FontPreferences />
+          </div>
+        </div>
       </div>
     );
   }
@@ -414,53 +445,16 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
       <div className="max-w-4xl mx-auto px-4 py-6 pb-20 space-y-8">
         {/* Create New Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
-          <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Create New Paper</h2>
-          <div className="flex gap-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Paper</h2>
             <Button
               onClick={handleCreateNew}
               variant="primary"
               size="sm"
-              className="flex-1 flex items-center justify-center gap-1.5"
+              className="flex items-center gap-2"
             >
-              <PlusIcon className="w-4 h-4" strokeWidth={2} />
-              New
-            </Button>
-            
-            <Button
-              onClick={() => {
-                lightTap();
-                onCreateLanguagePaper('bangla');
-              }}
-              variant="outline"
-              size="sm"
-              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
-            >
-              বাংলা
-            </Button>
-            
-            <Button
-              onClick={() => {
-                lightTap();
-                onCreateLanguagePaper('arabic');
-              }}
-              variant="outline"
-              size="sm"
-              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
-            >
-              العربية
-            </Button>
-            
-            <Button
-              onClick={() => {
-                lightTap();
-                onCreateLanguagePaper('urdu');
-              }}
-              variant="outline"
-              size="sm"
-              className="flex-1 bg-[#09302f]/10 dark:bg-[#4ade80]/20 text-[#09302f] dark:text-[#4ade80] border-[#09302f]/20 dark:border-[#4ade80]/30"
-              style={{ fontFamily: 'Noto Nastaliq Urdu, serif' }}
-            >
-              اردو
+              <PlusIcon className="w-4 h-4" />
+              Create
             </Button>
           </div>
         </div>
@@ -469,7 +463,7 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
         {recentPapers.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Papers ({recentPapers.length})</h2>
               {recentPapers.length > 6 && (
                 <button 
                   onClick={() => {
@@ -495,53 +489,28 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
           </div>
         )}
 
-        {/* Shared Papers */}
-        {sharedPapers.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Shared with me</h2>
-              {sharedPapers.length > 4 && (
-                <button 
-                  onClick={() => {
-                    lightTap();
-                    setShowAllShared(!showAllShared);
-                  }}
-                  className="text-sm text-[#09302f] dark:text-[#4ade80] font-medium hover:underline"
-                >
-                  {showAllShared ? 'Show less' : `See all (${sharedPapers.length})`}
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {displayedShared.map((paper, index) => (
-                <PaperCard 
-                  key={index} 
-                  paper={paper} 
-                  isShared 
-                  onOpenPaper={handleOpenPaper}
-                  showColorTag={false}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Empty State */}
-        {recentPapers.length === 0 && sharedPapers.length === 0 && (
-          <EmptyState
-            icon={DocumentTextIcon}
-            title="No papers yet"
-            description="Create your first question paper to get started"
-            action={
-              <Button
-                onClick={handleCreateNew}
-                variant="primary"
-                size="lg"
-              >
-                Create New Paper
-              </Button>
-            }
-          />
+        {recentPapers.length === 0 && (
+          <div className="text-center py-12">
+            <EmptyState
+              icon={DocumentTextIcon}
+              title="No papers yet"
+              description="Create your first question paper to get started"
+              action={
+                <div className="flex justify-center">
+                  <Button
+                    onClick={handleCreateNew}
+                    variant="primary"
+                    size="lg"
+                  >
+                    Create New Paper
+                  </Button>
+                </div>
+              }
+            />
+          </div>
         )}
       </div>
       
