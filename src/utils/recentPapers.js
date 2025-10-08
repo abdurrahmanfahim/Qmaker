@@ -1,9 +1,8 @@
 // Recent papers management
-export const saveRecentPaper = (paperData, paperId = null) => {
+export const saveRecentPaper = (paperData) => {
   const recent = getRecentPapers();
-  const id = paperId || Date.now().toString();
   const paperInfo = {
-    id,
+    id: Date.now().toString(),
     title: paperData.metadata?.examName || 'Untitled Paper',
     subject: paperData.metadata?.subject || 'Unknown Subject',
     className: paperData.metadata?.className || 'Unknown Class',
@@ -13,7 +12,7 @@ export const saveRecentPaper = (paperData, paperId = null) => {
   };
 
   // Remove if already exists
-  const filtered = recent.filter(p => p.id !== id);
+  const filtered = recent.filter(p => p.title !== paperInfo.title);
   
   // Add to beginning
   const updated = [paperInfo, ...filtered].slice(0, 10);

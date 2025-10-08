@@ -839,9 +839,33 @@ const usePaperStore = create(
        */
       initialize: () => {
         const state = get();
+        
+        // Ensure we have at least one section
+        if (state.sections.length === 0) {
+          const defaultSection = {
+            id: uuidv4(),
+            title: "প্রথম প্রশ্ন:",
+            subQuestions: [
+              {
+                id: uuidv4(),
+                label: "(ক)",
+                heading: "",
+                content: "<p></p>",
+                marks: "",
+                showAnswer: false,
+                answer: "",
+                type: "text",
+              }
+            ],
+          };
+          set({ sections: [defaultSection] });
+        }
+        
+        // Set active section if none selected
         if (state.sections.length > 0 && !state.activeSectionId) {
           set({ activeSectionId: state.sections[0].id });
         }
+        
         // Expose store to window for PDF validation
         if (typeof window !== "undefined") {
           window.__QMAKER_STORE__ = { getState: get };
@@ -849,7 +873,7 @@ const usePaperStore = create(
       },
     }),
     {
-      name: "qmaker-settings",
+      name: "qmaker-ui-settings",
       partialize: (state) => ({
         darkMode: state.darkMode,
         uiLanguage: state.uiLanguage,

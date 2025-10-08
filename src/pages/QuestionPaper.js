@@ -9,6 +9,7 @@ import TopFloatingToolbar from '../components/TopFloatingToolbar';
 import ReviewButton from '../components/ReviewButton';
 import { EditorProvider } from '../contexts/EditorContext';
 import { saveRecentPaper } from '../utils/recentPapers';
+import paperStorage from '../utils/paperStorage';
 
 const QuestionPaper = () => {
   const { qsnId } = useParams();
@@ -29,34 +30,25 @@ const QuestionPaper = () => {
   useEffect(() => {
     initialize();
     
-    // Try to load existing data for this qsnId
-    const loadPaperData = () => {
-      try {
-        if (location.state?.isNew) {
-          clearAll();
-          if (location.state.metadata) {
-            const { setMetadata } = usePaperStore.getState();
-            setMetadata(location.state.metadata);
-            setLanguage(location.state.metadata.language || 'bangla');
-          }
-        } else if (location.state?.paperData) {
-          importData(location.state.paperData);
-        } else {
-          const existingData = localStorage.getItem(`qmaker-paper-${qsnId}`);
-          if (existingData) {
-            const paperData = JSON.parse(existingData);
-            importData(paperData);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load paper data:', error);
+    if (location.state?.isNew) {
+      clearAll();
+      if (location.state.metadata) {
+        const { setMetadata } = usePaperStore.getState();
+        setMetadata(location.state.metadata);
+        setLanguage(location.state.metadata.language || 'bangla');
       }
-    };
-    
-    loadPaperData();
+    } else if (location.state?.paperData) {
+      importData(location.state.paperData);
+    } else {
+      // Load existing paper by ID
+      const existingPaper = paperStorage.loadPaper(qsnId);
+      if (existingPaper) {
+        importData(existingPaper);
+      }
+    }
   }, [qsnId, location.state, initialize, clearAll, setLanguage, importData]);
   
-  // Auto-save paper data with qsnId
+  // Auto-save paper data
   useEffect(() => {
     const saveInterval = setInterval(() => {
       const currentState = usePaperStore.getState();
@@ -65,10 +57,14 @@ const QuestionPaper = () => {
           metadata: currentState.metadata,
           sections: currentState.sections
         };
-        localStorage.setItem(`qmaker-paper-${qsnId}`, JSON.stringify(paperData));
-        saveRecentPaper(paperData, qsnId);
+        
+        // Save to individual paper storage
+        paperStorage.savePaper(qsnId, paperData);
+        
+        // Also save to recent papers
+        saveRecentPaper(paperData);
       }
-    }, 2000);
+    }, 5000); // Auto-save every 5 seconds
     
     return () => clearInterval(saveInterval);
   }, [qsnId]);
