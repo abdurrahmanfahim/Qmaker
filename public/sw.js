@@ -14,15 +14,21 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Validate URL to prevent SSRF
   const url = new URL(event.request.url);
+  
+  // Skip caching for API calls and dynamic content
+  if (url.pathname.includes('/qsn/') || 
+      url.pathname.includes('/api/') ||
+      url.search.includes('nocache')) {
+    return;
+  }
+  
   const allowedOrigins = [self.location.origin, 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
   
   if (!allowedOrigins.some(origin => url.origin === origin || url.href.startsWith(origin))) {
     return;
   }
   
-  // Block requests to private networks
   if (url.hostname === 'localhost' || 
       url.hostname === '127.0.0.1' ||
       url.hostname.startsWith('192.168.') ||
