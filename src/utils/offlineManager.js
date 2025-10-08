@@ -161,10 +161,14 @@ class OfflineManager {
   // Sanitize data to prevent XSS
   sanitizeData(data) {
     if (typeof data === 'string') {
-      return data.replace(/[<>"'&]/g, (match) => {
-        const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
-        return entities[match];
-      });
+      return data
+        .replace(/[<>"'&]/g, (match) => {
+          const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+          return entities[match];
+        })
+        .replace(/javascript:/gi, '')
+        .replace(/on\w+=/gi, '')
+        .replace(/<script[^>]*>.*?<\/script>/gi, '');
     }
     if (Array.isArray(data)) {
       return data.map(item => this.sanitizeData(item));
@@ -172,7 +176,8 @@ class OfflineManager {
     if (data && typeof data === 'object') {
       const sanitized = {};
       for (const [key, value] of Object.entries(data)) {
-        sanitized[key] = this.sanitizeData(value);
+        const sanitizedKey = typeof key === 'string' ? key.replace(/[<>"'&]/g, '_') : key;
+        sanitized[sanitizedKey] = this.sanitizeData(value);
       }
       return sanitized;
     }

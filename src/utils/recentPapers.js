@@ -1,8 +1,9 @@
 // Recent papers management
-export const saveRecentPaper = (paperData) => {
+export const saveRecentPaper = (paperData, paperId = null) => {
   const recent = getRecentPapers();
+  const id = paperId || Date.now().toString();
   const paperInfo = {
-    id: Date.now().toString(),
+    id,
     title: paperData.metadata?.examName || 'Untitled Paper',
     subject: paperData.metadata?.subject || 'Unknown Subject',
     className: paperData.metadata?.className || 'Unknown Class',
@@ -12,10 +13,10 @@ export const saveRecentPaper = (paperData) => {
   };
 
   // Remove if already exists
-  const filtered = recent.filter(p => p.title !== paperInfo.title);
+  const filtered = recent.filter(p => p.id !== id);
   
   // Add to beginning
-  const updated = [paperInfo, ...filtered].slice(0, 10); // Keep only 10 recent
+  const updated = [paperInfo, ...filtered].slice(0, 10);
   
   localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
   return updated;

@@ -169,20 +169,45 @@ const removePDFStyling = (element) => {
 const createLoadingToast = () => {
   const toast = document.createElement('div');
   toast.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[280px]';
-  toast.innerHTML = `
-    <div class="flex items-center gap-3">
-      <div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-      <div class="flex flex-col">
-        <span class="font-medium">Exporting PDF</span>
-        <span class="text-xs opacity-90" id="progress-text">Initializing...</span>
-      </div>
-    </div>
-    <div class="ml-auto">
-      <div class="w-16 h-1 bg-blue-400 rounded-full overflow-hidden">
-        <div class="h-full bg-white rounded-full transition-all duration-500" id="progress-bar" style="width: 10%"></div>
-      </div>
-    </div>
-  `;
+  
+  const container = document.createElement('div');
+  container.className = 'flex items-center gap-3';
+  
+  const spinner = document.createElement('div');
+  spinner.className = 'animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent';
+  
+  const textContainer = document.createElement('div');
+  textContainer.className = 'flex flex-col';
+  
+  const title = document.createElement('span');
+  title.className = 'font-medium';
+  title.textContent = 'Exporting PDF';
+  
+  const progressText = document.createElement('span');
+  progressText.className = 'text-xs opacity-90';
+  progressText.id = 'progress-text';
+  progressText.textContent = 'Initializing...';
+  
+  const progressContainer = document.createElement('div');
+  progressContainer.className = 'ml-auto';
+  
+  const progressBg = document.createElement('div');
+  progressBg.className = 'w-16 h-1 bg-blue-400 rounded-full overflow-hidden';
+  
+  const progressBar = document.createElement('div');
+  progressBar.className = 'h-full bg-white rounded-full transition-all duration-500';
+  progressBar.id = 'progress-bar';
+  progressBar.style.width = '10%';
+  
+  textContainer.appendChild(title);
+  textContainer.appendChild(progressText);
+  container.appendChild(spinner);
+  container.appendChild(textContainer);
+  progressBg.appendChild(progressBar);
+  progressContainer.appendChild(progressBg);
+  toast.appendChild(container);
+  toast.appendChild(progressContainer);
+  
   return toast;
 };
 
@@ -207,17 +232,40 @@ const updateLoadingProgress = (toast, message) => {
  * @param {HTMLElement} loadingToast - Loading toast to transform
  */
 const showSuccessToast = (loadingToast) => {
-  loadingToast.innerHTML = `
-    <div class="flex items-center gap-3">
-      <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-      </svg>
-      <div class="flex flex-col">
-        <span class="font-medium">PDF exported successfully!</span>
-        <span class="text-xs opacity-90">Check your downloads folder</span>
-      </div>
-    </div>
-  `;
+  while (loadingToast.firstChild) {
+    loadingToast.removeChild(loadingToast.firstChild);
+  }
+  
+  const container = document.createElement('div');
+  container.className = 'flex items-center gap-3';
+  
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'w-5 h-5 text-white');
+  svg.setAttribute('fill', 'currentColor');
+  svg.setAttribute('viewBox', '0 0 20 20');
+  
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill-rule', 'evenodd');
+  path.setAttribute('d', 'M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z');
+  path.setAttribute('clip-rule', 'evenodd');
+  
+  const textContainer = document.createElement('div');
+  textContainer.className = 'flex flex-col';
+  
+  const title = document.createElement('span');
+  title.className = 'font-medium';
+  title.textContent = 'PDF exported successfully!';
+  
+  const subtitle = document.createElement('span');
+  subtitle.className = 'text-xs opacity-90';
+  subtitle.textContent = 'Check your downloads folder';
+  
+  svg.appendChild(path);
+  textContainer.appendChild(title);
+  textContainer.appendChild(subtitle);
+  container.appendChild(svg);
+  container.appendChild(textContainer);
+  loadingToast.appendChild(container);
   loadingToast.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[280px]';
   
   setTimeout(() => {
@@ -335,20 +383,55 @@ const handleExportError = (error) => {
 const showErrorToast = (title, message) => {
   const errorToast = document.createElement('div');
   errorToast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center gap-3 min-w-[320px] max-w-[400px]';
-  errorToast.innerHTML = `
-    <svg class="w-6 h-6 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-    </svg>
-    <div class="flex flex-col flex-1">
-      <span class="font-semibold text-sm">${title}</span>
-      <span class="text-xs opacity-90 mt-1 leading-relaxed">${message}</span>
-    </div>
-    <button onclick="this.parentElement.remove()" class="ml-2 text-white hover:text-red-200 flex-shrink-0">
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-      </svg>
-    </button>
-  `;
+  
+  const sanitizeText = (text) => String(text).replace(/[<>"'&]/g, (match) => {
+    const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+    return entities[match];
+  });
+  
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'w-6 h-6 text-white flex-shrink-0');
+  svg.setAttribute('fill', 'currentColor');
+  svg.setAttribute('viewBox', '0 0 20 20');
+  
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill-rule', 'evenodd');
+  path.setAttribute('d', 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z');
+  path.setAttribute('clip-rule', 'evenodd');
+  
+  const textContainer = document.createElement('div');
+  textContainer.className = 'flex flex-col flex-1';
+  
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'font-semibold text-sm';
+  titleSpan.textContent = sanitizeText(title);
+  
+  const messageSpan = document.createElement('span');
+  messageSpan.className = 'text-xs opacity-90 mt-1 leading-relaxed';
+  messageSpan.textContent = sanitizeText(message);
+  
+  const closeButton = document.createElement('button');
+  closeButton.className = 'ml-2 text-white hover:text-red-200 flex-shrink-0';
+  closeButton.addEventListener('click', () => errorToast.remove());
+  
+  const closeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  closeSvg.setAttribute('class', 'w-4 h-4');
+  closeSvg.setAttribute('fill', 'currentColor');
+  closeSvg.setAttribute('viewBox', '0 0 20 20');
+  
+  const closePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  closePath.setAttribute('fill-rule', 'evenodd');
+  closePath.setAttribute('d', 'M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z');
+  closePath.setAttribute('clip-rule', 'evenodd');
+  
+  svg.appendChild(path);
+  textContainer.appendChild(titleSpan);
+  textContainer.appendChild(messageSpan);
+  closeSvg.appendChild(closePath);
+  closeButton.appendChild(closeSvg);
+  errorToast.appendChild(svg);
+  errorToast.appendChild(textContainer);
+  errorToast.appendChild(closeButton);
   
   document.body.appendChild(errorToast);
   

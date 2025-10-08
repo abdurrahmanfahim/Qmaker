@@ -54,10 +54,27 @@ const RichTextEditor = ({
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       
+      // Sanitize HTML to prevent XSS
+      const sanitizeHtml = (html) => {
+        return html
+          .replace(/<script[^>]*>.*?<\/script>/gi, '')
+          .replace(/javascript:/gi, '')
+          .replace(/on\w+=/gi, '')
+          .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+          .replace(/<object[^>]*>.*?<\/object>/gi, '')
+          .replace(/<embed[^>]*>/gi, '');
+      };
+      
+      const sanitizedHtml = sanitizeHtml(html);
+      
       // Auto-detect and apply Bangla font for Bangla characters
       const banglaRegex = /[\u0980-\u09FF]/g;
-      const processedHtml = html.replace(banglaRegex, (match) => {
-        return `<span style="font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;">${match}</span>`;
+      const processedHtml = sanitizedHtml.replace(banglaRegex, (match) => {
+        const escapedMatch = match.replace(/[<>"'&]/g, (char) => {
+          const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+          return entities[char];
+        });
+        return `<span style="font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;">${escapedMatch}</span>`;
       });
       
       onChange(processedHtml);

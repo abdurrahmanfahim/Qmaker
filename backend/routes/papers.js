@@ -47,10 +47,30 @@ router.get('/:id', auth, (req, res) => {
 
 // Create paper
 router.post('/', auth, csrfProtection, (req, res) => {
+  const sanitizeInput = (obj) => {
+    if (typeof obj === 'string') {
+      return obj.replace(/[<>"'&]/g, (match) => {
+        const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+        return entities[match];
+      });
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => sanitizeInput(item));
+    }
+    if (obj && typeof obj === 'object') {
+      const sanitized = {};
+      for (const [key, value] of Object.entries(obj)) {
+        sanitized[key] = sanitizeInput(value);
+      }
+      return sanitized;
+    }
+    return obj;
+  };
+  
   const paper = {
     id: Date.now().toString(),
     userId: req.userId,
-    ...req.body,
+    ...sanitizeInput(req.body),
     createdAt: new Date(),
     updatedAt: new Date()
   };
@@ -66,9 +86,29 @@ router.put('/:id', auth, csrfProtection, (req, res) => {
     return res.status(404).json({ error: 'Paper not found' });
   }
   
+  const sanitizeInput = (obj) => {
+    if (typeof obj === 'string') {
+      return obj.replace(/[<>"'&]/g, (match) => {
+        const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+        return entities[match];
+      });
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => sanitizeInput(item));
+    }
+    if (obj && typeof obj === 'object') {
+      const sanitized = {};
+      for (const [key, value] of Object.entries(obj)) {
+        sanitized[key] = sanitizeInput(value);
+      }
+      return sanitized;
+    }
+    return obj;
+  };
+  
   papers[paperIndex] = {
     ...papers[paperIndex],
-    ...req.body,
+    ...sanitizeInput(req.body),
     updatedAt: new Date()
   };
   

@@ -1,15 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { securityHeaders, generalLimiter, sanitizeInput } = require('./middleware/security');
+const { securityHeaders, generalLimiter, sanitizeInput, validateRequest } = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
 app.use(securityHeaders);
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
+app.use(validateRequest);
 app.use(sanitizeInput);
 app.use(generalLimiter);
 

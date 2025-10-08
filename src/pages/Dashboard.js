@@ -13,7 +13,7 @@ const Dashboard = () => {
   };
 
   const handleCreatePaper = (metadata) => {
-    const qsnId = generateQsnId(metadata.language);
+    const qsnId = Date.now().toString();
     navigate(`/qsn/${qsnId}`, { state: { metadata, isNew: true } });
   };
 

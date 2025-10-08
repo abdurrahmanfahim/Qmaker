@@ -66,7 +66,17 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${metadata.subject || 'question-paper'}.json`;
+      
+      // Sanitize filename
+      const sanitizeFilename = (filename) => {
+        return filename
+          .replace(/[<>:"/\\|?*]/g, '_')
+          .replace(/\.\./g, '_')
+          .replace(/^[.\s]+|[.\s]+$/g, '')
+          .substring(0, 255);
+      };
+      
+      a.download = sanitizeFilename(`${metadata.subject || 'question-paper'}.json`);
       a.click();
       URL.revokeObjectURL(url);
       setIsOpen(false);
@@ -108,11 +118,19 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
             if (currentData.sections.length > 0 || currentData.metadata.examName) {
               // Save to recent papers
               const recent = JSON.parse(localStorage.getItem('qmaker-recent-papers') || '[]');
+              // Sanitize metadata before saving
+              const sanitizeText = (text) => {
+                return String(text || '').replace(/[<>"'&]/g, (match) => {
+                  const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+                  return entities[match];
+                });
+              };
+              
               const paperInfo = {
                 id: Date.now().toString(),
-                title: currentData.metadata?.examName || 'Untitled Paper',
-                subject: currentData.metadata?.subject || 'Unknown Subject',
-                className: currentData.metadata?.className || 'Unknown Class',
+                title: sanitizeText(currentData.metadata?.examName || 'Untitled Paper'),
+                subject: sanitizeText(currentData.metadata?.subject || 'Unknown Subject'),
+                className: sanitizeText(currentData.metadata?.className || 'Unknown Class'),
                 language: currentData.metadata?.language || 'english',
                 lastModified: new Date().toLocaleDateString(),
                 data: currentData

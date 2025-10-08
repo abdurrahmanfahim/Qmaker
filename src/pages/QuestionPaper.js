@@ -29,28 +29,46 @@ const QuestionPaper = () => {
   useEffect(() => {
     initialize();
     
+    // Try to load existing data for this qsnId
+    const existingData = localStorage.getItem(`qmaker-paper-${qsnId}`);
+    
     if (location.state?.isNew) {
       clearAll();
       if (location.state.metadata) {
         const { setMetadata } = usePaperStore.getState();
         setMetadata(location.state.metadata);
         setLanguage(location.state.metadata.language || 'bangla');
-        
-        // Save to recent papers
-        setTimeout(() => {
-          const currentState = usePaperStore.getState();
-          saveRecentPaper({
-            metadata: currentState.metadata,
-            sections: currentState.sections
-          });
-        }, 1000);
-      } else {
-        setLanguage(location.state.language || 'bangla');
       }
     } else if (location.state?.paperData) {
       importData(location.state.paperData);
+    } else if (existingData) {
+      try {
+        const paperData = JSON.parse(existingData);
+        importData(paperData);
+      } catch (error) {
+        console.error('Failed to load paper data:', error);
+      }
     }
   }, [qsnId, location.state, initialize, clearAll, setLanguage, importData]);
+  
+  // Auto-save paper data with qsnId
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+      const currentState = usePaperStore.getState();
+      if (currentState.sections.length > 0 || currentState.metadata.examName) {
+        const paperData = {
+          metadata: currentState.metadata,
+          sections: currentState.sections
+        };
+        localStorage.setItem(`qmaker-paper-${qsnId}`, JSON.stringify(paperData));
+        
+        // Save to recent papers
+        saveRecentPaper(paperData, qsnId);
+      }
+    }, 5000);
+    
+    return () => clearInterval(saveInterval);
+  }, [qsnId]);
 
   return (
     <div className={darkMode ? "dark" : ""}>

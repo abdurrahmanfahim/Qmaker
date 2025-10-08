@@ -39,11 +39,25 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
 
   useEffect(() => {
     // Load recent and shared papers
-    const recent = getRecentPapers();
-    const shared = getMockSharedPapers();
+    const loadPapers = () => {
+      const recent = getRecentPapers();
+      const shared = getMockSharedPapers();
+      
+      setRecentPapers(recent);
+      setSharedPapers(shared);
+    };
     
-    setRecentPapers(recent);
-    setSharedPapers(shared);
+    loadPapers();
+    
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadPapers();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
   
   const displayedRecent = showAllRecent ? recentPapers : recentPapers.slice(0, 6);

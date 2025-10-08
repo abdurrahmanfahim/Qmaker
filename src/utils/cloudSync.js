@@ -7,8 +7,13 @@ class CloudSync {
 
   // Initialize cloud sync
   init() {
+    console.log('Cloud sync initialized');
     this.startAutoSync();
     this.handleOnlineOffline();
+    // Initial sync
+    if (navigator.onLine) {
+      this.syncToCloud();
+    }
   }
 
   // Start automatic synchronization
@@ -67,10 +72,14 @@ class CloudSync {
   // Sanitize data to prevent XSS
   sanitizeData(data) {
     if (typeof data === 'string') {
-      return data.replace(/[<>"'&]/g, (match) => {
-        const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
-        return entities[match];
-      });
+      return data
+        .replace(/[<>"'&]/g, (match) => {
+          const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+          return entities[match];
+        })
+        .replace(/javascript:/gi, '')
+        .replace(/on\w+=/gi, '')
+        .replace(/<script[^>]*>.*?<\/script>/gi, '');
     }
     if (Array.isArray(data)) {
       return data.map(item => this.sanitizeData(item));
@@ -78,7 +87,8 @@ class CloudSync {
     if (data && typeof data === 'object') {
       const sanitized = {};
       for (const [key, value] of Object.entries(data)) {
-        sanitized[key] = this.sanitizeData(value);
+        const sanitizedKey = typeof key === 'string' ? key.replace(/[<>"'&]/g, '_') : key;
+        sanitized[sanitizedKey] = this.sanitizeData(value);
       }
       return sanitized;
     }
@@ -106,10 +116,22 @@ class CloudSync {
     });
   }
 
-  // Show sync status to user (disabled)
+  // Show sync status to user
   showSyncStatus(type, message) {
-    // Disabled for now
-    return;
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white text-sm z-50 ${
+      type === 'success' ? 'bg-green-600' : 
+      type === 'error' ? 'bg-red-600' : 
+      type === 'warning' ? 'bg-yellow-600' : 'bg-blue-600'
+    }`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        toast.remove();
+      }
+    }, 3000);
   }
 
   // Stop sync

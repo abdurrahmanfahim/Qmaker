@@ -141,7 +141,14 @@ export const exportToWord = async (paperData, options = {}) => {
     
     // Generate and save
     const buffer = await Packer.toBuffer(doc);
-    const filename = options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.docx`;
+    const sanitizeFilename = (filename) => {
+      return filename
+        .replace(/[<>:"/\\|?*]/g, '_')
+        .replace(/\.\./g, '_')
+        .replace(/^[.\s]+|[.\s]+$/g, '')
+        .substring(0, 255);
+    };
+    const filename = sanitizeFilename(options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.docx`);
     saveAs(new Blob([buffer]), filename);
     
   } catch (error) {
@@ -283,10 +290,14 @@ export const exportToHTML = (paperData, options = {}) => {
 </html>`;
   
   const blob = new Blob([html], { type: 'text/html' });
-  // Sanitize filename to prevent path traversal
-  const safeFilename = (options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.html`)
-    .replace(/[^a-zA-Z0-9.-]/g, '_')
-    .replace(/\.\./g, '_');
+  const sanitizeFilename = (filename) => {
+    return filename
+      .replace(/[<>:"/\\|?*]/g, '_')
+      .replace(/\.\./g, '_')
+      .replace(/^[.\s]+|[.\s]+$/g, '')
+      .substring(0, 255);
+  };
+  const safeFilename = sanitizeFilename(options.filename || `question-paper-${new Date().toISOString().split('T')[0]}.html`);
   saveAs(blob, safeFilename);
 };
 

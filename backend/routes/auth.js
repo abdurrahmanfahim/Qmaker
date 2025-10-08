@@ -23,33 +23,67 @@ const auth = (req, res, next) => {
 // In-memory user storage (replace with database)
 const users = [];
 
+// CSRF protection for state-changing operations
+const csrfProtection = (req, res, next) => {
+  const token = req.header('X-CSRF-Token');
+  if (!token && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    return res.status(403).json({ error: 'CSRF token required' });
+  }
+  next();
+};
+
+// Input sanitization
+const sanitizeInput = (input) => {
+  if (typeof input === 'string') {
+    return input.replace(/[<>"'&]/g, (match) => {
+      const entities = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' };
+      return entities[match];
+    }).trim();
+  }
+  return input;
+};
+
 // Register
-router.post('/register', authLimiter, async (req, res) => {
+router.post('/register', authLimiter, csrfProtection, async (req, res) => {
   try {
     const { email, password, name } = req.body;
     
+    // Validate and sanitize inputs
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedName = sanitizeInput(name);
+    
+    if (!sanitizedEmail || !password || !sanitizedName) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(sanitizedEmail)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    
     // Check if user exists
-    const existingUser = users.find(u => u.email === email);
+    const existingUser = users.find(u => u.email === sanitizedEmail);
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
     
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
     
     // Create user
     const user = {
       id: Date.now().toString(),
-      email,
+      email: sanitizedEmail,
       password: hashedPassword,
-      name,
+      name: sanitizedName,
       createdAt: new Date()
     };
     
     users.push(user);
     
     // Generate token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     
     res.status(201).json({
       token,
@@ -74,12 +108,19 @@ router.get('/profile', auth, async (req, res) => {
 });
 
 // Login
-router.post('/login', authLimiter, async (req, res) => {
+router.post('/login', authLimiter, csrfProtection, async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // Validate and sanitize inputs
+    const sanitizedEmail = sanitizeInput(email);
+    
+    if (!sanitizedEmail || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
     // Find user
-    const user = users.find(u => u.email === email);
+    const user = users.find(u => u.email === sanitizedEmail);
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
@@ -91,7 +132,7 @@ router.post('/login', authLimiter, async (req, res) => {
     }
     
     // Generate token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     
     res.json({
       token,
