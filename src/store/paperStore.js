@@ -849,10 +849,8 @@ const usePaperStore = create(
       },
     }),
     {
-      name: "paper-storage",
+      name: "qmaker-settings",
       partialize: (state) => ({
-        metadata: state.metadata,
-        sections: state.sections,
         darkMode: state.darkMode,
         uiLanguage: state.uiLanguage,
       }),
