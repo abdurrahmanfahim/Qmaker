@@ -25,6 +25,7 @@ import BottomNavigation from '../common/BottomNavigation';
 import SearchPage from './SearchPage';
 import Button from '../common/Button';
 import EmptyState from '../common/EmptyState';
+import cloudSync from '../../utils/cloudSync';
 
 
 const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) => {
@@ -39,7 +40,29 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
 
   useEffect(() => {
     // Load recent and shared papers
-    const loadPapers = () => {
+    const loadPapers = async () => {
+      // Check if user is logged in
+      const profileData = localStorage.getItem('qmaker-profile');
+      if (profileData) {
+        try {
+          const decoded = decodeURIComponent(escape(atob(profileData)));
+          const profile = JSON.parse(decoded);
+          if (profile.id) {
+            // Sync from cloud first
+            await cloudSync.syncFromCloud(profile.id);
+          }
+        } catch (e) {
+          try {
+            const profile = JSON.parse(profileData);
+            if (profile.id) {
+              await cloudSync.syncFromCloud(profile.id);
+            }
+          } catch (err) {
+            console.error('Failed to parse profile:', err);
+          }
+        }
+      }
+      
       const recent = getRecentPapers();
       const shared = getMockSharedPapers();
       
@@ -112,7 +135,9 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
       case 'delete':
         const recent = getRecentPapers();
         const updated = recent.filter(p => p.id !== paper.id);
-        localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+        const jsonStr = JSON.stringify(updated);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        localStorage.setItem('qmaker-recent-papers', encoded);
         setRecentPapers(updated);
         break;
       case 'print':
@@ -155,7 +180,9 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
       const updated = recent.map(p => 
         p.id === paper.id ? { ...p, colorTag: color } : p
       );
-      localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+      const jsonStr1 = JSON.stringify(updated);
+      const encoded1 = btoa(unescape(encodeURIComponent(jsonStr1)));
+      localStorage.setItem('qmaker-recent-papers', encoded1);
       setRecentPapers(updated);
       setShowColorPicker(false);
       
@@ -169,7 +196,9 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
           }
         };
         // Auto-save to cloud storage
-        localStorage.setItem(`qmaker-paper-${paper.id}`, JSON.stringify(updatedPaperData));
+        const jsonStr2 = JSON.stringify(updatedPaperData);
+        const encoded2 = btoa(unescape(encodeURIComponent(jsonStr2)));
+        localStorage.setItem(`qmaker-paper-${paper.id}`, encoded2);
       }
     };
     
@@ -414,7 +443,9 @@ const WelcomeDashboard = ({ onCreateNew, onOpenPaper, onCreateLanguagePaper }) =
         <GoogleSignup 
           onBack={() => setCurrentPage('profile')}
           onSignupComplete={(profile) => {
-            localStorage.setItem('qmaker-profile', JSON.stringify(profile));
+            const jsonStr = JSON.stringify(profile);
+            const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+            localStorage.setItem('qmaker-profile', encoded);
             setCurrentPage('profile');
           }}
         />

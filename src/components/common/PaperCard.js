@@ -57,7 +57,9 @@ const PaperCard = ({
     const updated = recent.map(p => 
       p.id === paper.id ? { ...p, colorTag: color } : p
     );
-    localStorage.setItem(STORAGE_KEYS.RECENT_PAPERS, JSON.stringify(updated));
+    const jsonStr1 = JSON.stringify(updated);
+    const encoded1 = btoa(unescape(encodeURIComponent(jsonStr1)));
+    localStorage.setItem(STORAGE_KEYS.RECENT_PAPERS, encoded1);
     
     // Save to cloud storage if paper data exists
     if (paper.data) {
@@ -68,7 +70,9 @@ const PaperCard = ({
           colorTag: color
         }
       };
-      localStorage.setItem(`${STORAGE_KEYS.PAPER_PREFIX}${paper.id}`, JSON.stringify(updatedPaperData));
+      const jsonStr2 = JSON.stringify(updatedPaperData);
+      const encoded2 = btoa(unescape(encodeURIComponent(jsonStr2)));
+      localStorage.setItem(`${STORAGE_KEYS.PAPER_PREFIX}${paper.id}`, encoded2);
     }
     
     // Update parent component and close menus
@@ -87,7 +91,9 @@ const PaperCard = ({
       case 'delete':
         const recent = getRecentPapers();
         const updated = recent.filter(p => p.id !== paper.id);
-        localStorage.setItem(STORAGE_KEYS.RECENT_PAPERS, JSON.stringify(updated));
+        const jsonStr = JSON.stringify(updated);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        localStorage.setItem(STORAGE_KEYS.RECENT_PAPERS, encoded);
         if (onUpdatePapers) onUpdatePapers(updated);
         break;
       case 'print':

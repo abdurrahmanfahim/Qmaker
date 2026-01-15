@@ -137,7 +137,9 @@ const HamburgerMenu = ({ showPaperInfo, setShowPaperInfo, onMenuToggle }) => {
               };
               const filtered = recent.filter(p => p.title !== paperInfo.title);
               const updated = [paperInfo, ...filtered].slice(0, 10);
-              localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+              const jsonStr = JSON.stringify(updated);
+              const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+              localStorage.setItem('qmaker-recent-papers', encoded);
             }
             
             localStorage.removeItem('qmaker-visited');

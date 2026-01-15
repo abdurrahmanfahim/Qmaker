@@ -17,13 +17,23 @@ export const saveRecentPaper = (paperData) => {
   // Add to beginning
   const updated = [paperInfo, ...filtered].slice(0, 10);
   
-  localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+  const jsonStr = JSON.stringify(updated);
+  const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+  localStorage.setItem('qmaker-recent-papers', encoded);
   return updated;
 };
 
 export const getRecentPapers = () => {
   try {
-    return JSON.parse(localStorage.getItem('qmaker-recent-papers') || '[]');
+    const data = localStorage.getItem('qmaker-recent-papers');
+    if (!data) return [];
+    
+    try {
+      const decoded = decodeURIComponent(escape(atob(data)));
+      return JSON.parse(decoded);
+    } catch (e) {
+      return JSON.parse(data);
+    }
   } catch {
     return [];
   }
@@ -32,7 +42,9 @@ export const getRecentPapers = () => {
 export const removeRecentPaper = (paperId) => {
   const recent = getRecentPapers();
   const updated = recent.filter(p => p.id !== paperId);
-  localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+  const jsonStr = JSON.stringify(updated);
+  const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+  localStorage.setItem('qmaker-recent-papers', encoded);
   return updated;
 };
 

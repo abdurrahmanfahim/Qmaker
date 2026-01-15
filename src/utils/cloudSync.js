@@ -52,6 +52,45 @@ class CloudSync {
     }
   }
 
+  // Sync data from cloud to local
+  async syncFromCloud(userId) {
+    try {
+      const response = await this.mockCloudAPI('fetch', { userId });
+      
+      if (response.success && response.data) {
+        // Save cloud data to local storage with encoding
+        const { papers, profile } = response.data;
+        
+        if (papers && papers.length > 0) {
+          papers.forEach(paper => {
+            const jsonStr = JSON.stringify(paper.data);
+            const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+            localStorage.setItem(`qmaker-paper-${paper.id}`, encoded);
+          });
+          
+          // Update recent papers
+          const jsonStr = JSON.stringify(papers);
+          const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+          localStorage.setItem('qmaker-recent-papers', encoded);
+        }
+        
+        if (profile) {
+          const jsonStr = JSON.stringify(profile);
+          const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+          localStorage.setItem('qmaker-profile', encoded);
+        }
+        
+        this.showSyncStatus('success', 'Synced from cloud');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Cloud sync from failed:', error);
+      this.showSyncStatus('error', 'Sync from cloud failed');
+      return false;
+    }
+  }
+
   // Get local data for sync with sanitization
   getLocalData() {
     try {
@@ -99,6 +138,39 @@ class CloudSync {
   async mockCloudAPI(action, data) {
     return new Promise((resolve) => {
       setTimeout(() => {
+        if (action === 'fetch') {
+          // Simulate fetching user data from cloud
+          resolve({ 
+            success: true, 
+            data: {
+              papers: [
+                {
+                  id: Date.now().toString(),
+                  title: 'Sample Cloud Paper',
+                  subject: 'Mathematics',
+                  className: 'Class 10',
+                  language: 'english',
+                  lastModified: new Date().toISOString().split('T')[0],
+                  data: {
+                    metadata: {
+                      examName: 'Sample Cloud Paper',
+                      subject: 'Mathematics',
+                      className: 'Class 10',
+                      language: 'english'
+                    },
+                    sections: []
+                  }
+                }
+              ],
+              profile: {
+                name: 'Cloud User',
+                email: 'user@example.com',
+                school: 'Cloud School',
+                subject: 'Mathematics'
+              }
+            }
+          });
+        }
         resolve({ success: true, data });
       }, 1000);
     });

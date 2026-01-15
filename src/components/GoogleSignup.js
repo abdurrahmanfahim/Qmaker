@@ -4,6 +4,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useHapticFeedback } from '../hooks/useSwipeGestures';
+import cloudSync from '../utils/cloudSync';
 
 const GoogleSignup = ({ onBack, onSignupComplete }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,18 +31,24 @@ const GoogleSignup = ({ onBack, onSignupComplete }) => {
     setIsLoading(true);
     
     // Simulate Google OAuth flow
-    setTimeout(() => {
+    setTimeout(async () => {
+      const userProfile = {
+        id: Date.now().toString(),
+        name: 'John Teacher',
+        email: 'john.teacher@gmail.com',
+        school: 'Demo School',
+        subject: 'Mathematics'
+      };
+      
+      // Sync data from cloud to local
+      await cloudSync.syncFromCloud(userProfile.id);
+      
       setIsLoading(false);
       setIsSuccess(true);
       
-      // Simulate successful signup
+      // Complete signup
       setTimeout(() => {
-        onSignupComplete({
-          name: 'John Teacher',
-          email: 'john.teacher@gmail.com',
-          school: 'Demo School',
-          subject: 'Mathematics'
-        });
+        onSignupComplete(userProfile);
       }, 2000);
     }, 2000);
   };

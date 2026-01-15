@@ -44,7 +44,9 @@ const Header = ({ onMenuToggle }) => {
     const timer = setTimeout(() => {
       try {
         const data = exportData();
-        localStorage.setItem('qmaker-autosave', JSON.stringify(data));
+        const jsonStr = JSON.stringify(data);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        localStorage.setItem('qmaker-autosave', encoded);
       } catch (error) {
         console.error('Auto-save failed:', error);
       }

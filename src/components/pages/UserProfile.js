@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useHapticFeedback } from '../../hooks/useSwipeGestures';
 import ImageCropper from '../ImageCropper';
+import cloudSync from '../../utils/cloudSync';
 
 const UserProfile = ({ onBack, onShowGoogleSignup }) => {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -26,8 +27,25 @@ const UserProfile = ({ onBack, onShowGoogleSignup }) => {
   React.useEffect(() => {
     const saved = localStorage.getItem('qmaker-profile');
     if (saved) {
-      setProfile(JSON.parse(saved));
-      setIsSignedIn(true);
+      try {
+        const decoded = decodeURIComponent(escape(atob(saved)));
+        const profileData = JSON.parse(decoded);
+        setProfile(profileData);
+        setIsSignedIn(true);
+        
+        // Sync from cloud if user has ID
+        if (profileData.id) {
+          cloudSync.syncFromCloud(profileData.id);
+        }
+      } catch (e) {
+        const profileData = JSON.parse(saved);
+        setProfile(profileData);
+        setIsSignedIn(true);
+        
+        if (profileData.id) {
+          cloudSync.syncFromCloud(profileData.id);
+        }
+      }
     } else {
       // Auto sign in for demo
       setIsSignedIn(true);
@@ -52,7 +70,9 @@ const UserProfile = ({ onBack, onShowGoogleSignup }) => {
   const handleSave = () => {
     lightTap();
     setIsEditing(false);
-    localStorage.setItem('qmaker-profile', JSON.stringify(profile));
+    const jsonStr = JSON.stringify(profile);
+    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+    localStorage.setItem('qmaker-profile', encoded);
   };
 
   const handleCancel = () => {
@@ -61,7 +81,12 @@ const UserProfile = ({ onBack, onShowGoogleSignup }) => {
     // Reset to saved data
     const saved = localStorage.getItem('qmaker-profile');
     if (saved) {
-      setProfile(JSON.parse(saved));
+      try {
+        const decoded = decodeURIComponent(escape(atob(saved)));
+        setProfile(JSON.parse(decoded));
+      } catch (e) {
+        setProfile(JSON.parse(saved));
+      }
     }
   };
 
@@ -121,6 +146,8 @@ const UserProfile = ({ onBack, onShowGoogleSignup }) => {
             onClick={() => {
               lightTap();
               setIsSignedIn(true);
+              // Try to sync from cloud even for guest users
+              cloudSync.syncFromCloud('guest');
             }}
             className="w-full text-[#09302f] dark:text-[#4ade80] font-medium py-2 hover:underline"
           >

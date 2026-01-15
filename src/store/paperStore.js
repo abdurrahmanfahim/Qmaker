@@ -878,6 +878,28 @@ const usePaperStore = create(
         darkMode: state.darkMode,
         uiLanguage: state.uiLanguage,
       }),
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+          try {
+            const decoded = decodeURIComponent(escape(atob(str)));
+            return JSON.parse(decoded);
+          } catch (e) {
+            try {
+              return JSON.parse(str);
+            } catch (err) {
+              return null;
+            }
+          }
+        },
+        setItem: (name, value) => {
+          const jsonStr = JSON.stringify(value);
+          const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+          localStorage.setItem(name, encoded);
+        },
+        removeItem: (name) => localStorage.removeItem(name),
+      },
     }
   )
 );

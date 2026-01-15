@@ -8,7 +8,9 @@ class PaperStorage {
   // Save paper with unique ID
   savePaper(paperId, paperData) {
     try {
-      localStorage.setItem(`${this.storagePrefix}${paperId}`, JSON.stringify(paperData));
+      const jsonStr = JSON.stringify(paperData);
+      const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+      localStorage.setItem(`${this.storagePrefix}${paperId}`, encoded);
       this.updateIndex(paperId, paperData.metadata);
       return true;
     } catch (error) {
@@ -21,7 +23,16 @@ class PaperStorage {
   loadPaper(paperId) {
     try {
       const data = localStorage.getItem(`${this.storagePrefix}${paperId}`);
-      return data ? JSON.parse(data) : null;
+      if (!data) return null;
+      
+      // Try to decode base64 first (new format)
+      try {
+        const decoded = decodeURIComponent(escape(atob(data)));
+        return JSON.parse(decoded);
+      } catch (e) {
+        // Fallback to old format (plain JSON)
+        return JSON.parse(data);
+      }
     } catch (error) {
       console.error('Failed to load paper:', error);
       return null;
@@ -41,13 +52,23 @@ class PaperStorage {
     const filtered = index.filter(p => p.id !== paperId);
     const updated = [paperInfo, ...filtered].slice(0, 50); // Keep 50 papers max
     
-    localStorage.setItem(this.indexKey, JSON.stringify(updated));
+    const jsonStr = JSON.stringify(updated);
+    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+    localStorage.setItem(this.indexKey, encoded);
   }
 
   // Get papers index
   getPapersIndex() {
     try {
-      return JSON.parse(localStorage.getItem(this.indexKey) || '[]');
+      const data = localStorage.getItem(this.indexKey);
+      if (!data) return [];
+      
+      try {
+        const decoded = decodeURIComponent(escape(atob(data)));
+        return JSON.parse(decoded);
+      } catch (e) {
+        return JSON.parse(data);
+      }
     } catch {
       return [];
     }
@@ -58,7 +79,9 @@ class PaperStorage {
     localStorage.removeItem(`${this.storagePrefix}${paperId}`);
     const index = this.getPapersIndex();
     const updated = index.filter(p => p.id !== paperId);
-    localStorage.setItem(this.indexKey, JSON.stringify(updated));
+    const jsonStr = JSON.stringify(updated);
+    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+    localStorage.setItem(this.indexKey, encoded);
   }
 
   // Get storage usage

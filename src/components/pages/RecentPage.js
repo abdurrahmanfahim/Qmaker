@@ -54,7 +54,9 @@ const RecentPage = ({ onBack, onOpenPaper, onNavigate }) => {
         break;
       case 'delete':
         const updated = recentPapers.filter(p => p.id !== paper.id);
-        localStorage.setItem('qmaker-recent-papers', JSON.stringify(updated));
+        const jsonStr = JSON.stringify(updated);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        localStorage.setItem('qmaker-recent-papers', encoded);
         setRecentPapers(updated);
         break;
       case 'print':

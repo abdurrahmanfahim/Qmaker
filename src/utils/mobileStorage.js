@@ -44,7 +44,9 @@ class MobileStorage {
         timestamp: Date.now(),
         version: '1.0'
       };
-      localStorage.setItem(key, JSON.stringify(data));
+      const jsonStr = JSON.stringify(data);
+      const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+      localStorage.setItem(key, encoded);
       return true;
     } catch (error) {
       console.error('Mobile storage write failed:', error);
@@ -59,8 +61,14 @@ class MobileStorage {
       const stored = localStorage.getItem(key);
       if (!stored) return null;
       
-      const data = JSON.parse(stored);
-      return data.value || data; // Backward compatibility
+      try {
+        const decoded = decodeURIComponent(escape(atob(stored)));
+        const data = JSON.parse(decoded);
+        return data.value || data;
+      } catch (e) {
+        const data = JSON.parse(stored);
+        return data.value || data;
+      }
     } catch (error) {
       console.error('Mobile storage read failed:', error);
       return null;
